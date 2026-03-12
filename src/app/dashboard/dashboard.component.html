@@ -1,0 +1,271 @@
+
+<div class="dashboard-card-list">
+  <!-- Card 1 -->
+  <div
+    class="dashboard-card"
+    (click)="
+      openDialog(
+        {
+          title: 'Sensitive Folders With Open Access',
+          value: 2321,
+          file: false,
+          fileicon: false,
+          icon: '/svg/folder.svg',
+          subtitle: 'Sensitive Folders With Open Access',
+        },
+        FOLDER_DATA_1
+      )
+    "
+  >
+    <app-card
+      title="Sensitive Folders With Open Access"
+      value="2321"
+      [chart]="true"
+      [file]="false"
+      [fileicon]="false"
+      filecount=""
+      [percentage]="26"
+      icon="/svg/folder.svg"
+      subtitle="Sensitive Folders With Open Access"
+    ></app-card>
+  </div>
+
+  <!-- Card 2 -->
+  <div
+    class="dashboard-card"
+    (click)="
+      openDialog(
+        {
+          title: 'Sensitive Files With Open Access',
+          value: '3125',
+          file: true,
+          fileicon: true,
+          icon: '/svg/file.svg',
+          subtitle: 'Sensitive Files With Open Access',
+        },
+        FOLDER_DATA_2
+      )
+    "
+  >
+    <app-card
+      title="Sensitive Files With Open Access"
+      value="84%"
+      [chart]="false"
+      [file]="true"
+      [fileicon]="true"
+      filecount="3125"
+      [percentage]="26"
+      icon="/svg/file.svg"
+      subtitle="Sensitive Files With Open Access"
+    ></app-card>
+  </div>
+
+  <!-- Card 3 -->
+  <div
+    class="dashboard-card"
+    (click)="
+      openDialog(
+        {
+          title: 'Folders That Contain Sensitive Files',
+          value: '2981',
+          file: true,
+          fileicon: false,
+          icon: '/svg/folder.svg',
+          subtitle: 'Folders That Contain Sensitive Files',
+        },
+        FOLDER_DATA_3
+      )
+    "
+  >
+    <app-card
+      title="Folders That Contain Sensitive Files"
+      value="26%"
+      [chart]="false"
+      [file]="true"
+      [fileicon]="false"
+      filecount="2981"
+      [percentage]="26"
+      icon="/svg/folder.svg"
+      subtitle="Folders That Contain Sensitive Files"
+    ></app-card>
+  </div>
+
+  <div
+    class="dashboard-card"
+    (click)="
+      openDialog(
+        {
+          title: 'Sensitive Folders With Full Control Open Access',
+          value: 89,
+          file: false,
+          fileicon: false,
+          icon: '/svg/folder.svg',
+          subtitle: 'Sensitive Folders With Full Control Open Access',
+        },
+        FOLDER_DATA_1
+      )
+    "
+  >
+    <app-card
+      title="Sensitive Folders With Full Control Open Access"
+      value="89"
+      [chart]="true"
+      [file]="false"
+      [fileicon]="false"
+      filecount=""
+      [percentage]="0.71"
+      icon="/svg/folder.svg"
+      subtitle="Sensitive Folders With Full Control Open Access"
+    ></app-card>
+  </div>
+
+  <div
+    class="dashboard-card"
+    (click)="
+      openDialog(
+        {
+          title: ' Folders With Open Access',
+          value: 89,
+          file: false,
+          fileicon: false,
+          icon: '/svg/folder.svg',
+          subtitle: ' Folders With Open Access',
+        },
+        FOLDER_DATA_1
+      )
+    "
+  >
+    <app-card
+      title=" Folders With Open Access"
+      value="2934"
+      [chart]="true"
+      [file]="false"
+      [fileicon]="false"
+      filecount=""
+      [percentage]="33"
+      icon="/svg/folder.svg"
+      subtitle=" Folders With Open Access"
+    ></app-card>
+  </div>
+
+   <div
+    class="dashboard-card"
+    (click)="
+      openDialog(
+        {
+          title: 'Stale Sensitive Files',
+          value: '4102',
+          file: true,
+          fileicon: true,
+          icon: '/svg/file.svg',
+          subtitle: 'Stale Sensitive Files',
+        },
+        FOLDER_DATA_3
+      )
+    "
+  >
+    <app-card
+      title="Stale Sensitive Files"
+      value="26%"
+      [chart]="false"
+      [file]="true"
+      [fileicon]="true"
+      filecount="4102"
+      [percentage]="9"
+      icon="/svg/file.svg"
+      subtitle="Stale Sensitive Files"
+    ></app-card>
+  </div>
+
+
+   <div
+    class="dashboard-card"
+    (click)="
+      openDialog(
+        {
+          title: 'Sensitive Folders With Read and Execute Open Access',
+          value: 1892,
+          file: false,
+          fileicon: false,
+          icon: '/svg/folder.svg',
+          subtitle: 'Sensitive Folders With Read and Execute Open Access',
+        },
+        FOLDER_DATA_1
+      )
+    "
+  >
+    <app-card
+      title="Sensitive Folders With Read and Execute Open Access"
+      value="1892"
+      [chart]="true"
+      [file]="false"
+      [fileicon]="false"
+      filecount=""
+      [percentage]="22"
+      icon="/svg/folder.svg"
+      subtitle="Sensitive Folders With Open Access"
+    ></app-card>
+  </div>
+
+
+   <div
+    class="dashboard-card"
+    (click)="
+      openDialog(
+        {
+          title: 'External Sources',
+          value: '1923',
+          file: true,
+          fileicon: true,
+          icon: '/svg/file.svg',
+          subtitle: 'External Sources',
+        },
+        FOLDER_DATA_3
+      )
+    "
+  >
+    <app-card
+      title="External Sources"
+      value="46%"
+      [chart]="false"
+      [file]="true"
+      [fileicon]="true"
+      filecount="1923"
+      [percentage]="9"
+      icon="/svg/file.svg"
+      subtitle="Folders With Open Access (Including Inherited)"
+    ></app-card>
+  </div>
+
+   <div
+    class="dashboard-card"
+    (click)="
+      openDialog(
+        {
+          title: 'Cloud Resources',
+          value: '1257',
+          file: true,
+          fileicon: true,
+          icon: '/svg/folder.svg',
+          subtitle: 'Cloud Resources',
+        },
+        FOLDER_DATA_3
+      )
+    "
+  >
+    <app-card
+      title="Cloud Resources"
+      value="19%"
+      [chart]="false"
+      [file]="true"
+      [fileicon]="false"
+      filecount="1257"
+      [percentage]="9"
+      icon="/svg/folder.svg"
+      subtitle="Folders With Stale Data"
+    ></app-card>
+  </div>
+
+
+
+</div>

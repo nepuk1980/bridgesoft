@@ -1,0 +1,123 @@
+<!-- Fixed Header -->
+<mat-toolbar color="primary" class="header">
+  <div class="topnav">
+    <button mat-icon-button (click)="drawer.toggle()">
+      <img src="/svg/menu.svg" />
+    </button>
+
+    <a routerLink="/">
+      <img src="/svg/logo.svg" />
+    </a>
+    <a routerLink="/"> Home </a>
+    <a routerLink="/" class="hasSubmenu"> My Work </a>
+    <a routerLink="/" class="hasSubmenu"> Applications </a>
+    <a routerLink="/" class="hasSubmenu"> Intelligence </a>
+    <a routerLink="/" class="hasSubmenu"> Setup </a>
+    <a routerLink="/" class="hasSubmenu"> File Access Manager </a>
+  </div>
+
+  <div class="rightnav">
+    <button
+      mat-icon-button
+      matBadge="3"
+      matBadgeSize="large"
+      [matBadgeHidden]="hidden"
+      (click)="toggleBadgeVisibility()"
+      class="notibtn"
+    >
+      <img src="/svg/alerts.svg" />
+    </button>
+
+    <button mat-icon-button class="profileBtn">
+      <img src="/images/profile.png" class="profileImg" />
+      <span>Administrator</span>
+    </button>
+  </div>
+</mat-toolbar>
+
+<!-- Main Layout -->
+<mat-sidenav-container class="main-container">
+  <!-- Sidebar -->
+  <mat-sidenav #drawer mode="side" opened class="sidebar">
+    <mat-nav-list>
+      @defer {
+        <a mat-list-item routerLink="/dashboard" class="text-white">
+          <img src="/svg/dashboard.svg" />
+          <span>Dashboard</span>
+        </a>
+      } @placeholder (minimum 1000ms) {
+        <ngx-skeleton-loader animation="progress" />
+      }
+
+      @defer {
+        <a mat-list-item>
+          <img src="/svg/applications.svg" />
+          <span>Applications</span>
+        </a>
+      } @placeholder (minimum 1000ms) {
+        <ngx-skeleton-loader animation="progress" />
+      }
+
+      @defer {
+        <a mat-list-item>
+          <img src="/svg/identity.svg" />
+          <span>Identity Vault</span>
+        </a>
+      } @placeholder (minimum 1000ms) {
+        <ngx-skeleton-loader animation="progress" />
+      }
+
+      @defer {
+        <a mat-list-item>
+          <img src="/svg/request.svg" />
+          <span>Request Access</span>
+        </a>
+      } @placeholder (minimum 1000ms) {
+        <ngx-skeleton-loader animation="progress" />
+      }
+
+      @defer {
+        <a mat-list-item>
+          <img src="/svg/audit.svg" />
+          <span>Audit Trail</span>
+        </a>
+      } @placeholder (minimum 1000ms) {
+        <ngx-skeleton-loader animation="progress" />
+      }
+
+      @defer {
+        <a mat-list-item>
+          <img src="/svg/control.svg" />
+          <span>Administrative Control</span>
+        </a>
+      } @placeholder (minimum 1000ms) {
+        <ngx-skeleton-loader animation="progress" />
+      }
+
+      @defer {
+        <a mat-list-item>
+          <img src="/svg/alerts.svg" />
+          <span>Alerts</span>
+        </a>
+      } @placeholder (minimum 1000ms) {
+        <ngx-skeleton-loader animation="progress" />
+      }
+
+      @defer {
+        <a mat-list-item>
+          <img src="/svg/rules.svg" />
+          <span>Rules</span>
+        </a>
+      } @placeholder (minimum 1000ms) {
+        <ngx-skeleton-loader animation="progress" />
+      }
+    </mat-nav-list>
+  </mat-sidenav>
+
+  <!-- Page Content -->
+  <mat-sidenav-content>
+    <div class="content">
+      <router-outlet></router-outlet>
+    </div>
+  </mat-sidenav-content>
+</mat-sidenav-container>

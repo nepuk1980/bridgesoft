@@ -1,0 +1,102 @@
+/* Header fixed at top */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 6rem;
+  right: 0;
+  z-index: 1000;
+  padding: 0 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+}
+.header  a{
+   color:#787878;
+   text-decoration: none;
+   position: relative;
+
+   display: flex;
+   align-items: center;
+    transition: all 0.25s linear;
+    font-size: 1rem;
+
+}
+.header  a:hover{
+   color:#050D02;
+    transition: all 0.25s linear;
+}
+.header  a.hasSubmenu{
+   padding-right: 1.8rem ;
+}
+.header  a.hasSubmenu:before{
+    content: "";
+    width: 0.75rem;
+    height: 0.375rem;
+    background: url('/svg/downarrow.svg') no-repeat center center;
+    position: absolute;
+    right: 0;
+
+}
+.header .rightnav,
+.header .topnav{
+    display: flex;
+    align-items: center;
+    gap: 1.875rem;
+}
+.header .profileBtn{
+    display: flex;
+    align-items: center;
+    gap:0.625rem;
+    width: auto;
+    height: auto;
+}
+.header .profileBtn .profileImg{
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    overflow: hidden;
+}
+
+.header .profileBtn span{
+   color: #050D02;
+   font-size: 1.125rem;
+}
+
+/* Main container below header */
+.main-container {
+  margin-top: 6rem;
+  background: #f4f4f4;
+  height: calc(100vh - 6rem);
+}
+
+/* Sidebar width */
+.sidebar {
+  width: 17.75rem;
+  box-shadow: 0.1875rem 0.1875rem 0.0625rem 0.0625rem #00000005;
+  border: 0;
+  border-radius: 0;
+  padding: 1.5rem;
+  margin-top: 1.25rem;
+  background: #fff;
+}
+
+.sidebar a{
+     border-radius: 0.625rem !important;
+}
+.sidebar a img {
+  width: 1.5rem;
+  height: 1.5rem;
+  object-fit: contain;
+}
+
+/* Content area */
+.content {
+  padding: 1.25rem;
+}
+
+/* Spacer in toolbar */
+.spacer {
+  flex: 1 1 auto;
+}
