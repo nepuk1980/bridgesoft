@@ -211,16 +211,17 @@
    <div
     class="dashboard-card"
     (click)="
-      openDialog(
-        {
+      openExternalDialog(
+         {
           title: 'External Sources',
-          value: '1923',
+          value: '46%',
           file: true,
           fileicon: true,
           icon: '/svg/file.svg',
           subtitle: 'External Sources',
         },
-        FOLDER_DATA_3
+        Shared,
+        ExternalFiles
       )
     "
   >
@@ -231,7 +232,7 @@
       [file]="true"
       [fileicon]="true"
       filecount="1923"
-      [percentage]="9"
+      [percentage]="0"
       icon="/svg/file.svg"
       subtitle="Folders With Open Access (Including Inherited)"
     ></app-card>
@@ -239,17 +240,18 @@
 
    <div
     class="dashboard-card"
-    (click)="
-      openDialog(
-        {
+     (click)="
+      openCloudDialog(
+         {
           title: 'Cloud Resources',
-          value: '1257',
+          value: '46%',
           file: true,
           fileicon: true,
-          icon: '/svg/folder.svg',
+          icon: '/svg/file.svg',
           subtitle: 'Cloud Resources',
         },
-        FOLDER_DATA_3
+        Shared,
+        ExternalFiles
       )
     "
   >

@@ -1,0 +1,194 @@
+<mat-dialog-actions align="end" class="popupclose" (click)="closeDialog()">
+  <img  src="/svg/close.svg" />
+</mat-dialog-actions>
+
+<div class="popup-content">
+  <h6 mat-dialog-title class="popup-title">{{ data.title }}</h6>
+
+<div class="chart-content-wrapper">
+  <div class="chart-main-wrapper">
+    <h4>Resource Classification</h4>
+    <div class="chart-wrapper">
+      <canvas
+        baseChart
+        [data]="barChartData"
+        [options]="barChartOptions"
+        [type]="barChartType"
+        (chartHover)="chartHovered($event)"
+        (chartClick)="chartClicked($event)"
+      >
+      </canvas>
+    </div>
+  </div>
+
+    <div class="content-main-wrapper">
+ <h4>Shared Externally</h4>
+
+ <div class="tableDiv">
+<mat-dialog-content class="dialog-content-shared tabel-content">
+  <table mat-table [dataSource]="dataSource" matSort>
+
+    <!-- Shared By -->
+    <ng-container matColumnDef="sharedBy">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>
+        Shared By
+      </th>
+      <td mat-cell *matCellDef="let element" (click)="openDriveDialog(element)" class="tdClick">
+        {{ element.sharedBy }}
+      </td>
+    </ng-container>
+
+    <!-- Shared With -->
+    <ng-container matColumnDef="sharedWith">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>
+        Shared With
+      </th>
+      <td mat-cell *matCellDef="let element">
+        {{ element.sharedWith }}
+      </td>
+    </ng-container>
+
+    <!-- File Name -->
+    <ng-container matColumnDef="fileName">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>
+        File Name
+      </th>
+      <td mat-cell *matCellDef="let element">
+        {{ element.fileName }}
+      </td>
+    </ng-container>
+
+    <!-- File Type -->
+    <ng-container matColumnDef="fileType">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>
+        File Type
+      </th>
+      <td mat-cell *matCellDef="let element">
+        {{ element.fileType }}
+      </td>
+    </ng-container>
+
+    <!-- Date -->
+    <ng-container matColumnDef="date">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header class="lastcol">
+        Date
+      </th>
+      <td mat-cell *matCellDef="let element" class="lastcol">
+        {{ element.date }}
+      </td>
+    </ng-container>
+
+    <!-- Header / Row -->
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+    <!-- No Data -->
+    <tr class="mat-row" *matNoDataRow>
+      <td class="mat-cell no-data" colspan="5">No files found</td>
+    </tr>
+
+  </table>
+</mat-dialog-content>
+ </div>
+    </div>
+</div>
+
+  <div class="popup-table">
+    <mat-dialog-content class="dialog-content-external">
+  <table mat-table [dataSource]="dataSource2" matSort>
+
+    <!-- Name -->
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>
+        Name
+      </th>
+      <td mat-cell *matCellDef="let element">
+        {{ element.name }}
+      </td>
+    </ng-container>
+
+    <!-- Type -->
+    <ng-container matColumnDef="type">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>
+        Type
+      </th>
+      <td mat-cell *matCellDef="let element">
+        {{ element.type }}
+      </td>
+    </ng-container>
+
+    <!-- Service -->
+    <ng-container matColumnDef="service">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>
+        Service
+      </th>
+      <td mat-cell *matCellDef="let element">
+ <div>
+              <img
+                *ngIf="element.serviceType === 'drive'"
+                src="/svg/drive.svg"
+                alt="Folder icon"
+                width="25"
+                height="18"
+              />
+              <img
+                *ngIf="element.serviceType === 'amazon'"
+                src="/svg/amazon.svg"
+                alt="File icon"
+                width="25"
+                height="18"
+              />
+               <img
+                *ngIf="element.serviceType === 'dropbox'"
+                src="/svg/dropbox.svg"
+                alt="File icon"
+                width="25"
+                height="18"
+              />
+              <span>{{ element.service }}</span>
+            </div>
+      </td>
+    </ng-container>
+
+    <!-- Last Viewed -->
+    <ng-container matColumnDef="lastViewed">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>
+        Last Viewed
+      </th>
+      <td mat-cell *matCellDef="let element">
+        {{ element.lastViewed }}
+      </td>
+    </ng-container>
+
+    <!-- Last Viewed Recent -->
+    <ng-container matColumnDef="lastViewedRecent">
+      <th mat-header-cell *matHeaderCellDef mat-sort-header>
+        Last Viewed Recent
+      </th>
+      <td mat-cell *matCellDef="let element">
+        {{ element.lastViewedRecent }}
+      </td>
+    </ng-container>
+
+    <!-- Tags -->
+    <ng-container matColumnDef="tags">
+      <th mat-header-cell *matHeaderCellDef>
+        Tags
+      </th>
+      <td mat-cell *matCellDef="let element">
+        {{ element.tags.join(', ') }}
+      </td>
+    </ng-container>
+
+    <!-- Rows -->
+    <tr mat-header-row *matHeaderRowDef="displayedColumns2"></tr>
+    <tr mat-row *matRowDef="let row; columns: displayedColumns2"></tr>
+
+    <tr class="mat-row" *matNoDataRow>
+      <td class="mat-cell no-data" colspan="6">No files found</td>
+    </tr>
+
+  </table>
+</mat-dialog-content>
+  </div>
+</div>
