@@ -11,6 +11,7 @@
   align-items: center;
   justify-content: space-between;
   background: #fff;
+      border-bottom: 1px solid #f4f4f4;
 }
 .header  a{
    color:#787878;
@@ -36,6 +37,7 @@
     height: 0.375rem;
     background: url('/svg/downarrow.svg') no-repeat center center;
     position: absolute;
+    background-size: contain;
     right: 0;
 
 }

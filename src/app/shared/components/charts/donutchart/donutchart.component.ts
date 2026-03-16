@@ -1,44 +1,66 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { NgxChartsModule, ScaleType } from '@swimlane/ngx-charts';
+import { ChartData, ChartEvent, ChartType, ChartOptions } from 'chart.js';
+import { BaseChartDirective } from 'ng2-charts';
+
 @Component({
   selector: 'app-donutchart',
-  imports: [NgxChartsModule],
+  standalone: true,
+  imports: [BaseChartDirective],
   templateUrl: './donutchart.component.html',
-  styleUrl: './donutchart.component.css',
+  styleUrls: ['./donutchart.component.css'],
 })
-export class DonutchartComponent {
+export class DonutchartComponent implements OnChanges {
+
   @Input() percentage: number = 0;
+  @Input() title:string =''
 
-  view: [number, number] = [150, 150];
+ public doughnutChartType: 'doughnut' = 'doughnut';
 
-  results = [
-    { name: 'value', value: this.percentage },
-    { name: 'remaining', value: 100 - this.percentage },
-  ];
-
-  gradient = false;
-  showLegend = true;
-  showLabels = true;
-  isDoughnut = true;
-
-  colorScheme = {
-    name: 'custom',
-    selectable: true,
-    group: ScaleType.Ordinal,
-    domain: ['#99D5BE', '#F4F4F4'],
+  public doughnutChartData: ChartData<'doughnut'> = {
+    // labels: [this.title, ''],
+    datasets: [
+      {
+        data: [0, 100],
+        backgroundColor: ['#99D5BE', '#F4F4F4'],
+        borderWidth: 0
+      }
+    ]
   };
-  ngOnChanges(changes: SimpleChanges) {
+
+  public doughnutChartOptions: ChartOptions<'doughnut'> = {
+    cutout: '30%',   // nicer donut shape
+    plugins: {
+      legend: {
+        display: false
+      },
+      tooltip: {
+        enabled: true,
+         padding: 10,
+      },
+      datalabels: {
+      display: false
+    }
+    }
+  };
+
+  ngOnChanges(changes: SimpleChanges): void {
     if (changes['percentage']) {
       this.updateChart();
     }
   }
 
-  updateChart() {
+  updateChart(): void {
     const value = Math.min(Math.max(this.percentage, 0), 100);
 
-    this.results = [
-      { name: 'value', value: value },
-      { name: 'remaining', value: 100 - value },
-    ];
+    this.doughnutChartData.datasets[0].data = [value, 100 - value];
+    // this.doughnutChartData.labels = [this.title, 'Remaining'];
+  }
+
+  chartClicked({ event, active }: { event: ChartEvent; active: object[] }): void {
+    console.log(event, active);
+  }
+
+  chartHovered({ event, active }: { event: ChartEvent; active: object[] }): void {
+    console.log(event, active);
   }
 }

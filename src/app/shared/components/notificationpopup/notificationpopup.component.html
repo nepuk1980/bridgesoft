@@ -1,1 +1,78 @@
-<p>notificationpopup works!</p>
+<mat-dialog-actions align="end" class="popupclose">
+  <img mat-dialog-close src="/svg/close.svg" />
+</mat-dialog-actions>
+
+<div class="popup-content">
+  <h6 mat-dialog-title class="popup-title">
+    {{ data?.title || 'Notifications' }}
+  </h6>
+
+  <p>Total Notifications {{ dataSource.data.length }}</p>
+
+  <div class="popup-table">
+    <mat-dialog-content class="dialog-content">
+      <table mat-table [dataSource]="dataSource" class="mat-elevation-z0">
+
+        <!-- Notification -->
+        <ng-container matColumnDef="notification">
+          <th mat-header-cell *matHeaderCellDef>Notification</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.notification }}
+          </td>
+        </ng-container>
+
+        <!-- Source IP -->
+        <ng-container matColumnDef="sourceIp">
+          <th mat-header-cell *matHeaderCellDef>Source IP</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.sourceIp }}
+          </td>
+        </ng-container>
+
+        <!-- Resource -->
+        <ng-container matColumnDef="resource">
+          <th mat-header-cell *matHeaderCellDef>Resource</th>
+          <td mat-cell *matCellDef="let element">
+            <div>
+              <img
+                *ngIf="element.resourceType === 'folder'"
+                src="/svg/folder.svg"
+                alt="Folder icon"
+                width="25"
+                height="18"
+              />
+              <img
+                *ngIf="element.resourceType === 'file'"
+                src="/svg/file.svg"
+                alt="File icon"
+                width="25"
+                height="18"
+              />
+              <span>{{ element.resource }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Target User -->
+        <ng-container matColumnDef="targetUser">
+          <th mat-header-cell *matHeaderCellDef>Target User</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.targetUser }}
+          </td>
+        </ng-container>
+
+        <!-- Time -->
+        <ng-container matColumnDef="time">
+          <th mat-header-cell *matHeaderCellDef class="lastcol">Time</th>
+          <td mat-cell *matCellDef="let element" class="lastcol">
+            {{ element.time }}
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+      </table>
+    </mat-dialog-content>
+  </div>
+</div>

@@ -1,0 +1,169 @@
+<mat-dialog-actions align="end" class="popupclose" (click)="closeDialog()">
+  <img src="/svg/close.svg" />
+</mat-dialog-actions>
+
+<div class="popup-content">
+  <h6 mat-dialog-title class="popup-title">{{ data.title }}</h6>
+
+  <div class="chart-content-wrapper">
+    <div class="chart-main-wrapper">
+      <div class="chart-wrapper">
+        <canvas
+          baseChart
+          [data]="barChartData"
+          [options]="barChartOptions"
+          [type]="barChartType"
+          (chartHover)="chartHovered($event)"
+          (chartClick)="chartClicked($event)"
+        >
+        </canvas>
+      </div>
+    </div>
+
+  <div class="content-main-wrapper">
+  <div class="card-wrapper" *ngFor="let file of fileData"
+  (click)="
+    openDialog(
+      {
+        title: file.title,
+        value: file.count,
+        file: file.file,
+        fileicon: file.fileicon,
+        icon: file.icon,
+        subtitle: file.title
+      },
+      FOLDER_DATA_1
+    )
+  "
+  >
+
+    <h4>{{ file.title }}</h4>
+
+    <div class="card-inner-wrapper">
+
+      <h2>
+        <img src="/svg/file.svg" alt="file">
+        {{ file.count }}
+      </h2>
+
+      <h6>
+        <img src="/svg/redarrow.svg" alt="arrow">
+        {{ file.increase }}%
+      </h6>
+
+    </div>
+
+  </div>
+</div>
+  </div>
+  <div class="popup-table">
+    <mat-dialog-content class="dialog-content-external">
+      <table
+        mat-table
+        [dataSource]="treeData"
+        multiTemplateDataRows
+        class="tree-table"
+      >
+        <!-- NAME -->
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef>Name</th>
+
+          <td
+            mat-cell
+            *matCellDef="let element"
+            [style.padding-left.rem]="element.level * 1.5"
+            [class.clickable-cell]="element.service === 'folder'"
+            [class.cursor-pointer]="element.service === 'folder'"
+            
+          >
+            <div>
+              <button
+                mat-icon-button
+                *ngIf="hasChild(element)"
+                (click)="toggle(element)"
+              >
+                <mat-icon>
+                  {{ element.expanded ? "expand_more" : "chevron_right" }}
+                </mat-icon>
+              </button>
+
+              <img
+                *ngIf="element.service === 'drive'"
+                src="/svg/drive.svg"
+                class="serviceIcon"
+              />
+
+              <img
+                *ngIf="element.service === 'amazon'"
+                src="/svg/amazon.svg"
+                class="serviceIcon"
+              />
+
+              <img
+                *ngIf="element.service === 'salesforce'"
+                src="/svg/salesforce.svg"
+                class="serviceIcon"
+              />
+
+              <img
+                *ngIf="element.service === 'dropbox'"
+                src="/svg/dropbox.svg"
+                class="serviceIcon"
+              />
+
+              <!-- FOLDER -->
+              <img
+                *ngIf="element.service === 'folder'"
+                src="/svg/folder.svg"
+                class="folderimg"
+              />
+
+              <!-- FILE -->
+              <img
+                *ngIf="element.service === 'file'"
+                src="/svg/file.svg"
+                class="fileimg"
+              />
+
+              <span (click)="element.service === 'folder' && openDriveDialog(element)">{{ element.name }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- SIZE -->
+        <ng-container matColumnDef="size">
+          <th mat-header-cell *matHeaderCellDef>Size</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.size }}
+          </td>
+        </ng-container>
+
+        <!-- TOTAL HIT COUNT -->
+        <ng-container matColumnDef="totalHitCount">
+          <th mat-header-cell *matHeaderCellDef>Total Hit Count</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.totalHitCount }}
+          </td>
+        </ng-container>
+
+        <!-- CLASSIFICATION -->
+        <ng-container matColumnDef="classification">
+          <th mat-header-cell *matHeaderCellDef>Classification</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.classification }}
+          </td>
+        </ng-container>
+
+        <!-- HEADER -->
+        <tr mat-header-row *matHeaderRowDef="treeColumns"></tr>
+
+        <!-- ROW -->
+        <tr
+          mat-row
+          *matRowDef="let row; columns: treeColumns"
+          [hidden]="!isVisible(row)"
+        ></tr>
+      </table>
+    </mat-dialog-content>
+  </div>
+</div>

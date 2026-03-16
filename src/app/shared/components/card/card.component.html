@@ -4,7 +4,7 @@
       <h6 class="card-title">{{ title }}</h6>
     </div>
     <div class="card-content">
-      <app-donutchart *ngIf="chart" [percentage]="percentage"></app-donutchart>
+      <app-donutchart *ngIf="chart" [percentage]="percentage" [title]="title"></app-donutchart>
       <div class="card-content-data" *ngIf="file">
         <h6>
           {{ filecount }}
@@ -26,8 +26,8 @@
       @if (chart) {
        <ngx-skeleton-loader count="1" appearance="circle" 
        [theme]="{ 
-      height: '100px',
-      width: '100px',
+      height: '6.25rem',
+      width: '6.25rem',
     }"
        />
       } @else {

@@ -1,11 +1,19 @@
 .donut-wrapper{
     display: flex;
     align-items: center;
+    gap: 1.25rem;
     width: 16rem;
+    padding-left: 2.5rem;
 }
 
 .center-text{
     color: #1176BD;
     font-weight: 500;
     font-size: 2.5rem;
+}
+.chart-wrapper{
+    width: 6.25rem;
+}
+canvas {
+  overflow: visible !important;
 }

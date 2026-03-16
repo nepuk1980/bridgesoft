@@ -1,8 +1,10 @@
 /* You can add global styles to this file, and also import other style files */
-@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100..900;1,100..900&display=swap");
 
 /* 1. Use a more-intuitive box-sizing model */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
 }
 
@@ -26,18 +28,31 @@ body {
 }
 
 /* 6. Improve media defaults */
-img, picture, video, canvas, svg {
+img,
+picture,
+video,
+canvas,
+svg {
   display: block;
   max-width: 100%;
 }
 
 /* 7. Inherit fonts for form controls */
-input, button, textarea, select {
+input,
+button,
+textarea,
+select {
   font: inherit;
 }
 
 /* 8. Avoid text overflows */
-p, h1, h2, h3, h4, h5, h6 {
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   overflow-wrap: break-word;
 }
 
@@ -45,14 +60,20 @@ p, h1, h2, h3, h4, h5, h6 {
 p {
   text-wrap: pretty;
 }
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   text-wrap: balance;
 }
 
 /*
   10. Create a root stacking context
 */
-#root, #__next {
+#root,
+#__next {
   isolation: isolate;
 }
 
@@ -61,39 +82,160 @@ body {
   height: auto;
   font-size: 16px;
 }
+
+@media screen and (max-width: 1600px) and (min-width: 1500px) {
+  html,
+  body {
+    height: auto;
+    font-size: 14px;
+  }
+}
+@media screen and (max-width: 1499px) and (min-width: 1200px) {
+  html,
+  body {
+    height: auto;
+    font-size: 12px;
+  }
+}
 body {
   margin: 0;
-  background: #F4F4F4;
-   font-family: "Roboto", sans-serif;
+  background: #f4f4f4;
+  font-family: "Roboto", sans-serif;
 }
-.sidebar .mdc-list-item__primary-text{
+.sidebar .mdc-list-item__primary-text {
   display: flex !important;
   align-items: center !important;
   gap: 0.625rem;
 }
 
-.header .profileBtn.mat-mdc-icon-button .mat-mdc-button-persistent-ripple{
-   border-radius: 0.625rem !important;
+.header .profileBtn.mat-mdc-icon-button .mat-mdc-button-persistent-ripple {
+  border-radius: 0.625rem !important;
 }
-.header .notibtn.mat-badge-large.mat-badge-overlap .mat-badge-content{
-  background: #E57373 !important;
+.header .notibtn.mat-badge-large.mat-badge-overlap .mat-badge-content {
+  background: #e57373 !important;
   min-width: 1.0625rem !important;
   min-height: 1.0625rem !important;
   bottom: auto !important;
   top: 50% !important;
-  right: 0.9375rem !important;
-  left: auto !important;
+  right: auto !important;
+  left: 32px !important;
   font-size: 0.8125rem !important;
   display: flex !important;
   justify-content: center !important;
   align-items: center !important;
 }
+.header .notibtn.mat-badge-hidden.mat-badge-overlap .mat-badge-content {
+  display: none !important;
+}
 .cdk-overlay-dark-backdrop {
-    background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.6);
 }
-.mat-mdc-dialog-surface{
- border-radius: 0.625rem !important;
+.mat-mdc-dialog-surface {
+  border-radius: 0.625rem !important;
 }
-.lastcol .mat-sort-header-container{
-    justify-content: flex-end !important;
+.lastcol .mat-sort-header-container {
+  justify-content: flex-end !important;
+}
+[mat-sort-header].cdk-keyboard-focused .mat-sort-header-container,
+[mat-sort-header].cdk-program-focused .mat-sort-header-container {
+  border-bottom: 0 !important;
+}
+.bottom-right-dialog.cdk-overlay-pane {
+  border: 1px solid #d9d9d9 !important;
+  box-shadow: 0px 0px 5px 10px #0000000d !important ;
+  border-radius: 0.625rem !important;
+  overflow: hidden !important;
+}
+.tabGrp{
+  margin-top: 1rem;
+}
+.tabGrp .mat-mdc-tab.mdc-tab{
+    padding: 0 1rem 0 0 !important;
+    margin-right: 1.875rem;
+    height: 2.5rem;
+  
+}
+.tabGrp .mat-mdc-tab .mdc-tab__text-label {
+   
+     color: #787878 !important;
+    font-weight: 400 !important;
+    font-size: 1rem !important;
+   
+}
+.tabGrp .mat-mdc-tab.mdc-tab--active .mdc-tab__text-label {
+   
+    color: #1176BD !important;
+   
+}
+.tabGrp .mat-mdc-tab-label-container{
+  border-bottom: 0;
+}
+.tabGrp .mat-mdc-tab .mdc-tab-indicator__content--underline{
+  border-width: 1px !important;
+  border-color:  #1176BD !important;
+}
+.tabGrp .mat-mdc-dialog-content{
+  padding: 0.6rem 0 0 0 !important;
+}
+.tabGrp .tab-title-cust .mdc-button .mdc-button__label{
+    font-weight: 400;
+font-size: 1.125rem;
+line-height: 1.5rem;
+color: #1176BD;
+}
+.tabGrp .tab-title-cust .mdc-button{
+
+  border-radius: 0.625rem !important;
+}
+.tab-acco-cust .mat-expansion-panel-header {
+  padding: 0.625rem 1.25rem 0.625rem 0.625rem;
+      flex-direction: row-reverse;
+      gap: 0.625rem;
+
+}
+.tab-acco-cust .mat-expansion-panel .mat-expansion-indicator{
+    width: 1.6875rem;
+    height: 1.6875rem;
+    background: #fff url('/svg/downarrow.svg') no-repeat center center;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+.tab-acco-cust .mat-expansion-indicator svg{
+  margin: 0;
+  display: none;
+}
+.tab-acco-cust .mat-expansion-panel-header-title{
+  justify-content: space-between;
+  margin: 0;
+}
+
+
+.bottom-right-dialog {
+  animation: slideUpDialog 0.4s ease-in-out;
+
+    
+   
+}
+@keyframes slideUpDialog {
+  from {
+    transform: translateY(100px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.mat-sort-header-arrow svg{
+  position: static !important;
+  margin: 0 !important;
+}
+.mat-sort-header-arrow{
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

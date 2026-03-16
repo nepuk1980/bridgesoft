@@ -19,10 +19,10 @@
   <div class="rightnav">
     <button
       mat-icon-button
-      matBadge="3"
+      matBadge="15"
       matBadgeSize="large"
       [matBadgeHidden]="hidden"
-      (click)="toggleBadgeVisibility()"
+     (click)="handleNotificationClick()"
       class="notibtn"
     >
       <img src="/svg/alerts.svg" />
@@ -95,7 +95,8 @@
       }
 
       @defer {
-        <a mat-list-item>
+     <a mat-list-item 
+   >
           <img src="/svg/alerts.svg" />
           <span>Alerts</span>
         </a>
