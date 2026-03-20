@@ -11,7 +11,7 @@
   align-items: center;
   justify-content: space-between;
   background: #fff;
-      border-bottom: 1px solid #f4f4f4;
+      border-bottom: 2px solid #f4f4f4;
 }
 .header  a{
    color:#787878;
@@ -95,10 +95,28 @@
 
 /* Content area */
 .content {
-  padding: 1.25rem;
+  /* padding: 1.25rem; */
 }
 
 /* Spacer in toolbar */
 .spacer {
   flex: 1 1 auto;
 }
+.mat-mdc-list-item.mat-active {
+  background: rgba(0, 0, 0, 0.08); /* light material hover */
+  border-radius: 8px;
+}
+
+.mat-mdc-list-item.mat-active .mdc-list-item__primary-text {
+  font-weight: 500;
+}
+
+.mat-mdc-list-item.mat-active img {
+  opacity: 1;
+}
+
+.mat-mdc-list-item img {
+  opacity: 0.7;
+  transition: 0.2s ease;
+}
+

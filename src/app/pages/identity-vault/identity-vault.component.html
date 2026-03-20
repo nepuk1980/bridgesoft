@@ -1,0 +1,127 @@
+<app-innerheader
+  title="Identity Vault"
+  [btn]="false"
+  btntitle=" Back To Applications"
+></app-innerheader>
+
+@defer {
+  <div class="application-content-div">
+    
+    <!-- Top Bar -->
+    <div class="application-tab-div">
+
+      <!-- 🔍 Search -->
+      <div class="search-box">
+        <input
+          type="text"
+          placeholder="Search"
+          [(ngModel)]="searchText"
+          (input)="applyFilters()"
+        />
+        <img src="/svg/search.svg" class="search-icon" />
+      </div>
+
+      <p>Showing {{ dataSource.filteredData.length }} of {{ data.length }}</p>
+
+      <!-- 🔽 Filters -->
+      <div class="filter-grp-div">
+
+        <!-- Category -->
+        <div class="custom-filter no-icon">
+          <mat-form-field>
+            <mat-label>Select Category</mat-label>
+            <mat-select
+              [(ngModel)]="selectedCategory"
+              (selectionChange)="applyFilters()"
+               panelClass="custom-filter-panel"
+            >
+              <mat-option value="">Category</mat-option>
+              @for (item of categories; track item.value) {
+                <mat-option [value]="item.value">
+                  {{ item.viewValue }}
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- Risk Filter -->
+        <div class="custom-filter">
+          <mat-form-field>
+            <mat-label>Filter</mat-label>
+            <mat-select
+              [(ngModel)]="selectedFilter"
+              (selectionChange)="applyFilters()"
+               panelClass="custom-filter-panel"
+            >
+              <mat-option value="">Filter</mat-option>
+              @for (item of filters; track item.value) {
+                <mat-option [value]="item.value">
+                  {{ item.viewValue }}
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="solid-table table-wrapper">
+      <table mat-table [dataSource]="dataSource" matSort class="custom-table">
+
+        <ng-container matColumnDef="firstName">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>First Name</th>
+          <td mat-cell *matCellDef="let element">{{ element.firstName }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="lastName">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Last Name</th>
+          <td mat-cell *matCellDef="let element">{{ element.lastName }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Email Id</th>
+          <td mat-cell *matCellDef="let element">{{ element.email }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="manager">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Manager</th>
+          <td mat-cell *matCellDef="let element">{{ element.manager }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="roleSummary">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            Assigned Role Summary
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.roleSummary || '-' }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="lastRefresh">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            Last Refresh
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.lastRefresh }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="riskScore" >
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="lastcol">
+            Risk Score
+          </th>
+          <td mat-cell *matCellDef="let element" class="lastcol">
+            {{ element.riskScore }}
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+      </table>
+    </div>
+  </div>
+}

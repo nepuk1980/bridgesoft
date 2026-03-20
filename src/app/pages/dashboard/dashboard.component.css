@@ -3,6 +3,7 @@
     justify-content: start;
     flex-wrap: wrap;
     gap: 1.25rem;
+    padding: 1.25rem;
 }
 .dashboard-card-list .dashboard-card{
     width: calc((100%/3) - 0.875rem);
