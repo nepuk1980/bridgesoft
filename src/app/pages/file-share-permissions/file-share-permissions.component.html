@@ -1,0 +1,48 @@
+<app-innerheader
+  title="File Share Permissions"
+  [btn]="true"
+  btntitle="Back To Applications"
+></app-innerheader>
+
+<div *ngFor="let section of formData" class="file-content-div">
+  <h3>{{ section.title }}</h3>
+
+  <div class="file-form-wrapper">
+    
+    <ng-container *ngFor="let field of section.fields; let i = index">
+
+      <div class="form-control">
+        <label>{{ field.label }}</label>
+
+        <!-- Input -->
+        <input
+          *ngIf="field.type !== 'textarea'"
+          [type]="field.type"
+          class="form-field"
+          [(ngModel)]="model[section.key][field.key]"
+          name="{{section.key}}-{{field.key}}"
+        />
+
+        <!-- Textarea -->
+        <textarea
+          *ngIf="field.type === 'textarea'"
+          class="form-field"
+          [(ngModel)]="model[section.key][field.key]"
+          name="{{section.key}}-{{field.key}}"
+        ></textarea>
+      </div>
+
+      <!-- ✅ Add empty div AFTER every 6 items -->
+      <div
+        *ngIf="(i + 1) % 6 === 0"
+        class="form-control empty-div">
+      </div>
+
+    </ng-container>
+
+  </div>
+</div>
+
+<div class="fixed-btn">
+ <button mat-flat-button class="btn-blue">Save</button>
+</div>

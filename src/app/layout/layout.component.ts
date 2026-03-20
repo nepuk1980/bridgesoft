@@ -1,20 +1,32 @@
-import { Component,inject } from '@angular/core';
-import { RouterLink, RouterOutlet } from '@angular/router';
+import { Component,inject ,ViewChild} from '@angular/core';
+import { NavigationEnd, Router, RouterLink, RouterModule, RouterOutlet } from '@angular/router';
 
-import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatSidenavModule,MatSidenav } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
-import {   MatBadgeModule } from '@angular/material/badge';
+import { MatBadgeModule } from '@angular/material/badge';
 import { NgxSkeletonLoaderComponent } from 'ngx-skeleton-loader';
 import { MatDialog } from '@angular/material/dialog';
 import { NotificationpopupComponent } from '../shared/components/notificationpopup/notificationpopup.component';
+import { filter } from 'rxjs';
+
+// ✅ ADDED
+import {
+  trigger,
+  transition,
+  style,
+  animate,
+  query,
+  group
+} from '@angular/animations';
 
 
 @Component({
   selector: 'app-layout',
   imports: [
+    RouterModule,
      RouterOutlet,
     RouterLink,
     MatBadgeModule,
@@ -26,18 +38,88 @@ import { NotificationpopupComponent } from '../shared/components/notificationpop
     NgxSkeletonLoaderComponent
   ],
   templateUrl: './layout.component.html',
-  styleUrl: './layout.component.css'
+  styleUrl: './layout.component.css',
+
+  // ✅ ADDED
+  animations: [
+  trigger('routeAnimations', [
+    transition('* <=> *', [
+
+      query(':enter, :leave', [
+        style({
+          position: 'absolute',
+          width: '100%',
+          top: 0,
+          left: 0
+        })
+      ], { optional: true }),
+
+      group([   // ✅ IMPORTANT FIX
+
+        query(':leave', [
+          animate('500ms ease',
+            style({
+              opacity: 0,
+              transform: 'translateX(-200px)'
+            })
+          )
+        ], { optional: true }),
+
+        query(':enter', [
+          style({
+            opacity: 0,
+            transform: 'translateX(200px)'
+          }),
+          animate('500ms ease',
+            style({
+              opacity: 1,
+              transform: 'translateX(0)'
+            })
+          )
+        ], { optional: true })
+
+      ])
+
+    ])
+  ])
+]
 })
 export class LayoutComponent {
   private dialog = inject(MatDialog);
+  @ViewChild('drawer') drawer!: MatSidenav;
 
+  isDashboard = true;
 
- hidden = false;
+  constructor(private router: Router) {}
 
-toggleBadgeVisibility() {
-  this.hidden = true;
-}
-notifications = [
+  ngOnInit() {
+    this.router.events
+      .pipe(filter(event => event instanceof NavigationEnd))
+      .subscribe((event: any) => {
+        const url = event.urlAfterRedirects;
+
+        if (url === '/' || url === '/dashboard') {
+          this.isDashboard = true;
+          setTimeout(() => this.drawer.open());
+        } else {
+          this.isDashboard = false;
+          setTimeout(() => this.drawer.close());
+        }
+      });
+  }
+
+  // ✅ ADDED
+  prepareRoute(outlet: RouterOutlet) {
+    return outlet?.activatedRouteData?.['animation'];
+  }
+
+  hidden = false;
+
+  toggleBadgeVisibility() {
+    this.hidden = true;
+  }
+
+  notifications = [
   {
     notification: 'Bob Smith (EMP2371Y) logged in during off hours into file system',
     sourceIp: '103.25.45.210',
@@ -159,7 +241,8 @@ notifications = [
     time: '02 / 11 / 2026 11:24 AM'
   }
 ];
-    openNotificationDialog() {
+
+  openNotificationDialog() {
     this.dialog.open(NotificationpopupComponent, {
       width: '85.75rem',
       minWidth: '85.75rem',
@@ -171,11 +254,8 @@ notifications = [
     });
   }
 
-
-    handleNotificationClick() {
-  this.toggleBadgeVisibility();
-  this.openNotificationDialog();
-}
-
-
+  handleNotificationClick() {
+    this.toggleBadgeVisibility();
+    this.openNotificationDialog();
+  }
 }

@@ -15,8 +15,9 @@
   display: flex;
   gap: 2rem;
   align-items: center;
-  margin:0 0  1rem 0;
-  min-height: 9.375rem;
+  /* margin:0 0  1rem 0; */
+  /* min-height: 9.375rem; */
+  min-height: 16vh;
 }
 .card-content .card-value{
     width: 8.375rem;
@@ -38,7 +39,7 @@
 }
 .card-content-data{
     width: 16rem;
-    padding-left: 2.5rem;
+    padding-left: 2rem;
 }
 .card-content-data h6{
     color: #1176bd;

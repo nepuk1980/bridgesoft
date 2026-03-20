@@ -1,11 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { CardComponent } from '../../shared/components/card/card.component';
+import { ExternalresourcespopupComponent } from '../../shared/components/externalresourcespopup/externalresourcespopup.component';
+import { FilefolderpopupComponent } from '../../shared/components/filefolderpopup/filefolderpopup.component';
+import { CloudresourcespopupComponent } from '../../shared/components/cloudresourcespopup/cloudresourcespopup.component';
 
-import { CardComponent } from '../shared/components/card/card.component';
-import { FilefolderpopupComponent } from '../shared/components/filefolderpopup/filefolderpopup.component';
-import { ExternalresourcespopupComponent } from '../shared/components/externalresourcespopup/externalresourcespopup.component';
-import { NotificationpopupComponent } from '../shared/components/notificationpopup/notificationpopup.component';
-import { CloudresourcespopupComponent } from '../shared/components/cloudresourcespopup/cloudresourcespopup.component';
+
 
 export interface Folder {
   name: string;

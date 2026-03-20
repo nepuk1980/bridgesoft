@@ -1,0 +1,17 @@
+<div class="inner-header-wrapper">
+  <app-breadcrumb></app-breadcrumb>
+  @defer {
+    <h1>{{ title }}</h1>
+    <a mat-flat-button (click)="goBack()" class="back-btn" *ngIf="btn">
+      <img src="/svg/backarrow.svg" alt="arrow" />
+      {{ btntitle }}
+    </a>
+  } @placeholder (minimum 1000ms) {
+    <h1><ngx-skeleton-loader animation="progress" class="skeleton-w-100" /></h1>
+    <ngx-skeleton-loader
+      animation="progress"
+      *ngIf="btn"
+      class="skeleton-w-100"
+    />
+  }
+</div>

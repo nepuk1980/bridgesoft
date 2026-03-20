@@ -36,12 +36,12 @@
 </mat-toolbar>
 
 <!-- Main Layout -->
-<mat-sidenav-container class="main-container">
+<mat-sidenav-container class="main-container"  [hasBackdrop]="false">
   <!-- Sidebar -->
-  <mat-sidenav #drawer mode="side" opened class="sidebar">
+  <mat-sidenav #drawer  mode="side" [opened]="isDashboard" class="sidebar">
     <mat-nav-list>
       @defer {
-        <a mat-list-item routerLink="/dashboard" class="text-white">
+        <a mat-list-item routerLink="/" routerLinkActive="mat-active" [routerLinkActiveOptions]="{ exact: true }">
           <img src="/svg/dashboard.svg" />
           <span>Dashboard</span>
         </a>
@@ -50,7 +50,7 @@
       }
 
       @defer {
-        <a mat-list-item>
+        <a mat-list-item routerLink="/applications" routerLinkActive="mat-active" [routerLinkActiveOptions]="{ exact: true }">
           <img src="/svg/applications.svg" />
           <span>Applications</span>
         </a>
@@ -59,7 +59,7 @@
       }
 
       @defer {
-        <a mat-list-item>
+        <a mat-list-item  routerLink="/identity-vault"  routerLinkActive="mat-active" [routerLinkActiveOptions]="{ exact: true }">
           <img src="/svg/identity.svg" />
           <span>Identity Vault</span>
         </a>
@@ -68,7 +68,7 @@
       }
 
       @defer {
-        <a mat-list-item>
+        <a mat-list-item  routerLink="/request-access"  routerLinkActive="mat-active" [routerLinkActiveOptions]="{ exact: true }">
           <img src="/svg/request.svg" />
           <span>Request Access</span>
         </a>
@@ -77,7 +77,7 @@
       }
 
       @defer {
-        <a mat-list-item>
+        <a mat-list-item  routerLink="/audit-trail"  routerLinkActive="mat-active" [routerLinkActiveOptions]="{ exact: true }">
           <img src="/svg/audit.svg" />
           <span>Audit Trail</span>
         </a>
@@ -85,8 +85,18 @@
         <ngx-skeleton-loader animation="progress" />
       }
 
+
+         @defer {
+     <a mat-list-item  routerLink="/review-access"  routerLinkActive="mat-active" [routerLinkActiveOptions]="{ exact: true }">
+          <img src="/svg/review.svg" />
+          <span>Review Access</span>
+        </a>
+      } @placeholder (minimum 1000ms) {
+        <ngx-skeleton-loader animation="progress" />
+      }
+
       @defer {
-        <a mat-list-item>
+        <a mat-list-item  routerLink="/administrative-control"  routerLinkActive="mat-active" [routerLinkActiveOptions]="{ exact: true }">
           <img src="/svg/control.svg" />
           <span>Administrative Control</span>
         </a>
@@ -94,9 +104,9 @@
         <ngx-skeleton-loader animation="progress" />
       }
 
+
       @defer {
-     <a mat-list-item 
-   >
+     <a mat-list-item  routerLink="/alerts"  routerLinkActive="mat-active" [routerLinkActiveOptions]="{ exact: true }">
           <img src="/svg/alerts.svg" />
           <span>Alerts</span>
         </a>
@@ -105,7 +115,7 @@
       }
 
       @defer {
-        <a mat-list-item>
+        <a mat-list-item routerLink="/rules"  routerLinkActive="mat-active" [routerLinkActiveOptions]="{ exact: true }">
           <img src="/svg/rules.svg" />
           <span>Rules</span>
         </a>
@@ -118,7 +128,9 @@
   <!-- Page Content -->
   <mat-sidenav-content>
     <div class="content">
-      <router-outlet></router-outlet>
+      <div [@routeAnimations]="prepareRoute(outlet)">
+  <router-outlet #outlet="outlet"></router-outlet>
+</div>
     </div>
   </mat-sidenav-content>
 </mat-sidenav-container>

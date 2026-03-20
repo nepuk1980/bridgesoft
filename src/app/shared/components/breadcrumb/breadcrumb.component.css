@@ -1,0 +1,23 @@
+.breadcrumb{
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+}
+.breadcrumb span,
+.breadcrumb a{
+    color: #787878;
+font-weight: 400;
+font-size: 1.125rem;
+text-decoration: none;
+transition: all 0.25s ease-in-out;
+}
+.breadcrumb a:hover{
+    color: #1176BD;
+    transition: all 0.25s ease-in-out;
+}
+.breadcrumb  span{
+    font-weight: 600;
+}
+.linkSkeleton{
+    width: 10rem;
+}

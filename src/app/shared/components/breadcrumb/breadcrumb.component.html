@@ -1,0 +1,22 @@
+@defer {
+ <nav class="breadcrumb">
+    <ng-container *ngFor="let crumb of breadcrumbs; let last = last; let first = first">
+
+      <ng-container *ngIf="!first">
+        <img src="/svg/rightarrow.svg" alt="arrow" />
+      </ng-container>
+
+      <a *ngIf="!last" [routerLink]="crumb.url">{{ crumb.label }}</a>
+      <span *ngIf="last">{{ crumb.label }}</span>
+
+    </ng-container>
+  </nav>
+} @placeholder (minimum 1000ms) {
+  <nav class="breadcrumb">
+
+    <ng-container *ngFor="let crumb of breadcrumbs; let last = last">
+      <ngx-skeleton-loader animation="progress" *ngIf="!last" class="skeleton-w-100"/>
+      <ngx-skeleton-loader animation="progress" *ngIf="last" class="skeleton-w-100"/>
+    </ng-container>
+  </nav>
+}
