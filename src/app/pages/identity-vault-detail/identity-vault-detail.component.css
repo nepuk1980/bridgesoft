@@ -1,0 +1,23 @@
+.solid-table th:first-child,
+.solid-table td:first-child {
+  width: 15% !important;
+}
+.solid-table td:nth-child(2),
+.solid-table td:nth-child(2) {
+  width: 25% !important;
+}
+.solid-table td:nth-child(3),
+.solid-table td:nth-child(3) {
+  width: 10% !important;
+}
+.solid-table td:nth-child(4),
+.solid-table td:nth-child(4) {
+  width: 10% !important;
+}
+.solid-table td:nth-child(5),
+.solid-table td:nth-child(5) {
+  width: 35% !important;
+}
+.solid-table {
+  height: calc(100vh - 19rem);
+}

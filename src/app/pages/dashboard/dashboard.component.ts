@@ -5,8 +5,6 @@ import { ExternalresourcespopupComponent } from '../../shared/components/externa
 import { FilefolderpopupComponent } from '../../shared/components/filefolderpopup/filefolderpopup.component';
 import { CloudresourcespopupComponent } from '../../shared/components/cloudresourcespopup/cloudresourcespopup.component';
 
-
-
 export interface Folder {
   name: string;
   category: string;
@@ -14,19 +12,19 @@ export interface Folder {
 }
 
 export interface sharedData {
-  sharedBy: string,
-    sharedWith:string,
-    fileName: string,
-    fileType: string,
-    date: string,
-    tag:string,
-    path:string
+  sharedBy: string;
+  sharedWith: string;
+  fileName: string;
+  fileType: string;
+  date: string;
+  tag: string;
+  path: string;
 }
 
 export interface externalFilesData {
   name: string;
   type: string;
-  serviceType:string;
+  serviceType: string;
   service: string;
   lastViewed: string;
   lastViewedRecent: string;
@@ -333,282 +331,280 @@ export class DashboardComponent {
   ];
 
   Shared: sharedData[] = [
-  
-  {
-    "sharedBy": "William Bridges",
-    "sharedWith": "Christopher Williams",
-    "fileName": "Finance Policy.xlsx",
-    "fileType": "File",
-    "date": "07/21/2025 02:24 AM",
-    "tag":"Private",
-    "path":"/gsuite/Finance/ William Bridges"
-  },
-  {
-    "sharedBy": "Amanda Jones",
-    "sharedWith": "Bob Smith",
-    "fileName": "Employee Perks.xlsx",
-    "fileType": "File",
-    "date": "08/22/2025 12:08 PM",
-      "tag":"Private",
-    "path":"/gsuite/Finance/ William Bridges"
-  },
-  {
-    "sharedBy": "Peter Biel",
-    "sharedWith": "Randy Jefferson",
-    "fileName": "Vendor Policy.xlsx",
-    "fileType": "File",
-    "date": "07/21/2025 02:24 AM",
-      "tag":"Private",
-    "path":"/gsuite/Finance/ William Bridges"
-  },
-  {
-    "sharedBy": "Brenda Jenna",
-    "sharedWith": "Miroslav L",
-    "fileName": "Medical Insurance.xlsx",
-    "fileType": "File",
-    "date": "08/22/2025 12:08 PM",
-      "tag":"Private",
-    "path":"/gsuite/Finance/ William Bridges"
-  },
-  {
-    "sharedBy": "Ashley Smithson",
-    "sharedWith": "Christopher Williams",
-    "fileName": "Vendor Legal.xlsx",
-    "fileType": "File",
-    "date": "07/21/2025 02:24 AM",
-      "tag":"Private",
-    "path":"/gsuite/Finance/ William Bridges"
-  },
-  {
-    "sharedBy": "Deepak Sharma",
-    "sharedWith": "Bob Smith",
-    "fileName": "Employee Onboarding.xlsx",
-    "fileType": "File",
-    "date": "08/22/2025 12:08 PM",
-      "tag":"Private",
-    "path":"/gsuite/Finance/ William Bridges"
-  },
-  {
-    "sharedBy": "William Bridges",
-    "sharedWith": "Christopher Williams",
-    "fileName": "Finance Policy.xlsx",
-    "fileType": "File",
-    "date": "07/21/2025 02:24 AM",
-      "tag":"Private",
-    "path":"/gsuite/Finance/ William Bridges"
-  },
-  {
-    "sharedBy": "Amanda Jones",
-    "sharedWith": "Bob Smith",
-    "fileName": "Employee Perks.xlsx",
-    "fileType": "File",
-    "date": "08/22/2025 12:08 PM",
-      "tag":"Private",
-    "path":"/gsuite/Finance/ William Bridges"
-  },
-  {
-    "sharedBy": "Peter Biel",
-    "sharedWith": "Randy Jefferson",
-    "fileName": "Vendor Policy.xlsx",
-    "fileType": "File",
-    "date": "07/21/2025 02:24 AM",
-      "tag":"Private",
-    "path":"/gsuite/Finance/ William Bridges"
-  },
-  {
-    "sharedBy": "Brenda Jenna",
-    "sharedWith": "Miroslav L",
-    "fileName": "Medical Insurance.xlsx",
-    "fileType": "File",
-    "date": "08/22/2025 12:08 PM",
-      "tag":"Private",
-    "path":"/gsuite/Finance/ William Bridges"
-  },
-  {
-    "sharedBy": "Ashley Smithson",
-    "sharedWith": "Christopher Williams",
-    "fileName": "Vendor Legal.xlsx",
-    "fileType": "File",
-    "date": "07/21/2025 02:24 AM",
-      "tag":"Private",
-    "path":"/gsuite/Finance/ William Bridges"
-  },
-  {
-    "sharedBy": "Deepak Sharma",
-    "sharedWith": "Bob Smith",
-    "fileName": "Employee Onboarding.xlsx",
-    "fileType": "File",
-    "date": "08/22/2025 12:08 PM",
-      "tag":"Private",
-    "path":"/gsuite/Finance/ William Bridges"
-  }
-
+    {
+      sharedBy: 'William Bridges',
+      sharedWith: 'Christopher Williams',
+      fileName: 'Finance Policy.xlsx',
+      fileType: 'File',
+      date: '07/21/2025 02:24 AM',
+      tag: 'Private',
+      path: '/gsuite/Finance/ William Bridges',
+    },
+    {
+      sharedBy: 'Amanda Jones',
+      sharedWith: 'Bob Smith',
+      fileName: 'Employee Perks.xlsx',
+      fileType: 'File',
+      date: '08/22/2025 12:08 PM',
+      tag: 'Private',
+      path: '/gsuite/Finance/ William Bridges',
+    },
+    {
+      sharedBy: 'Peter Biel',
+      sharedWith: 'Randy Jefferson',
+      fileName: 'Vendor Policy.xlsx',
+      fileType: 'File',
+      date: '07/21/2025 02:24 AM',
+      tag: 'Private',
+      path: '/gsuite/Finance/ William Bridges',
+    },
+    {
+      sharedBy: 'Brenda Jenna',
+      sharedWith: 'Miroslav L',
+      fileName: 'Medical Insurance.xlsx',
+      fileType: 'File',
+      date: '08/22/2025 12:08 PM',
+      tag: 'Private',
+      path: '/gsuite/Finance/ William Bridges',
+    },
+    {
+      sharedBy: 'Ashley Smithson',
+      sharedWith: 'Christopher Williams',
+      fileName: 'Vendor Legal.xlsx',
+      fileType: 'File',
+      date: '07/21/2025 02:24 AM',
+      tag: 'Private',
+      path: '/gsuite/Finance/ William Bridges',
+    },
+    {
+      sharedBy: 'Deepak Sharma',
+      sharedWith: 'Bob Smith',
+      fileName: 'Employee Onboarding.xlsx',
+      fileType: 'File',
+      date: '08/22/2025 12:08 PM',
+      tag: 'Private',
+      path: '/gsuite/Finance/ William Bridges',
+    },
+    {
+      sharedBy: 'William Bridges',
+      sharedWith: 'Christopher Williams',
+      fileName: 'Finance Policy.xlsx',
+      fileType: 'File',
+      date: '07/21/2025 02:24 AM',
+      tag: 'Private',
+      path: '/gsuite/Finance/ William Bridges',
+    },
+    {
+      sharedBy: 'Amanda Jones',
+      sharedWith: 'Bob Smith',
+      fileName: 'Employee Perks.xlsx',
+      fileType: 'File',
+      date: '08/22/2025 12:08 PM',
+      tag: 'Private',
+      path: '/gsuite/Finance/ William Bridges',
+    },
+    {
+      sharedBy: 'Peter Biel',
+      sharedWith: 'Randy Jefferson',
+      fileName: 'Vendor Policy.xlsx',
+      fileType: 'File',
+      date: '07/21/2025 02:24 AM',
+      tag: 'Private',
+      path: '/gsuite/Finance/ William Bridges',
+    },
+    {
+      sharedBy: 'Brenda Jenna',
+      sharedWith: 'Miroslav L',
+      fileName: 'Medical Insurance.xlsx',
+      fileType: 'File',
+      date: '08/22/2025 12:08 PM',
+      tag: 'Private',
+      path: '/gsuite/Finance/ William Bridges',
+    },
+    {
+      sharedBy: 'Ashley Smithson',
+      sharedWith: 'Christopher Williams',
+      fileName: 'Vendor Legal.xlsx',
+      fileType: 'File',
+      date: '07/21/2025 02:24 AM',
+      tag: 'Private',
+      path: '/gsuite/Finance/ William Bridges',
+    },
+    {
+      sharedBy: 'Deepak Sharma',
+      sharedWith: 'Bob Smith',
+      fileName: 'Employee Onboarding.xlsx',
+      fileType: 'File',
+      date: '08/22/2025 12:08 PM',
+      tag: 'Private',
+      path: '/gsuite/Finance/ William Bridges',
+    },
   ];
 
-  ExternalFiles : externalFilesData [] = [
-  {
-    "name": "Employee DB 2025.xlsx",
-    "type": "File",
-    "service": "polyrizeab.com",
-    "serviceType" : "drive",
-    "lastViewed": "07/21/2024 02:24 AM",
-    "lastViewedRecent": "01/21/2025 02:24 AM",
-    "tags": ["Sensitive", "Share Externally"]
-  },
-  {
-    "name": "Vendor List Domestic.xlsx",
-    "type": "File",
-    "service": "polyrizeab.com",
-      "serviceType" : "drive",
-    "lastViewed": "08/22/2024 12:08 PM",
-    "lastViewedRecent": "08/22/2025 14:08 PM",
-    "tags": ["Sensitive", "Share Externally"]
-  },
-  {
-    "name": "Employee Policies.xlsx",
-    "type": "File",
-    "service": "Test3",
-      "serviceType" : "amazon",
-    "lastViewed": "07/21/2024 02:24 AM",
-    "lastViewedRecent": "02/21/2025 02:24 AM",
-    "tags": ["Sensitive", "Share Externally"]
-  },
-  {
-    "name": "Medical Policies.xlsx",
-    "type": "File",
-    "service": "polyrizeab.com",
-      "serviceType" : "drive",
-    "lastViewed": "08/22/2024 12:08 PM",
-    "lastViewedRecent": "08/22/2025 12:08 PM",
-    "tags": ["Public", "Sensitive", "Share Externally"]
-  },
-  {
-    "name": "Employee Device List.xlsx",
-    "type": "File",
-    "service": "Staging S2",
-      "serviceType" : "dropbox",
-    "lastViewed": "07/21/2024 02:24 AM",
-    "lastViewedRecent": "07/21/2025 02:24 AM",
-    "tags": ["Sensitive"]
-  },
-  {
-    "name": "Code of Conduct Policy.pdf",
-    "type": "File",
-    "service": "polyrizeab.com",
-      "serviceType" : "drive",
-    "lastViewed": "08/22/2024 12:08 PM",
-    "lastViewedRecent": "08/22/2025 12:08 PM",
-    "tags": ["Sensitive", "Share Externally"]
-  },
-  {
-    "name": "Work from home policy.pdf",
-    "type": "File",
-    "service": "Inbound Enquiries",
-     "serviceType" : "dropbox",
-    "lastViewed": "08/22/2024 12:08 PM",
-    "lastViewedRecent": "08/22/2025 12:08 PM",
-    "tags": ["Public"]
-  },
-  {
-    "name": "Uniform & Accessories.pdf",
-    "type": "File",
-    "service": "polyrizeab.com",
-      "serviceType" : "drive",
-    "lastViewed": "08/22/2024 12:08 PM",
-    "lastViewedRecent": "08/22/2025 12:08 PM",
-    "tags": ["Public"]
-  },
-  {
-    "name": "Office Overheads.pdf",
-    "type": "File",
-    "service": "polyrizeab.com",
-      "serviceType" : "drive",
-    "lastViewed": "08/22/2024 12:08 PM",
-    "lastViewedRecent": "08/22/2025 12:08 PM",
-    "tags": ["Public", "Sensitive", "Share Externally"]
-  },
-  {
-    "name": "Employee DB 2025.xlsx",
-    "type": "File",
-    "service": "polyrizeab.com",
-    "serviceType" : "drive",
-    "lastViewed": "07/21/2024 02:24 AM",
-    "lastViewedRecent": "01/21/2025 02:24 AM",
-    "tags": ["Sensitive", "Share Externally"]
-  },
-  {
-    "name": "Vendor List Domestic.xlsx",
-    "type": "File",
-    "service": "polyrizeab.com",
-      "serviceType" : "drive",
-    "lastViewed": "08/22/2024 12:08 PM",
-    "lastViewedRecent": "08/22/2025 14:08 PM",
-    "tags": ["Sensitive", "Share Externally"]
-  },
-  {
-    "name": "Employee Policies.xlsx",
-    "type": "File",
-    "service": "Test3",
-      "serviceType" : "amazon",
-    "lastViewed": "07/21/2024 02:24 AM",
-    "lastViewedRecent": "02/21/2025 02:24 AM",
-    "tags": ["Sensitive", "Share Externally"]
-  },
-  {
-    "name": "Medical Policies.xlsx",
-    "type": "File",
-    "service": "polyrizeab.com",
-      "serviceType" : "drive",
-    "lastViewed": "08/22/2024 12:08 PM",
-    "lastViewedRecent": "08/22/2025 12:08 PM",
-    "tags": ["Public", "Sensitive", "Share Externally"]
-  },
-  {
-    "name": "Employee Device List.xlsx",
-    "type": "File",
-    "service": "Staging S2",
-      "serviceType" : "dropbox",
-    "lastViewed": "07/21/2024 02:24 AM",
-    "lastViewedRecent": "07/21/2025 02:24 AM",
-    "tags": ["Sensitive"]
-  },
-  {
-    "name": "Code of Conduct Policy.pdf",
-    "type": "File",
-    "service": "polyrizeab.com",
-      "serviceType" : "drive",
-    "lastViewed": "08/22/2024 12:08 PM",
-    "lastViewedRecent": "08/22/2025 12:08 PM",
-    "tags": ["Sensitive", "Share Externally"]
-  },
-  {
-    "name": "Work from home policy.pdf",
-    "type": "File",
-    "service": "Inbound Enquiries",
-     "serviceType" : "dropbox",
-    "lastViewed": "08/22/2024 12:08 PM",
-    "lastViewedRecent": "08/22/2025 12:08 PM",
-    "tags": ["Public"]
-  },
-  {
-    "name": "Uniform & Accessories.pdf",
-    "type": "File",
-    "service": "polyrizeab.com",
-      "serviceType" : "drive",
-    "lastViewed": "08/22/2024 12:08 PM",
-    "lastViewedRecent": "08/22/2025 12:08 PM",
-    "tags": ["Public"]
-  },
-  {
-    "name": "Office Overheads.pdf",
-    "type": "File",
-    "service": "polyrizeab.com",
-      "serviceType" : "drive",
-    "lastViewed": "08/22/2024 12:08 PM",
-    "lastViewedRecent": "08/22/2025 12:08 PM",
-    "tags": ["Public", "Sensitive", "Share Externally"]
-  }
-]
+  ExternalFiles: externalFilesData[] = [
+    {
+      name: 'Employee DB 2025.xlsx',
+      type: 'File',
+      service: 'polyrizeab.com',
+      serviceType: 'drive',
+      lastViewed: '07/21/2024 02:24 AM',
+      lastViewedRecent: '01/21/2025 02:24 AM',
+      tags: ['Sensitive', 'Share Externally'],
+    },
+    {
+      name: 'Vendor List Domestic.xlsx',
+      type: 'File',
+      service: 'polyrizeab.com',
+      serviceType: 'drive',
+      lastViewed: '08/22/2024 12:08 PM',
+      lastViewedRecent: '08/22/2025 14:08 PM',
+      tags: ['Sensitive', 'Share Externally'],
+    },
+    {
+      name: 'Employee Policies.xlsx',
+      type: 'File',
+      service: 'Test3',
+      serviceType: 'amazon',
+      lastViewed: '07/21/2024 02:24 AM',
+      lastViewedRecent: '02/21/2025 02:24 AM',
+      tags: ['Sensitive', 'Share Externally'],
+    },
+    {
+      name: 'Medical Policies.xlsx',
+      type: 'File',
+      service: 'polyrizeab.com',
+      serviceType: 'drive',
+      lastViewed: '08/22/2024 12:08 PM',
+      lastViewedRecent: '08/22/2025 12:08 PM',
+      tags: ['Public', 'Sensitive', 'Share Externally'],
+    },
+    {
+      name: 'Employee Device List.xlsx',
+      type: 'File',
+      service: 'Staging S2',
+      serviceType: 'dropbox',
+      lastViewed: '07/21/2024 02:24 AM',
+      lastViewedRecent: '07/21/2025 02:24 AM',
+      tags: ['Sensitive'],
+    },
+    {
+      name: 'Code of Conduct Policy.pdf',
+      type: 'File',
+      service: 'polyrizeab.com',
+      serviceType: 'drive',
+      lastViewed: '08/22/2024 12:08 PM',
+      lastViewedRecent: '08/22/2025 12:08 PM',
+      tags: ['Sensitive', 'Share Externally'],
+    },
+    {
+      name: 'Work from home policy.pdf',
+      type: 'File',
+      service: 'Inbound Enquiries',
+      serviceType: 'dropbox',
+      lastViewed: '08/22/2024 12:08 PM',
+      lastViewedRecent: '08/22/2025 12:08 PM',
+      tags: ['Public'],
+    },
+    {
+      name: 'Uniform & Accessories.pdf',
+      type: 'File',
+      service: 'polyrizeab.com',
+      serviceType: 'drive',
+      lastViewed: '08/22/2024 12:08 PM',
+      lastViewedRecent: '08/22/2025 12:08 PM',
+      tags: ['Public'],
+    },
+    {
+      name: 'Office Overheads.pdf',
+      type: 'File',
+      service: 'polyrizeab.com',
+      serviceType: 'drive',
+      lastViewed: '08/22/2024 12:08 PM',
+      lastViewedRecent: '08/22/2025 12:08 PM',
+      tags: ['Public', 'Sensitive', 'Share Externally'],
+    },
+    {
+      name: 'Employee DB 2025.xlsx',
+      type: 'File',
+      service: 'polyrizeab.com',
+      serviceType: 'drive',
+      lastViewed: '07/21/2024 02:24 AM',
+      lastViewedRecent: '01/21/2025 02:24 AM',
+      tags: ['Sensitive', 'Share Externally'],
+    },
+    {
+      name: 'Vendor List Domestic.xlsx',
+      type: 'File',
+      service: 'polyrizeab.com',
+      serviceType: 'drive',
+      lastViewed: '08/22/2024 12:08 PM',
+      lastViewedRecent: '08/22/2025 14:08 PM',
+      tags: ['Sensitive', 'Share Externally'],
+    },
+    {
+      name: 'Employee Policies.xlsx',
+      type: 'File',
+      service: 'Test3',
+      serviceType: 'amazon',
+      lastViewed: '07/21/2024 02:24 AM',
+      lastViewedRecent: '02/21/2025 02:24 AM',
+      tags: ['Sensitive', 'Share Externally'],
+    },
+    {
+      name: 'Medical Policies.xlsx',
+      type: 'File',
+      service: 'polyrizeab.com',
+      serviceType: 'drive',
+      lastViewed: '08/22/2024 12:08 PM',
+      lastViewedRecent: '08/22/2025 12:08 PM',
+      tags: ['Public', 'Sensitive', 'Share Externally'],
+    },
+    {
+      name: 'Employee Device List.xlsx',
+      type: 'File',
+      service: 'Staging S2',
+      serviceType: 'dropbox',
+      lastViewed: '07/21/2024 02:24 AM',
+      lastViewedRecent: '07/21/2025 02:24 AM',
+      tags: ['Sensitive'],
+    },
+    {
+      name: 'Code of Conduct Policy.pdf',
+      type: 'File',
+      service: 'polyrizeab.com',
+      serviceType: 'drive',
+      lastViewed: '08/22/2024 12:08 PM',
+      lastViewedRecent: '08/22/2025 12:08 PM',
+      tags: ['Sensitive', 'Share Externally'],
+    },
+    {
+      name: 'Work from home policy.pdf',
+      type: 'File',
+      service: 'Inbound Enquiries',
+      serviceType: 'dropbox',
+      lastViewed: '08/22/2024 12:08 PM',
+      lastViewedRecent: '08/22/2025 12:08 PM',
+      tags: ['Public'],
+    },
+    {
+      name: 'Uniform & Accessories.pdf',
+      type: 'File',
+      service: 'polyrizeab.com',
+      serviceType: 'drive',
+      lastViewed: '08/22/2024 12:08 PM',
+      lastViewedRecent: '08/22/2025 12:08 PM',
+      tags: ['Public'],
+    },
+    {
+      name: 'Office Overheads.pdf',
+      type: 'File',
+      service: 'polyrizeab.com',
+      serviceType: 'drive',
+      lastViewed: '08/22/2024 12:08 PM',
+      lastViewedRecent: '08/22/2025 12:08 PM',
+      tags: ['Public', 'Sensitive', 'Share Externally'],
+    },
+  ];
 
   openDialog(card: CardData, folders: Folder[]) {
     this.dialog.open(FilefolderpopupComponent, {
@@ -622,52 +618,57 @@ export class DashboardComponent {
     });
   }
 
-  openExternalDialog(card: CardData,shared: sharedData[],
-  externalFiles: externalFilesData[]) {
+  openExternalDialog(
+    card: CardData,
+    shared: sharedData[],
+    externalFiles: externalFilesData[],
+  ) {
     this.dialog.open(ExternalresourcespopupComponent, {
       width: '95%',
       minWidth: '95%',
       maxWidth: '100%',
-      data: { 
-       ...card,
+      data: {
+        ...card,
         shared,
-        externalFiles
+        externalFiles,
       },
     });
   }
 
-   openCloudDialog(card: CardData,shared: sharedData[],
-  externalFiles: externalFilesData[]) {
+  openCloudDialog(
+    card: CardData,
+    shared: sharedData[],
+    externalFiles: externalFilesData[],
+  ) {
     this.dialog.open(CloudresourcespopupComponent, {
       width: '95%',
       minWidth: '95%',
       maxWidth: '100%',
-      data: { 
-       ...card,
+      data: {
+        ...card,
         shared,
-        externalFiles
+        externalFiles,
       },
     });
   }
-  
-//   ngOnInit(): void {
-//   this.dialog.open(CloudresourcespopupComponent, {
-//     width: '95%',
-//     minWidth: '95%',
-//     maxWidth: '100%',
-//     data: {
-//       title: 'Cloud Resources',
-//       value: '46%',
-//       file: true,
-//       fileicon: true,
-//       icon: '/svg/file.svg',
-//       subtitle: 'External Sources',
-//       shared: this.Shared,
-//       externalFiles: this.ExternalFiles
-//     }
-//   });
-// }
 
+  //   ngOnInit(): void {
+  //   this.dialog.open(CloudresourcespopupComponent, {
+  //     width: '95%',
+  //     minWidth: '95%',
+  //     maxWidth: '100%',
+  //     data: {
+  //       title: 'Cloud Resources',
+  //       value: '46%',
+  //       file: true,
+  //       fileicon: true,
+  //       icon: '/svg/file.svg',
+  //       subtitle: 'External Sources',
+  //       shared: this.Shared,
+  //       externalFiles: this.ExternalFiles
+  //     }
+  //   });
+  // }
 
   //   openNotificationDialog() {
   //   this.dialog.open(NotificationpopupComponent, {
@@ -689,4 +690,15 @@ export class DashboardComponent {
   //   this.openNotificationDialog(); // ✅ Opens dialog by default
   // }
 
+  showSuccess = false;
+
+  ngOnInit() {
+    if (history.state?.submitted) {
+      this.showSuccess = true;
+
+      setTimeout(() => {
+        this.showSuccess = false;
+      }, 3000);
+    }
+  }
 }

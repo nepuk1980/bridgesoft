@@ -6,10 +6,8 @@
 
 @defer {
   <div class="application-content-div">
-    
     <!-- Top Bar -->
     <div class="application-tab-div">
-
       <!-- 🔍 Search -->
       <div class="search-box">
         <input
@@ -25,7 +23,6 @@
 
       <!-- 🔽 Filters -->
       <div class="filter-grp-div">
-
         <!-- Category -->
         <div class="custom-filter no-icon">
           <mat-form-field>
@@ -33,7 +30,7 @@
             <mat-select
               [(ngModel)]="selectedCategory"
               (selectionChange)="applyFilters()"
-               panelClass="custom-filter-panel"
+              panelClass="custom-filter-panel"
             >
               <mat-option value="">Category</mat-option>
               @for (item of categories; track item.value) {
@@ -52,7 +49,7 @@
             <mat-select
               [(ngModel)]="selectedFilter"
               (selectionChange)="applyFilters()"
-               panelClass="custom-filter-panel"
+              panelClass="custom-filter-panel"
             >
               <mat-option value="">Filter</mat-option>
               @for (item of filters; track item.value) {
@@ -63,17 +60,28 @@
             </mat-select>
           </mat-form-field>
         </div>
-
       </div>
     </div>
 
     <!-- Table -->
     <div class="solid-table table-wrapper">
       <table mat-table [dataSource]="dataSource" matSort class="custom-table">
-
         <ng-container matColumnDef="firstName">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>First Name</th>
-          <td mat-cell *matCellDef="let element">{{ element.firstName }}</td>
+          <td mat-cell *matCellDef="let element">
+            <a
+              [routerLink]="[
+                '/identity-vault',
+                createSlug(element.firstName, element.lastName),
+              ]"
+              [queryParams]="{
+                name: element.firstName + ' ' + element.lastName,
+              }"
+              class="table-link"
+            >
+              {{ element.firstName }}
+            </a>
+          </td>
         </ng-container>
 
         <ng-container matColumnDef="lastName">
@@ -96,7 +104,7 @@
             Assigned Role Summary
           </th>
           <td mat-cell *matCellDef="let element">
-            {{ element.roleSummary || '-' }}
+            {{ element.roleSummary || "-" }}
           </td>
         </ng-container>
 
@@ -109,7 +117,7 @@
           </td>
         </ng-container>
 
-        <ng-container matColumnDef="riskScore" >
+        <ng-container matColumnDef="riskScore">
           <th mat-header-cell *matHeaderCellDef mat-sort-header class="lastcol">
             Risk Score
           </th>
@@ -120,7 +128,6 @@
 
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-
       </table>
     </div>
   </div>

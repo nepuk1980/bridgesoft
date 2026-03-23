@@ -1,0 +1,50 @@
+.card-list-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.875rem;
+  flex-wrap: wrap;
+  padding: 1.25rem 1.5rem;
+}
+.request-profile-card-wrapper {
+  width: calc(20% - 1.5rem);
+}
+.custom-pagination {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin: 3.75rem 0;
+  padding: 0 1.5rem;
+  gap: 1.25rem;
+}
+
+.count {
+  color: #333;
+  font-size: 0.875rem;
+}
+
+.pagination-buttons {
+  display: flex;
+  gap: 0.625rem;
+}
+
+.pagination-buttons button {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 0.5rem;
+  border: none;
+  background: #fff;
+  cursor: pointer;
+}
+
+.pagination-buttons button.active {
+  background: #5f9eca;
+  color: #fff;
+}
+.fixed-btn {
+  padding: 1rem 1.5rem;
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(255, 255, 255, 0.6);
+}

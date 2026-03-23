@@ -10,10 +10,10 @@ import {
   group,
 } from '@angular/animations';
 @Component({
-  selector: 'app-applications-layout',
+  selector: 'app-audittrail-layout',
   imports: [RouterOutlet],
-  templateUrl: './applications-layout.component.html',
-  styleUrl: './applications-layout.component.css',
+  templateUrl: './audittrail-layout.component.html',
+  styleUrl: './audittrail-layout.component.css',
   // ✅ ADDED
   animations: [
     trigger('routeAnimations', [
@@ -70,7 +70,7 @@ import {
     ]),
   ],
 })
-export class ApplicationsLayoutComponent {
+export class AudittrailLayoutComponent {
   constructor(private cdr: ChangeDetectorRef) {}
 
   ngAfterViewInit() {
