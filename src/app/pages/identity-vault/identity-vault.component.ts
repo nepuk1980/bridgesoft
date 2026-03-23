@@ -4,7 +4,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 import { InnerheaderComponent } from '../../shared/components/innerheader/innerheader.component';
@@ -23,6 +23,7 @@ interface Application {
   roleSummary: string;
   lastRefresh: string;
   riskScore: number;
+  link: string;
 }
 
 @Component({
@@ -37,21 +38,20 @@ interface Application {
     MatSortModule,
     FormsModule,
     RouterModule,
-    NgxSkeletonLoaderModule
+    NgxSkeletonLoaderModule,
   ],
   templateUrl: './identity-vault.component.html',
-  styleUrl: './identity-vault.component.css'
+  styleUrl: './identity-vault.component.css',
 })
 export class IdentityVaultComponent implements AfterViewInit {
-
   categories: Filter[] = [
-    { value: 'bob jefferson', viewValue: 'Bob Jefferson' }
+    { value: 'bob jefferson', viewValue: 'Bob Jefferson' },
   ];
 
   filters: Filter[] = [
     { value: 'low', viewValue: 'Low Risk' },
     { value: 'medium', viewValue: 'Medium Risk' },
-    { value: 'high', viewValue: 'High Risk' }
+    { value: 'high', viewValue: 'High Risk' },
   ];
 
   displayedColumns: string[] = [
@@ -61,56 +61,61 @@ export class IdentityVaultComponent implements AfterViewInit {
     'manager',
     'roleSummary',
     'lastRefresh',
-    'riskScore'
+    'riskScore',
   ];
 
-data: Application[] = [
-  {
-    firstName: 'Christopher',
-    lastName: 'Williams',
-    email: 'chris.w@bridesoft.com',
-    manager: 'Bob Jefferson',
-    roleSummary: '',
-    lastRefresh: '02 / 12 / 2026 17:11 PM',
-    riskScore: 63
-  },
-  {
-    firstName: 'Norton P',
-    lastName: 'Sheperd',
-    email: 'nortan.s@bridesoft.com',
-    manager: 'Bob Jefferson',
-    roleSummary: '',
-    lastRefresh: '02 / 11 / 2026 09:12 AM',
-    riskScore: 32
-  },
-  {
-    firstName: 'Amanda',
-    lastName: 'Bobbit',
-    email: 'amanda.bobbit@bridesoft.com',
-    manager: 'Bob Jefferson',
-    roleSummary: '',
-    lastRefresh: '02 / 08 / 2026 10:13 AM',
-    riskScore: 32
-  },
-  {
-    firstName: 'Prayag',
-    lastName: 'Shah',
-    email: 'paryag.s@bridesoft.com',
-    manager: 'Bob Jefferson',
-    roleSummary: '',
-    lastRefresh: '02 / 08 / 2026 12:01 PM',
-    riskScore: 32
-  },
-  {
-    firstName: 'Gefforson',
-    lastName: 'Michille',
-    email: 'gefforson.mt@bridesoft.com',
-    manager: 'Bob Jefferson',
-    roleSummary: '',
-    lastRefresh: '02 / 07 / 2026 13:23 PM',
-    riskScore: 32
-  }
-];
+  data: Application[] = [
+    {
+      firstName: 'Christopher',
+      lastName: 'Williams',
+      email: 'chris.w@bridesoft.com',
+      manager: 'Bob Jefferson',
+      roleSummary: '',
+      lastRefresh: '02 / 12 / 2026 17:11 PM',
+      riskScore: 63,
+      link: 'christopher-williams',
+    },
+    {
+      firstName: 'Norton P',
+      lastName: 'Sheperd',
+      email: 'nortan.s@bridesoft.com',
+      manager: 'Bob Jefferson',
+      roleSummary: '',
+      lastRefresh: '02 / 11 / 2026 09:12 AM',
+      riskScore: 32,
+      link: 'identity-vault-details',
+    },
+    {
+      firstName: 'Amanda',
+      lastName: 'Bobbit',
+      email: 'amanda.bobbit@bridesoft.com',
+      manager: 'Bob Jefferson',
+      roleSummary: '',
+      lastRefresh: '02 / 08 / 2026 10:13 AM',
+      riskScore: 32,
+      link: 'identity-vault-details',
+    },
+    {
+      firstName: 'Prayag',
+      lastName: 'Shah',
+      email: 'paryag.s@bridesoft.com',
+      manager: 'Bob Jefferson',
+      roleSummary: '',
+      lastRefresh: '02 / 08 / 2026 12:01 PM',
+      riskScore: 32,
+      link: 'identity-vault-details',
+    },
+    {
+      firstName: 'Gefforson',
+      lastName: 'Michille',
+      email: 'gefforson.mt@bridesoft.com',
+      manager: 'Bob Jefferson',
+      roleSummary: '',
+      lastRefresh: '02 / 07 / 2026 13:23 PM',
+      riskScore: 32,
+      link: 'identity-vault-details',
+    },
+  ];
 
   dataSource = new MatTableDataSource<Application>(this.data);
 
@@ -130,16 +135,17 @@ data: Application[] = [
 
     // Category filter
     if (this.selectedCategory) {
-      filteredData = filteredData.filter(item =>
-        item.manager.toLowerCase().includes(this.selectedCategory)
+      filteredData = filteredData.filter((item) =>
+        item.manager.toLowerCase().includes(this.selectedCategory),
       );
     }
 
     // Risk filter
     if (this.selectedFilter) {
-      filteredData = filteredData.filter(item => {
+      filteredData = filteredData.filter((item) => {
         if (this.selectedFilter === 'low') return item.riskScore < 30;
-        if (this.selectedFilter === 'medium') return item.riskScore >= 30 && item.riskScore <= 60;
+        if (this.selectedFilter === 'medium')
+          return item.riskScore >= 30 && item.riskScore <= 60;
         if (this.selectedFilter === 'high') return item.riskScore > 60;
         return true;
       });
@@ -148,13 +154,33 @@ data: Application[] = [
     // Search filter
     if (this.searchText) {
       const search = this.searchText.toLowerCase();
-      filteredData = filteredData.filter(item =>
+      filteredData = filteredData.filter((item) =>
         `${item.firstName} ${item.lastName} ${item.email} ${item.manager}`
           .toLowerCase()
-          .includes(search)
+          .includes(search),
       );
     }
 
     this.dataSource.data = filteredData;
+  }
+  createSlug(firstName: string, lastName: string): string {
+    const fullName = `${firstName} ${lastName}`;
+
+    return fullName
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
+  }
+  constructor(private router: Router) {}
+
+  goToDetail(item: Application) {
+    const slug = this.createSlug(item.firstName, item.lastName);
+    const fullName = `${item.firstName} ${item.lastName}`;
+
+    this.router.navigate(['/identity-vault', slug], {
+      queryParams: { name: fullName },
+    });
   }
 }

@@ -10,10 +10,10 @@ import {
   group,
 } from '@angular/animations';
 @Component({
-  selector: 'app-applications-layout',
+  selector: 'app-requestaccess-layout',
   imports: [RouterOutlet],
-  templateUrl: './applications-layout.component.html',
-  styleUrl: './applications-layout.component.css',
+  templateUrl: './requestaccess-layout.component.html',
+  styleUrl: './requestaccess-layout.component.css',
   // ✅ ADDED
   animations: [
     trigger('routeAnimations', [
@@ -70,7 +70,7 @@ import {
     ]),
   ],
 })
-export class ApplicationsLayoutComponent {
+export class RequestaccessLayoutComponent {
   constructor(private cdr: ChangeDetectorRef) {}
 
   ngAfterViewInit() {

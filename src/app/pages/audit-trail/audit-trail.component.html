@@ -1,0 +1,95 @@
+<app-innerheader
+  title="Audit Trail"
+  [btn]="false"
+  btntitle="Back To Audit Trail"
+></app-innerheader>
+
+<div class="search-filter-div">
+  <!-- 🔍 Search -->
+  <div class="search-box">
+    <input
+      type="text"
+      placeholder="Search"
+      (input)="applyFilter($any($event.target).value)"
+    />
+    <img src="/svg/search.svg" class="search-icon" />
+  </div>
+
+  <!-- 🔢 Count -->
+  <p>Showing {{ filteredCount }} of {{ totalCount }}</p>
+
+  <div class="filter-grp-div">
+    <!-- 🔽 Sort -->
+    <div class="custom-filter date-filter">
+      <mat-form-field>
+        <mat-label>Sort by date</mat-label>
+        <mat-select
+          [(value)]="selectedSort"
+          (selectionChange)="filterData()"
+          panelClass="custom-filter-panel"
+        >
+          <mat-option value="">Sort by date</mat-option>
+          <mat-option value="latest">Latest</mat-option>
+          <mat-option value="oldest">Oldest</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <!-- 🔽 Filter -->
+    <div class="custom-filter">
+      <mat-form-field>
+        <mat-label>Filter</mat-label>
+        <mat-select
+          [(value)]="selectedFilter"
+          (selectionChange)="filterData()"
+          panelClass="custom-filter-panel"
+        >
+          <mat-option value="">Filter</mat-option>
+          <mat-option value="Pending">Pending</mat-option>
+          <mat-option value="Complete">Complete</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+</div>
+
+<!-- ✅ LIST UI (matches your card style data) -->
+<div class="audit-card-wrapper">
+  <div
+    class="audit-card"
+    *ngFor="let item of dataSource"
+    (click)="goToDetail(item)"
+  >
+    <h3>Request Access: {{ item.userName }}</h3>
+
+    <p>
+      Requested by {{ item.requestedBy }} on {{ item.requestedDate }}
+      {{ item.requestedTime }} |
+      <strong>Request ID: {{ item.requestId }}</strong>
+    </p>
+
+    <p class="pending-text">
+      <img src="/svg/rpending.svg" alt="" *ngIf="item.status === 'Pending'" />
+      Requested {{ item.status }}
+    </p>
+
+    <div *ngFor="let access of item.accessList" class="access-row">
+      <span>
+        Add Access:
+        <img
+          *ngIf="access.type === 'folder'"
+          src="/svg/folder.svg"
+          width="16"
+        />
+        <img *ngIf="access.type === 'file'" src="/svg/file.svg" width="16" />
+        {{ access.name }} <small>&nbsp;on&nbsp;</small> {{ access.app }}
+      </span>
+
+      <span class="complete-text">
+        <img src="/svg/greencheck.svg" alt="check" /> {{ access.status }}</span
+      >
+    </div>
+  </div>
+  <!-- ✅ No Data -->
+  <div *ngIf="dataSource.length === 0" class="no-data">No data found</div>
+</div>

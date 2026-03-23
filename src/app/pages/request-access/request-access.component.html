@@ -1,0 +1,92 @@
+<div class="inner-header-wrapper inner-header-wrapper-nobg">
+  <app-breadcrumb></app-breadcrumb>
+  <h1>Request Access</h1>
+
+  <div class="search-filter-div">
+    <div class="search-box">
+      <input
+        type="text"
+        placeholder="Search"
+        [(ngModel)]="searchText"
+        (input)="applyFilters()"
+      />
+    </div>
+
+    <div class="custom-filter">
+      <mat-form-field>
+        <mat-label>Filter</mat-label>
+        <mat-select
+          [(value)]="selectedFilter"
+          (selectionChange)="applyFilters()"
+          panelClass="custom-filter-panel"
+        >
+          <mat-option value="">Filter</mat-option>
+          <mat-option value="SalePoint">SalePoint</mat-option>
+          <mat-option value="NCS">NCS</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+</div>
+
+<div class="card-list-wrapper">
+  <div
+    class="request-profile-card-wrapper"
+    *ngFor="let user of paginatedUsers"
+    (click)="chk.toggle()"
+  >
+    <mat-checkbox #chk></mat-checkbox>
+
+    <button mat-icon-button>
+      <mat-icon>more_vert</mat-icon>
+    </button>
+
+    <img [src]="user.profileImage" class="profileImg" />
+
+    <div class="innerContent">
+      <h6>{{ user.name }}</h6>
+      <p><strong>Company :</strong> {{ user.company }}</p>
+      <p><strong>Role :</strong> {{ user.role }}</p>
+      <p><strong>Manager :</strong> {{ user.manager }}</p>
+      <p><strong>Employee Type :</strong> {{ user.employeeType }}</p>
+      <p><strong>Status :</strong> {{ user.status }}</p>
+    </div>
+  </div>
+</div>
+
+<!-- ✅ Custom Pagination -->
+<div class="custom-pagination">
+  <span class="count">
+    Showing {{ paginatedUsers.length }} of {{ filteredUsers.length }}
+  </span>
+
+  <div class="pagination-buttons">
+    <button (click)="firstPage()" [disabled]="pageIndex === 0">«</button>
+    <button (click)="prevPage()" [disabled]="pageIndex === 0">‹</button>
+
+    <span *ngIf="pages[0] > 1">...</span>
+
+    <button
+      *ngFor="let p of pages"
+      (click)="goToPage(p)"
+      [class.active]="p === pageIndex + 1"
+    >
+      {{ p }}
+    </button>
+
+    <span *ngIf="pages[pages.length - 1] < totalPages">...</span>
+
+    <button (click)="nextPage()" [disabled]="pageIndex === totalPages - 1">
+      ›
+    </button>
+    <button (click)="lastPage()" [disabled]="pageIndex === totalPages - 1">
+      »
+    </button>
+  </div>
+</div>
+
+<div class="fixed-btn">
+  <button routerLink="request-access-detail" mat-flat-button class="btn-blue">
+    Save
+  </button>
+</div>

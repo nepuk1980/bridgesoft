@@ -1,0 +1,194 @@
+<div class="inner-header-wrapper">
+  <app-breadcrumb></app-breadcrumb>
+
+  <mat-chip-set class="custonChip">
+    <mat-chip-row *ngFor="let user of users" (removed)="remove(user)">
+      {{ user }}
+      <button matChipRemove>
+        <mat-icon>close</mat-icon>
+      </button>
+    </mat-chip-row>
+  </mat-chip-set>
+</div>
+
+<div class="search-filter-div">
+  <div class="search-box">
+    <input
+      type="text"
+      placeholder="Search"
+      [(ngModel)]="searchText"
+      (input)="applyFilter()"
+    />
+    <img src="/svg/search.svg" class="search-icon" />
+  </div>
+
+  <p>Showing {{ dataSource.length }} of {{ RESOURCE_DATA.length }}</p>
+
+  <div class="filter-grp-div">
+    <div class="custom-filter no-icon">
+      <mat-form-field>
+        <mat-label>Category</mat-label>
+        <mat-select
+          [(ngModel)]="selectedCategory"
+          (selectionChange)="applyFilter()"
+          panelClass="custom-filter-panel"
+        >
+          <mat-option value="">Category</mat-option>
+          <mat-option *ngFor="let cat of categories" [value]="cat">
+            {{ cat }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <div class="custom-filter">
+      <mat-form-field>
+        <mat-label>Filter</mat-label>
+        <mat-select
+          [(ngModel)]="selectedType"
+          (selectionChange)="applyFilter()"
+          panelClass="custom-filter-panel"
+        >
+          <mat-option value="">Filter</mat-option>
+
+          <!-- ✅ dynamic types -->
+          <mat-option *ngFor="let type of types" [value]="type">
+            {{ type | titlecase }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
+</div>
+
+<div class="solid-table table-wrapper">
+  <table mat-table [dataSource]="dataSource" class="mat-elevation-z2">
+    <!-- PATH -->
+    <ng-container matColumnDef="path">
+      <th mat-header-cell *matHeaderCellDef>
+        <div class="checktddiv">
+          <mat-checkbox
+            (change)="toggleAllRows()"
+            [checked]="isAllSelected()"
+            [indeterminate]="isIndeterminate()"
+          ></mat-checkbox>
+          <span> Resource Full Path</span>
+        </div>
+      </th>
+
+      <td mat-cell *matCellDef="let row">
+        <div class="checktddiv">
+          <mat-checkbox
+            (click)="$event.stopPropagation()"
+            (change)="toggleRow(row)"
+            [checked]="selection.isSelected(row)"
+          ></mat-checkbox>
+          <span>{{ row.path }}</span>
+        </div>
+      </td>
+    </ng-container>
+
+    <!-- NAME -->
+    <ng-container matColumnDef="name">
+      <th mat-header-cell *matHeaderCellDef>Folder / File Names</th>
+      <td mat-cell *matCellDef="let row">
+        <div class="icontexttd">
+          <img src="/svg/folder.svg" *ngIf="row.type === 'folder'" />
+          <img src="/svg/file.svg" *ngIf="row.type === 'file'" />
+          {{ row.name }}
+        </div>
+      </td>
+    </ng-container>
+
+    <!-- CATEGORY -->
+    <ng-container matColumnDef="category">
+      <th mat-header-cell *matHeaderCellDef>Categories</th>
+      <td mat-cell *matCellDef="let row">{{ row.category }}</td>
+    </ng-container>
+
+    <!-- ACCESS -->
+    <ng-container matColumnDef="access">
+      <th mat-header-cell *matHeaderCellDef>Access Level</th>
+      <td mat-cell *matCellDef="let row">
+        <mat-checkbox
+          [(ngModel)]="row.access.fullControl"
+          (click)="$event.stopPropagation()"
+        >
+          Full Control
+        </mat-checkbox>
+
+        <mat-checkbox
+          [(ngModel)]="row.access.modify"
+          (click)="$event.stopPropagation()"
+        >
+          Modify
+        </mat-checkbox>
+
+        <mat-checkbox
+          [(ngModel)]="row.access.readExecute"
+          (click)="$event.stopPropagation()"
+        >
+          Read & Execute
+        </mat-checkbox>
+
+        <mat-checkbox
+          [(ngModel)]="row.access.listFolder"
+          (click)="$event.stopPropagation()"
+        >
+          List Folder Content
+        </mat-checkbox>
+
+        <mat-checkbox
+          [(ngModel)]="row.access.read"
+          (click)="$event.stopPropagation()"
+        >
+          Read
+        </mat-checkbox>
+
+        <mat-checkbox
+          [(ngModel)]="row.access.write"
+          (click)="$event.stopPropagation()"
+        >
+          Write
+        </mat-checkbox>
+      </td>
+    </ng-container>
+
+    <!-- HEADER -->
+    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+
+    <!-- ROWS -->
+    <tr
+      mat-row
+      *matRowDef="let row; columns: displayedColumns"
+      (click)="toggleRow(row)"
+    ></tr>
+
+    <!-- ✅ NO DATA ROW -->
+    <tr class="mat-row" *matNoDataRow>
+      <td
+        class="mat-cell"
+        colspan="4"
+        style="text-align: center; padding: 20px"
+      >
+        No data found
+      </td>
+    </tr>
+  </table>
+</div>
+
+<!-- <div class="fixed-btn">
+  <button routerLink="request-access-detail" mat-flat-button class="btn-blue">
+    Save
+  </button>
+</div> -->
+<div class="fixed-btn">
+  <button
+    routerLink="../request-review-access"
+    mat-flat-button
+    class="btn-blue"
+    (click)="submit()"
+  >
+    Save
+  </button>
+</div>

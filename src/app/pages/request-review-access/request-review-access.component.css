@@ -1,0 +1,32 @@
+.custonChip {
+  margin-top: 2rem;
+}
+.fixed-search-div {
+  position: sticky;
+  top: 0;
+  padding-bottom: 1rem;
+  background: #f4f4f4;
+}
+.solid-table {
+  height: calc(100vh - 27.7rem);
+}
+.solid-table th:nth-child(1),
+.solid-table td:nth-child(1) {
+  width: 30% !important;
+}
+.solid-table th:nth-child(2),
+.solid-table td:nth-child(2) {
+  width: 15% !important;
+}
+.solid-table th:nth-child(3),
+.solid-table td:nth-child(3) {
+  width: 15% !important;
+}
+.solid-table th:nth-child(4),
+.solid-table td:nth-child(4) {
+  width: 30% !important;
+}
+.solid-table th:nth-child(5),
+.solid-table td:nth-child(5) {
+  width: 10% !important;
+}

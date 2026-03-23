@@ -7,17 +7,24 @@ import { ApplicationsLayoutComponent } from './layout/applications-layout/applic
 import { IdentityvaultLayoutComponent } from './layout/identityvault-layout/identityvault-layout.component';
 import { IdentityVaultComponent } from './pages/identity-vault/identity-vault.component';
 import { IdentityVaultDetailComponent } from './pages/identity-vault-detail/identity-vault-detail.component';
+import { RequestaccessLayoutComponent } from './layout/requestaccess-layout/requestaccess-layout.component';
+import { RequestAccessComponent } from './pages/request-access/request-access.component';
+import { RequestAccessDetailComponent } from './pages/request-access-detail/request-access-detail.component';
+import { RequestReviewAccessComponent } from './pages/request-review-access/request-review-access.component';
+import { AudittrailLayoutComponent } from './layout/audittrail-layout/audittrail-layout.component';
+import { AuditTrailComponent } from './pages/audit-trail/audit-trail.component';
+import { AuditTrailDetailComponent } from './pages/audit-trail-detail/audit-trail-detail.component';
 
 export const routes: Routes = [
   {
     path: '',
     component: DashboardComponent,
-    data: { breadcrumb: 'Dashboard',animation: 'DashboardPage' }
+    data: { breadcrumb: 'Dashboard', animation: 'DashboardPage' },
   },
   {
     path: 'applications',
     component: ApplicationsLayoutComponent,
-    data: { breadcrumb: 'Applications',animation: 'ApplicationsPage' },
+    data: { breadcrumb: 'Applications', animation: 'ApplicationsPage' },
     children: [
       {
         path: '',
@@ -26,24 +33,80 @@ export const routes: Routes = [
       {
         path: 'file-share-permission',
         component: FileSharePermissionsComponent,
-        data: { breadcrumb: 'File Share Permissions',animation: 'FileSharePermissionsPage' }
-      }
-    ]
+        data: {
+          breadcrumb: 'File Share Permissions',
+          animation: 'FileSharePermissionsPage',
+        },
+      },
+    ],
   },
   {
     path: 'identity-vault',
     component: IdentityvaultLayoutComponent,
-    data: { breadcrumb: 'Identity Vault',animation: 'IdentityvaultPage' },
+    data: { breadcrumb: 'Identity Vault', animation: 'IdentityvaultPage' },
     children: [
       {
         path: '',
         component: IdentityVaultComponent,
       },
       {
-        path: 'identity-vault-details',
+        path: ':id', // ✅ ADD PARAM
         component: IdentityVaultDetailComponent,
-        data: { breadcrumb: 'File Share Permissions',animation: 'FileSharePermissionsPage' }
-      }
-    ]
-  }
+        data: {
+          breadcrumb: '',
+          animation: 'IdentityVaultDetailsPage',
+          dynamic: true,
+          showPrefix: false,
+        },
+      },
+    ],
+  },
+  {
+    path: 'request-access',
+    component: RequestaccessLayoutComponent,
+    data: { breadcrumb: 'Request Access', animation: 'ReaquestAccessPage' },
+    children: [
+      {
+        path: '',
+        component: RequestAccessComponent,
+      },
+      {
+        path: 'request-access-detail',
+        component: RequestAccessDetailComponent,
+        data: {
+          breadcrumb: 'Request Access Detail',
+          animation: 'RequestAccessDetailPage',
+        },
+      },
+      {
+        path: 'request-review-access',
+        component: RequestReviewAccessComponent,
+        data: {
+          breadcrumb: 'Request Review Access',
+          animation: 'RequestReviewAccessPage',
+        },
+      },
+    ],
+  },
+  {
+    path: 'audit-trail',
+    component: AudittrailLayoutComponent,
+    data: { breadcrumb: 'Audit Trail', animation: 'AudittrailPage' },
+    children: [
+      {
+        path: '',
+        component: AuditTrailComponent,
+      },
+      {
+        path: ':id', // ✅ ADD PARAM
+        component: AuditTrailDetailComponent,
+        data: {
+          breadcrumb: 'Request Access',
+          dynamic: true,
+          animation: 'AuditDetailPage',
+          showPrefix: true,
+        },
+      },
+    ],
+  },
 ];
