@@ -1,10 +1,14 @@
-<mat-card class="card-wrapper"  >
+<mat-card class="card-wrapper">
   @defer {
     <div class="card-header">
       <h6 class="card-title">{{ title }}</h6>
     </div>
     <div class="card-content">
-      <app-donutchart *ngIf="chart" [percentage]="percentage" [title]="title"></app-donutchart>
+      <app-donutchart
+        *ngIf="chart"
+        [percentage]="percentage"
+        [title]="title"
+      ></app-donutchart>
       <div class="card-content-data" *ngIf="file">
         <h6>
           {{ filecount }}
@@ -12,39 +16,40 @@
         </h6>
       </div>
       <div class="card-value">
-        <span><img [src]="icon" /> {{ value }}</span>
+        <span *ngIf="chart"><img [src]="icon" /> {{ filecount }}</span>
+        <span *ngIf="!chart"><img [src]="icon" /> {{ percentage }}%</span>
         <p>{{ subtitle }}</p>
       </div>
     </div>
   } @placeholder (minimum 1000ms) {
     <div class="card-header">
       <h6 class="card-title">
-        <ngx-skeleton-loader animation="progress"/>
+        <ngx-skeleton-loader animation="progress" />
       </h6>
     </div>
     <div class="card-content">
       @if (chart) {
-       <ngx-skeleton-loader count="1" appearance="circle" 
-       [theme]="{ 
-      height: '6.25rem',
-      width: '6.25rem',
-    }"
-       />
+        <ngx-skeleton-loader
+          count="1"
+          appearance="circle"
+          [theme]="{
+            height: '6.25rem',
+            width: '6.25rem',
+          }"
+        />
       } @else {
         <div class="card-content-data" *ngIf="file">
           <h6>
-            <ngx-skeleton-loader animation="progress"/>
-            <ngx-skeleton-loader animation="progress"/>
+            <ngx-skeleton-loader animation="progress" />
+            <ngx-skeleton-loader animation="progress" />
           </h6>
         </div>
       }
 
       <div class="card-value">
-         <ngx-skeleton-loader animation="progress"/>
-        <ngx-skeleton-loader animation="progress"/>
+        <ngx-skeleton-loader animation="progress" />
+        <ngx-skeleton-loader animation="progress" />
       </div>
     </div>
   }
 </mat-card>
-
-

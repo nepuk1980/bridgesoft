@@ -1,4 +1,4 @@
-import { Component, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, ViewChild, AfterViewInit, OnInit } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
@@ -6,9 +6,11 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { CommonModule } from '@angular/common';
+import { MatPaginator } from '@angular/material/paginator';
 
 import { InnerheaderComponent } from '../../shared/components/innerheader/innerheader.component';
-import { CommonModule } from '@angular/common';
+import { ApiService } from '../../services/api.service';
 
 interface Filter {
   value: string;
@@ -43,15 +45,14 @@ interface Application {
   templateUrl: './identity-vault.component.html',
   styleUrl: './identity-vault.component.css',
 })
-export class IdentityVaultComponent implements AfterViewInit {
-  categories: Filter[] = [
-    { value: 'bob jefferson', viewValue: 'Bob Jefferson' },
-  ];
+export class IdentityVaultComponent implements AfterViewInit, OnInit {
+  // ✅ dynamic category list
+  categories: Filter[] = [];
 
   filters: Filter[] = [
-    { value: 'low', viewValue: 'Low Risk' },
-    { value: 'medium', viewValue: 'Medium Risk' },
-    { value: 'high', viewValue: 'High Risk' },
+    { value: 'low', viewValue: 'Low Risk (< 30)' },
+    { value: 'medium', viewValue: 'Medium Risk (>= 30 && <= 60)' },
+    { value: 'high', viewValue: 'High Risk (> 60)' },
   ];
 
   displayedColumns: string[] = [
@@ -64,83 +65,96 @@ export class IdentityVaultComponent implements AfterViewInit {
     'riskScore',
   ];
 
-  data: Application[] = [
-    {
-      firstName: 'Christopher',
-      lastName: 'Williams',
-      email: 'chris.w@bridesoft.com',
-      manager: 'Bob Jefferson',
-      roleSummary: '',
-      lastRefresh: '02 / 12 / 2026 17:11 PM',
-      riskScore: 63,
-      link: 'christopher-williams',
-    },
-    {
-      firstName: 'Norton P',
-      lastName: 'Sheperd',
-      email: 'nortan.s@bridesoft.com',
-      manager: 'Bob Jefferson',
-      roleSummary: '',
-      lastRefresh: '02 / 11 / 2026 09:12 AM',
-      riskScore: 32,
-      link: 'identity-vault-details',
-    },
-    {
-      firstName: 'Amanda',
-      lastName: 'Bobbit',
-      email: 'amanda.bobbit@bridesoft.com',
-      manager: 'Bob Jefferson',
-      roleSummary: '',
-      lastRefresh: '02 / 08 / 2026 10:13 AM',
-      riskScore: 32,
-      link: 'identity-vault-details',
-    },
-    {
-      firstName: 'Prayag',
-      lastName: 'Shah',
-      email: 'paryag.s@bridesoft.com',
-      manager: 'Bob Jefferson',
-      roleSummary: '',
-      lastRefresh: '02 / 08 / 2026 12:01 PM',
-      riskScore: 32,
-      link: 'identity-vault-details',
-    },
-    {
-      firstName: 'Gefforson',
-      lastName: 'Michille',
-      email: 'gefforson.mt@bridesoft.com',
-      manager: 'Bob Jefferson',
-      roleSummary: '',
-      lastRefresh: '02 / 07 / 2026 13:23 PM',
-      riskScore: 32,
-      link: 'identity-vault-details',
-    },
-  ];
+  dataSource = new MatTableDataSource<Application>([]);
 
-  dataSource = new MatTableDataSource<Application>(this.data);
+  // ✅ master data (important)
+  originalData: Application[] = [];
 
   searchText: string = '';
   selectedCategory: string = '';
   selectedFilter: string = '';
 
+  // pagination
+  page = 0;
+  size = 100000;
+  totalElements = 0;
+
   @ViewChild(MatSort) sort!: MatSort;
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+
+  constructor(
+    private router: Router,
+    private api: ApiService,
+  ) {}
+
+  ngOnInit() {
+    this.getIdentityVaultData();
+  }
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
   }
 
-  // 🔥 MAIN FILTER METHOD (search + dropdowns combined)
-  applyFilters() {
-    let filteredData = [...this.data];
+  // ✅ API CALL
+  getIdentityVaultData() {
+    this.api.getlistofidentityvaults(this.page, this.size).subscribe({
+      next: (res: any) => {
+        const mappedData: Application[] = res.content.map((item: any) => ({
+          id: item.id,
+          firstName: item.firstName,
+          lastName: item.lastName,
+          email: item.email,
+          manager: item.manager,
+          roleSummary: item.assignedRoleSummary || '-',
+          lastRefresh: new Date(item.lastModifiedDatetime).toLocaleString(),
+          riskScore: Number(item.riskScore),
+          link: '',
+        }));
 
-    // Category filter
+        // ✅ store original + display
+        this.originalData = mappedData;
+        this.dataSource.data = mappedData;
+
+        // ✅ dynamic categories (managers)
+        this.categories = [
+          ...new Map(
+            mappedData.map((item) => [
+              item.manager,
+              {
+                value: item.manager?.toLowerCase(),
+                viewValue: item.manager,
+              },
+            ]),
+          ).values(),
+        ];
+
+        // pagination
+        this.totalElements = res.totalElements;
+        this.page = res.number;
+        this.size = res.size;
+
+        this.dataSource.paginator = this.paginator;
+      },
+      error: (err) => {
+        console.error('API Error:', err);
+      },
+    });
+  }
+
+  // ✅ FILTER + SEARCH
+  applyFilters() {
+    let filteredData = [...this.originalData];
+
+    // category
     if (this.selectedCategory) {
       filteredData = filteredData.filter((item) =>
-        item.manager.toLowerCase().includes(this.selectedCategory),
+        item.manager
+          ?.toLowerCase()
+          .includes(this.selectedCategory.toLowerCase()),
       );
     }
 
-    // Risk filter
+    // risk filter
     if (this.selectedFilter) {
       filteredData = filteredData.filter((item) => {
         if (this.selectedFilter === 'low') return item.riskScore < 30;
@@ -151,7 +165,7 @@ export class IdentityVaultComponent implements AfterViewInit {
       });
     }
 
-    // Search filter
+    // search
     if (this.searchText) {
       const search = this.searchText.toLowerCase();
       filteredData = filteredData.filter((item) =>
@@ -162,25 +176,35 @@ export class IdentityVaultComponent implements AfterViewInit {
     }
 
     this.dataSource.data = filteredData;
-  }
-  createSlug(firstName: string, lastName: string): string {
-    const fullName = `${firstName} ${lastName}`;
 
-    return fullName
+    // reset paginator
+    if (this.paginator) {
+      this.paginator.firstPage();
+    }
+  }
+
+  // pagination
+  onPageChange(event: any) {
+    this.page = event.pageIndex;
+    this.size = event.pageSize;
+    this.getIdentityVaultData();
+  }
+
+  // reset filters
+  resetFilters() {
+    this.searchText = '';
+    this.selectedCategory = '';
+    this.selectedFilter = '';
+    this.dataSource.data = this.originalData;
+  }
+
+  // navigation
+  createSlug(firstName: string, lastName: string): string {
+    return `${firstName} ${lastName}`
       .toLowerCase()
       .trim()
       .replace(/[^a-z0-9\s-]/g, '')
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-');
-  }
-  constructor(private router: Router) {}
-
-  goToDetail(item: Application) {
-    const slug = this.createSlug(item.firstName, item.lastName);
-    const fullName = `${item.firstName} ${item.lastName}`;
-
-    this.router.navigate(['/identity-vault', slug], {
-      queryParams: { name: fullName },
-    });
   }
 }

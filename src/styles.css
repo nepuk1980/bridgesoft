@@ -416,14 +416,14 @@ body {
   z-index: 10;
   height: 2.375rem !important;
 }
-.solid-table .table-link {
+.table-link {
   cursor: pointer;
   text-decoration: none !important;
   color: inherit !important;
   transition: all 0.25s ease-in-out;
 }
 
-.solid-table .table-link:hover {
+.table-link:hover {
   color: #1176bd !important;
   transition: all 0.25s ease-in-out;
 }

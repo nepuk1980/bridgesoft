@@ -11,11 +11,12 @@
   padding-right: 2rem;
   background: #fff;
   box-shadow: 3px 3px 1px 1px #0000000d;
+  cursor: auto;
 }
 
 .dialog-content-shared {
   padding: 0;
-  height: 17.5rem ;
+  height: 17.5rem;
 }
 
 .popup-content .popup-title {
@@ -34,8 +35,6 @@
   font-size: 1rem;
   margin-top: 0.625rem;
 }
-
-
 
 .mat-mdc-header-row {
   background: #fff;
@@ -80,23 +79,22 @@ canvas {
   width: 100% !important;
   height: 100% !important;
 }
-.chart-main-wrapper{
-      width: 50rem;
+.chart-main-wrapper {
+  width: 50rem;
 }
-.content-main-wrapper{
-    width: calc(100% - 52.5rem);
+.content-main-wrapper {
+  width: calc(100% - 52.5rem);
 }
-.chart-content-wrapper h4{
-font-weight: 500;
-font-size: 1rem;
-color: #000;
-margin-bottom: 0.625rem;
-
+.chart-content-wrapper h4 {
+  font-weight: 500;
+  font-size: 1rem;
+  color: #000;
+  margin-bottom: 0.625rem;
 }
-.dialog-content-external{
-max-height: 40vh;
-padding: 0 !important;
-margin-top: 2.5rem;
+.dialog-content-external {
+  max-height: 40vh;
+  padding: 0 !important;
+  margin-top: 2.5rem;
 }
 
 table {
@@ -126,47 +124,47 @@ table tr {
   height: auto;
 }
 table div {
-    display: flex;
-    gap: 0.625rem;
-    align-items: center;
+  display: flex;
+  gap: 0.625rem;
+  align-items: center;
 }
-table div img{
-    width: 1.6875rem !important;
-    height: 1.6875rem !important;
-    object-fit: contain !important;
+table div img {
+  width: 1.6875rem !important;
+  height: 1.6875rem !important;
+  object-fit: contain !important;
 }
 
 .dialog-content-external table th:nth-child(1),
-.dialog-content-external table td:nth-child(1){
-    width: 22%;
+.dialog-content-external table td:nth-child(1) {
+  width: 22%;
 }
 .dialog-content-external table th:nth-child(2),
-.dialog-content-external table td:nth-child(2){
-    width: 10%;
+.dialog-content-external table td:nth-child(2) {
+  width: 10%;
 }
 .dialog-content-external table th:nth-child(3),
-.dialog-content-external table td:nth-child(3){
-    width: 20%;
+.dialog-content-external table td:nth-child(3) {
+  width: 20%;
 }
 .dialog-content-external table th:nth-child(4),
-.dialog-content-external table td:nth-child(4){
-    width: 15%;
+.dialog-content-external table td:nth-child(4) {
+  width: 15%;
 }
 .dialog-content-external table th:nth-child(5),
-.dialog-content-external table td:nth-child(5){
-    width: 15%;
+.dialog-content-external table td:nth-child(5) {
+  width: 15%;
 }
 .dialog-content-external table th:nth-child(6),
-.dialog-content-external table td:nth-child(6){
-    width: 18%;
+.dialog-content-external table td:nth-child(6) {
+  width: 18%;
 }
 
 .dialog-content-external table th,
-.dialog-content-external table td{
-   padding: 0.3125rem 0 ;
+.dialog-content-external table td {
+  padding: 0.3125rem 0;
 }
-.tdClick{
-    cursor: pointer;
+.tdClick {
+  cursor: pointer;
 }
 .tdClick:hover {
   color: #1176bd;

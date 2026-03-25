@@ -20,9 +20,32 @@
   align-items: center;
   gap: 1.25rem;
 }
-.solid-table .mdc-data-table__cell, .solid-table .mat-mdc-header-cell{
-    width: 13% !important;
+
+.solid-table .mdc-data-table__cell:nth-child(1),
+.solid-table .mat-mdc-header-cell:nth-child(1) {
+  width: 10% !important;
 }
-.solid-table .mdc-data-table__cell:nth-child(5), .solid-table .mat-mdc-header-cell:nth-child(5){
-    width: 22% !important;
+.solid-table .mdc-data-table__cell:nth-child(2),
+.solid-table .mat-mdc-header-cell:nth-child(2) {
+  width: 10% !important;
+}
+.solid-table .mdc-data-table__cell:nth-child(3),
+.solid-table .mat-mdc-header-cell:nth-child(3) {
+  width: 20% !important;
+}
+.solid-table .mdc-data-table__cell:nth-child(4),
+.solid-table .mat-mdc-header-cell:nth-child(4) {
+  width: 20% !important;
+}
+.solid-table .mdc-data-table__cell:nth-child(5),
+.solid-table .mat-mdc-header-cell:nth-child(5) {
+  width: 20% !important;
+}
+.solid-table .mdc-data-table__cell:nth-child(6),
+.solid-table .mat-mdc-header-cell:nth-child(6) {
+  width: 10% !important;
+}
+.solid-table .mdc-data-table__cell:nth-child(7),
+.solid-table .mat-mdc-header-cell:nth-child(7) {
+  width: 10% !important;
 }

@@ -6,6 +6,7 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { MatTabsModule } from '@angular/material/tabs';
 import { NgClass, NgFor, NgIf } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
+import { ApiService } from '../../services/api.service';
 
 // ✅ TYPES
 type Attributes = {
@@ -36,7 +37,6 @@ type ApplicationAccount = {
   status: string;
   lastAccess: string;
 };
-
 @Component({
   selector: 'app-identity-vault-detail',
   standalone: true,
@@ -54,32 +54,91 @@ type ApplicationAccount = {
   styleUrl: './identity-vault-detail.component.css',
 })
 export class IdentityVaultDetailComponent implements OnInit {
-  userId!: string | null;
+  appId!: number;
+  selectedIndex = 0;
+  isLoading = true;
 
-  tabs: any[] = [];
-  selectedIndex = 0; // ✅ controls active tab
+  // ✅ Keep existing static data for other tabs
+  tabs: any[] = [
+    {
+      name: 'Attributes',
+      key: 'attributes',
+      data: {}, // 👈 will come from API
+    },
+    {
+      name: 'Entitlements',
+      key: 'entitlements',
+      data: [
+        {
+          name: 'Human Resources',
+          type: 'Folder',
+          resourcePath:
+            'https://bridgesoft.sharepoint.com/sites/humanresources/folder/humanresources',
+          access: {
+            F: true,
+            M: false,
+            R: true,
+            W: false,
+            X: false,
+            L: false,
+          },
+          accountName: 'Christopher Williams (987342)',
+        },
+        {
+          name: 'Employee Perks',
+          type: 'File',
+          resourcePath:
+            'https://bridgesoft.sharepoint.com/sites/humanresources/folder/humanresources',
+          access: { F: true, M: true, R: true, W: true, X: true, L: true },
+          accountName: 'Christopher Williams (987342)',
+        },
+        {
+          name: 'Employee Reimbursements',
+          type: 'File',
+          resourcePath:
+            'https://bridgesoft.sharepoint.com/sites/humanresources/folder/humanresources',
+          access: {
+            F: true,
+            M: false,
+            R: true,
+            W: false,
+            X: false,
+            L: false,
+          },
+          accountName: 'Christopher Williams (987342)',
+        },
+        {
+          name: 'Employee Travel Policy',
+          type: 'File',
+          resourcePath:
+            'https://bridgesoft.sharepoint.com/sites/humanresources/folder/humanresources',
+          access: { F: true, M: true, R: true, W: true, X: false, L: false },
+          accountName: 'Christopher Williams (987342)',
+        },
+        {
+          name: 'Employee Medical Policy',
+          type: 'File',
+          resourcePath:
+            'https://bridgesoft.sharepoint.com/sites/humanresources/folder/humanresources',
+          access: { F: true, M: false, R: true, W: false, X: false, L: true },
+          accountName: 'Christopher Williams (987342)',
+        },
+      ],
+    },
+    {
+      name: 'Application Accounts',
+      key: 'applicationAccounts',
+      data: [
+        {
+          application: 'File share Permission',
+          accountName: 'Christopher Williams (987342)',
+          status: 'Active',
+          lastAccess: '2026-02-12T15:10:00',
+        },
+      ],
+    },
+  ];
 
-  userData!: {
-    attributes: Attributes;
-    entitlements: Entitlement[];
-    applicationAccounts: ApplicationAccount[];
-  };
-
-  constructor(private route: ActivatedRoute) {}
-
-  ngOnInit() {
-    this.userId = this.route.snapshot.paramMap.get('id');
-    this.loadUser();
-  }
-
-  createSlug(firstName: string, lastName: string): string {
-    return `${firstName} ${lastName}`
-      .toLowerCase()
-      .trim()
-      .replace(/[^a-z0-9\s-]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/-+/g, '-');
-  }
   displayedColumns: string[] = [
     'name',
     'resourcePath',
@@ -87,6 +146,7 @@ export class IdentityVaultDetailComponent implements OnInit {
     'access',
     'accountName',
   ];
+
   displayedAppColumns: string[] = [
     'application',
     'accountName',
@@ -94,124 +154,53 @@ export class IdentityVaultDetailComponent implements OnInit {
     'lastAccess',
   ];
 
-  loadUser() {
-    const allUsers = [
-      {
-        name: 'Attributes',
-        key: 'attributes',
-        data: {
-          firstName: 'Christopher',
-          lastName: 'Williams',
-          email: 'christopherwilliams@bridgesoft.com',
-          department: 'IT',
-          manager: 'Bob Smith',
-          employeeId: 'EMP4567853',
-          businessUnit: '622 Customer Care Ops',
-          location: 'IWA',
-          jobTitle: 'Agent, Ground Ops',
-          employeeCode: 'Service Provider - Stations',
-          company: 'Worldwide',
-        },
-      },
-      {
-        name: 'Entitlements',
-        key: 'entitlements',
-        data: [
-          {
-            name: 'Human Resources',
-            type: 'Folder',
-            resourcePath:
-              'https://bridgesoft.sharepoint.com/sites/humanresources/folder/humanresources',
-            access: {
-              F: true,
-              M: false,
-              R: true,
-              W: false,
-              X: false,
-              L: false,
-            },
-            accountName: 'Christopher Williams (987342)',
-          },
-          {
-            name: 'Employee Perks',
-            type: 'File',
-            resourcePath:
-              'https://bridgesoft.sharepoint.com/sites/humanresources/folder/humanresources',
-            access: { F: true, M: true, R: true, W: true, X: true, L: true },
-            accountName: 'Christopher Williams (987342)',
-          },
-          {
-            name: 'Employee Reimbursements',
-            type: 'File',
-            resourcePath:
-              'https://bridgesoft.sharepoint.com/sites/humanresources/folder/humanresources',
-            access: {
-              F: true,
-              M: false,
-              R: true,
-              W: false,
-              X: false,
-              L: false,
-            },
-            accountName: 'Christopher Williams (987342)',
-          },
-          {
-            name: 'Employee Travel Policy',
-            type: 'File',
-            resourcePath:
-              'https://bridgesoft.sharepoint.com/sites/humanresources/folder/humanresources',
-            access: { F: true, M: true, R: true, W: true, X: false, L: false },
-            accountName: 'Christopher Williams (987342)',
-          },
-          {
-            name: 'Employee Medical Policy',
-            type: 'File',
-            resourcePath:
-              'https://bridgesoft.sharepoint.com/sites/humanresources/folder/humanresources',
-            access: { F: true, M: false, R: true, W: false, X: false, L: true },
-            accountName: 'Christopher Williams (987342)',
-          },
-        ],
-      },
-      {
-        name: 'Application Accounts',
-        key: 'applicationAccounts',
-        data: [
-          {
-            application: 'File share Permission',
-            accountName: 'Christopher Williams (987342)',
-            status: 'Active',
-            lastAccess: '2026-02-12T15:10:00',
-          },
-        ],
-      },
-    ];
+  constructor(
+    private route: ActivatedRoute,
+    private api: ApiService,
+  ) {}
 
-    this.tabs = allUsers;
-
-    const attributesSection = allUsers.find((s) => s.key === 'attributes');
-    const user = attributesSection?.data as Attributes;
-
-    if (!user) return;
-
-    const slug = this.createSlug(user.firstName, user.lastName);
-
-    if (slug === this.userId) {
-      this.userData = {
-        attributes: user,
-        entitlements:
-          (allUsers.find((s) => s.key === 'entitlements')
-            ?.data as Entitlement[]) || [],
-        applicationAccounts:
-          (allUsers.find((s) => s.key === 'applicationAccounts')
-            ?.data as ApplicationAccount[]) || [],
-      };
-
-      this.route.snapshot.data['dynamicBreadcrumb'] =
-        `${user.firstName} ${user.lastName}`;
+  ngOnInit(): void {
+    this.appId = history.state.id;
+    if (this.appId) {
+      this.getAttributes();
+    } else {
+      console.error('No ID found');
     }
   }
-  isAllAccessTrue(access: Record<string, boolean>): boolean {
-    return Object.values(access).every((value) => value === true);
+
+  // ✅ ONLY ATTRIBUTES API CALL
+  getAttributes(): void {
+    this.api.getidentityvaultdetails(this.appId).subscribe({
+      next: (res: any) => {
+        const data = res?.content || res;
+
+        // ✅ Bind ONLY attributes tab
+        this.tabs[0].data = {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          department: data.department,
+          manager: data.manager,
+          employeeId: data.manager_employee_id,
+          businessUnit: data.manager_department,
+          location: data.location,
+          jobTitle: data.job_title,
+          employeeCode: data.employee_code,
+          company: data.company,
+        };
+
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error(err);
+        this.isLoading = false;
+      },
+    });
+  }
+
+  // ✅ existing function (no change)
+  isAllAccessTrue(access: any): boolean {
+    if (!access) return false;
+    return Object.values(access).every((val) => val === true);
   }
 }

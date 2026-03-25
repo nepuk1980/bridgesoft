@@ -4,6 +4,9 @@ import { CardComponent } from '../../shared/components/card/card.component';
 import { ExternalresourcespopupComponent } from '../../shared/components/externalresourcespopup/externalresourcespopup.component';
 import { FilefolderpopupComponent } from '../../shared/components/filefolderpopup/filefolderpopup.component';
 import { CloudresourcespopupComponent } from '../../shared/components/cloudresourcespopup/cloudresourcespopup.component';
+import { ApiService } from '../../services/api.service';
+import { FileSystemAccessSummaryInterface } from '../../models/type';
+import { NgIf } from '@angular/common';
 
 export interface Folder {
   name: string;
@@ -43,7 +46,7 @@ interface CardData {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CardComponent],
+  imports: [CardComponent, NgIf],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
 })
@@ -606,17 +609,17 @@ export class DashboardComponent {
     },
   ];
 
-  openDialog(card: CardData, folders: Folder[]) {
-    this.dialog.open(FilefolderpopupComponent, {
-      width: '58rem',
-      minWidth: '58rem',
-      maxWidth: '100%',
-      data: {
-        ...card,
-        folders: folders,
-      },
-    });
-  }
+  // openDialog(card: CardData, folders: Folder[]) {
+  //   this.dialog.open(FilefolderpopupComponent, {
+  //     width: '58rem',
+  //     minWidth: '58rem',
+  //     maxWidth: '100%',
+  //     data: {
+  //       ...card,
+  //       folders: folders,
+  //     },
+  //   });
+  // }
 
   openExternalDialog(
     card: CardData,
@@ -692,6 +695,8 @@ export class DashboardComponent {
 
   showSuccess = false;
 
+  constructor(private api: ApiService) {}
+
   ngOnInit() {
     if (history.state?.submitted) {
       this.showSuccess = true;
@@ -700,5 +705,54 @@ export class DashboardComponent {
         this.showSuccess = false;
       }, 3000);
     }
+    this.getFileSystemAccessSummary();
+  }
+  // ✅ API DATA
+  fileSystemData: FileSystemAccessSummaryInterface[] = [];
+  loadingFs = false;
+
+  getFileSystemAccessSummary() {
+    this.loadingFs = true;
+
+    this.api.getfilesystemaccesspermissionsummary().subscribe({
+      next: (res: any) => {
+        // ✅ correct handling (array response)
+        this.fileSystemData = res?.data ?? res ?? [];
+
+        this.loadingFs = false;
+      },
+      error: (err) => {
+        console.error('API Error:', err);
+        this.loadingFs = false;
+      },
+    });
+  }
+
+  // ✅ clean getter (best practice)
+  get fileSystemSummary(): FileSystemAccessSummaryInterface | null {
+    return this.fileSystemData.length ? this.fileSystemData[0] : null;
+  }
+
+  openDialog(card: any, ruleCategory: string) {
+    this.api
+      .getFilesystemAccessPermissionDetails(ruleCategory, 0, 1000000)
+      .subscribe({
+        next: (res: any) => {
+          const folders = res?.content ?? res?.data ?? res ?? [];
+
+          this.dialog.open(FilefolderpopupComponent, {
+            width: '58rem',
+            minWidth: '58rem',
+            maxWidth: '100%', // ✅ added
+            data: {
+              ...card,
+              folders,
+            },
+          });
+        },
+        error: (err) => {
+          console.error(err);
+        },
+      });
   }
 }
