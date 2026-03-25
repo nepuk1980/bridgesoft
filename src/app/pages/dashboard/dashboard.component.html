@@ -1,90 +1,86 @@
-
 <div class="dashboard-card-list">
-  <!-- Card 1 -->
   <div
     class="dashboard-card"
+    *ngIf="fileSystemSummary as data"
     (click)="
       openDialog(
         {
           title: 'Sensitive Folders With Open Access',
-          value: 2321,
+          value: +data.sensitiveFoldersWithOpenAccess,
           file: false,
           fileicon: false,
           icon: '/svg/folder.svg',
           subtitle: 'Sensitive Folders With Open Access',
         },
-        FOLDER_DATA_1
+        'Sensitive Folders With Open Access'
       )
     "
   >
     <app-card
       title="Sensitive Folders With Open Access"
-      value="2321"
       [chart]="true"
       [file]="false"
       [fileicon]="false"
-      filecount=""
-      [percentage]="26"
+      [filecount]="+data.sensitiveFoldersWithOpenAccess"
+      [percentage]="+data.sensitiveFoldersWithOpenAccessPercentage"
       icon="/svg/folder.svg"
       subtitle="Sensitive Folders With Open Access"
     ></app-card>
   </div>
 
-  <!-- Card 2 -->
   <div
     class="dashboard-card"
+    *ngIf="fileSystemSummary as data"
     (click)="
       openDialog(
         {
           title: 'Sensitive Files With Open Access',
-          value: '3125',
+          value: +data.sensitiveFilesWithOpenAccess,
           file: true,
           fileicon: true,
           icon: '/svg/file.svg',
           subtitle: 'Sensitive Files With Open Access',
         },
-        FOLDER_DATA_2
+        'Sensitive Files With Open Access'
       )
     "
   >
     <app-card
       title="Sensitive Files With Open Access"
-      value="84%"
       [chart]="false"
       [file]="true"
       [fileicon]="true"
-      filecount="3125"
-      [percentage]="26"
+      [filecount]="+data.sensitiveFilesWithOpenAccess"
+      [percentage]="+data.sensitiveFilesWithOpenAccessPercentage"
       icon="/svg/file.svg"
       subtitle="Sensitive Files With Open Access"
     ></app-card>
   </div>
 
-  <!-- Card 3 -->
   <div
     class="dashboard-card"
+    *ngIf="fileSystemSummary as data"
     (click)="
       openDialog(
         {
           title: 'Folders That Contain Sensitive Files',
-          value: '2981',
+          value: +data.foldersThatContainsSensitiveFiles,
           file: true,
           fileicon: false,
           icon: '/svg/folder.svg',
           subtitle: 'Folders That Contain Sensitive Files',
         },
-        FOLDER_DATA_3
+        'Folders That Contain Sensitive Files'
       )
     "
   >
     <app-card
       title="Folders That Contain Sensitive Files"
-      value="26%"
       [chart]="false"
       [file]="true"
       [fileicon]="false"
-      filecount="2981"
-      [percentage]="26"
+      [filecount]="+data.foldersThatContainsSensitiveFiles"
+      [percentage]="+data.foldersThatContainsSensitiveFilesPercentage"
       icon="/svg/folder.svg"
       subtitle="Folders That Contain Sensitive Files"
     ></app-card>
@@ -92,28 +88,28 @@
 
   <div
     class="dashboard-card"
+    *ngIf="fileSystemSummary as data"
     (click)="
       openDialog(
         {
           title: 'Sensitive Folders With Full Control Open Access',
-          value: 89,
+          value: +data.sensitivefoldersWithFullcontrolOpenAccess,
           file: false,
           fileicon: false,
           icon: '/svg/folder.svg',
           subtitle: 'Sensitive Folders With Full Control Open Access',
         },
-        FOLDER_DATA_1
+        'Sensitive Folders With Full Control Open Access'
       )
     "
   >
     <app-card
       title="Sensitive Folders With Full Control Open Access"
-      value="89"
       [chart]="true"
       [file]="false"
       [fileicon]="false"
-      filecount=""
-      [percentage]="0.71"
+      [filecount]="+data.sensitivefoldersWithFullcontrolOpenAccess"
+      [percentage]="+data.sensitivefoldersWithFullcontrolOpenAccessPercentage"
       icon="/svg/folder.svg"
       subtitle="Sensitive Folders With Full Control Open Access"
     ></app-card>
@@ -121,98 +117,99 @@
 
   <div
     class="dashboard-card"
+    *ngIf="fileSystemSummary as data"
     (click)="
       openDialog(
         {
-          title: ' Folders With Open Access',
-          value: 89,
+          title: 'Folders With Open Access',
+          value: +data.foldersWithOpenAccess,
           file: false,
           fileicon: false,
           icon: '/svg/folder.svg',
-          subtitle: ' Folders With Open Access',
+          subtitle: 'Folders With Open Access',
         },
-        FOLDER_DATA_1
+        'Folders With Open Access'
       )
     "
   >
     <app-card
       title=" Folders With Open Access"
-      value="2934"
       [chart]="true"
       [file]="false"
       [fileicon]="false"
-      filecount=""
-      [percentage]="33"
+      [filecount]="+data.foldersWithOpenAccess"
+      [percentage]="+data.foldersWithOpenAccessPercentage"
       icon="/svg/folder.svg"
       subtitle=" Folders With Open Access"
     ></app-card>
   </div>
 
-   <div
+  <div
     class="dashboard-card"
+    *ngIf="fileSystemSummary as data"
     (click)="
       openDialog(
         {
           title: 'Stale Sensitive Files',
-          value: '4102',
+          value: +data.staleSensitiveFiles,
           file: true,
           fileicon: true,
           icon: '/svg/file.svg',
           subtitle: 'Stale Sensitive Files',
         },
-        FOLDER_DATA_3
+        'Stale Sensitive Files'
       )
     "
   >
     <app-card
       title="Stale Sensitive Files"
-      value="26%"
       [chart]="false"
       [file]="true"
       [fileicon]="true"
-      filecount="4102"
-      [percentage]="9"
+      [filecount]="+data.staleSensitiveFiles"
+      [percentage]="+data.staleSensitiveFilesPercentage"
       icon="/svg/file.svg"
       subtitle="Stale Sensitive Files"
     ></app-card>
   </div>
 
-
-   <div
+  <div
     class="dashboard-card"
+    *ngIf="fileSystemSummary as data"
     (click)="
       openDialog(
         {
           title: 'Sensitive Folders With Read and Execute Open Access',
-          value: 1892,
+          value: +data.sensitiveFoldersWithReadandExecuteOpenAccess,
           file: false,
           fileicon: false,
           icon: '/svg/folder.svg',
           subtitle: 'Sensitive Folders With Read and Execute Open Access',
         },
-        FOLDER_DATA_1
+        'Sensitive Folders With Read and Execute Open Access'
       )
     "
   >
     <app-card
       title="Sensitive Folders With Read and Execute Open Access"
-      value="1892"
       [chart]="true"
       [file]="false"
       [fileicon]="false"
-      filecount=""
-      [percentage]="22"
+      [filecount]="+data.sensitiveFoldersWithReadandExecuteOpenAccess"
+      [percentage]="
+        +data.sensitiveFoldersWithReadandExecuteOpenAccessPercentage
+      "
       icon="/svg/folder.svg"
       subtitle="Sensitive Folders With Open Access"
     ></app-card>
   </div>
 
-
-   <div
+  <div
     class="dashboard-card"
+    *ngIf="fileSystemSummary as data"
     (click)="
       openExternalDialog(
-         {
+        {
           title: 'External Sources',
           value: '46%',
           file: true,
@@ -231,18 +228,19 @@
       [chart]="false"
       [file]="true"
       [fileicon]="true"
-      filecount="1923"
-      [percentage]="0"
+      [filecount]="+data.externalSources"
+      [percentage]="+data.externalSourcesPercentage"
       icon="/svg/file.svg"
       subtitle="Folders With Open Access (Including Inherited)"
     ></app-card>
   </div>
 
-   <div
+  <div
     class="dashboard-card"
-     (click)="
+    *ngIf="fileSystemSummary as data"
+    (click)="
       openCloudDialog(
-         {
+        {
           title: 'Cloud Resources',
           value: '46%',
           file: true,
@@ -261,13 +259,10 @@
       [chart]="false"
       [file]="true"
       [fileicon]="false"
-      filecount="1257"
-      [percentage]="9"
+      [filecount]="+data.cloudResources"
+      [percentage]="+data.cloudResourcesPercentage"
       icon="/svg/folder.svg"
       subtitle="Folders With Stale Data"
     ></app-card>
   </div>
-
-
-
 </div>

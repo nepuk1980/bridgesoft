@@ -11,6 +11,7 @@
   padding-right: 2rem;
   background: #fff;
   box-shadow: 3px 3px 1px 1px #0000000d;
+  cursor: auto;
 }
 
 .dialog-content-shared {
@@ -96,44 +97,42 @@ canvas {
   cursor: pointer;
   transition: all 0.25s ease-in-out;
 }
-.card-wrapper:hover{
-    background: #FCFEFF;
-    border-color: #1176BD;
-      transition: all 0.25s ease-in-out;
+.card-wrapper:hover {
+  background: #fcfeff;
+  border-color: #1176bd;
+  transition: all 0.25s ease-in-out;
 }
-.card-wrapper .card-inner-wrapper{
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+.card-wrapper .card-inner-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
-.card-wrapper .card-inner-wrapper h2{
-color: #1176BD;
-font-weight: 500;
-font-size: 2.5rem;
-display: flex;
-align-items: center;
-gap: 0.625rem;
+.card-wrapper .card-inner-wrapper h2 {
+  color: #1176bd;
+  font-weight: 500;
+  font-size: 2.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+.card-wrapper .card-inner-wrapper h2 img {
+  width: 1.4375rem;
+  height: 1.875rem;
+  object-fit: contain;
+  object-position: left;
+}
 
+.card-wrapper .card-inner-wrapper h6 {
+  color: #dc0000;
+  font-weight: 500;
+  font-size: 1.125rem;
+  display: flex;
+  align-items: center;
 }
-.card-wrapper .card-inner-wrapper h2 img{
-    width: 1.4375rem;
-    height: 1.875rem;
-    object-fit: contain;
-    object-position: left;
-}
-
-.card-wrapper .card-inner-wrapper h6{
-color: #DC0000;
-font-weight: 500;
-font-size: 1.125rem;
-display: flex;
-align-items: center;
-
-}
-.card-wrapper .card-inner-wrapper h6 img{
-    width: 1.3125rem;
-    height: 1.3125rem;
-    object-fit: contain;
+.card-wrapper .card-inner-wrapper h6 img {
+  width: 1.3125rem;
+  height: 1.3125rem;
+  object-fit: contain;
 }
 .chart-content-wrapper h4 {
   font-weight: 500;

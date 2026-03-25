@@ -16,13 +16,22 @@
     </div>
     <mat-dialog-content class="dialog-content">
       <table mat-table [dataSource]="dataSource" matSort>
-        <!-- Folder Name -->
+        <!-- Name -->
         <ng-container matColumnDef="name">
-          <th mat-header-cell *matHeaderCellDef>
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
             {{ data.fileicon ? "File" : "Folder" }} Names
           </th>
           <td mat-cell *matCellDef="let element">
-            <div class="icontd">
+            <a
+              *ngIf="element.url"
+              [href]="element.url"
+              target="_blank"
+              class="icontd table-link"
+            >
+              <img [src]="data.icon" class="folder-icon" />
+              {{ element.name }}
+            </a>
+            <div *ngIf="!element.url" class="icontd">
               <img [src]="data.icon" class="folder-icon" />
               {{ element.name }}
             </div>
@@ -47,12 +56,15 @@
           </td>
         </ng-container>
 
+        <!-- Header + Rows -->
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
 
-        <!-- No Data Message -->
+        <!-- No Data -->
         <tr class="mat-row" *matNoDataRow>
-          <td class="mat-cell no-data" colspan="3">No folders found</td>
+          <td class="mat-cell no-data" colspan="3">
+            No {{ data.fileicon ? "files" : "folders" }} found
+          </td>
         </tr>
       </table>
     </mat-dialog-content>

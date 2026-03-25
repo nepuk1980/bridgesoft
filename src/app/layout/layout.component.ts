@@ -1,7 +1,13 @@
-import { Component,inject ,ViewChild} from '@angular/core';
-import { NavigationEnd, Router, RouterLink, RouterModule, RouterOutlet } from '@angular/router';
+import { Component, inject, ViewChild } from '@angular/core';
+import {
+  NavigationEnd,
+  Router,
+  RouterLink,
+  RouterModule,
+  RouterOutlet,
+} from '@angular/router';
 
-import { MatSidenavModule,MatSidenav } from '@angular/material/sidenav';
+import { MatSidenavModule, MatSidenav } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -19,15 +25,14 @@ import {
   style,
   animate,
   query,
-  group
+  group,
 } from '@angular/animations';
-
 
 @Component({
   selector: 'app-layout',
   imports: [
     RouterModule,
-     RouterOutlet,
+    RouterOutlet,
     RouterLink,
     MatBadgeModule,
     MatSidenavModule,
@@ -35,54 +40,66 @@ import {
     MatIconModule,
     MatButtonModule,
     MatListModule,
-    NgxSkeletonLoaderComponent
+    NgxSkeletonLoaderComponent,
   ],
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.css',
 
   // ✅ ADDED
   animations: [
-  trigger('routeAnimations', [
-    transition('* <=> *', [
-
-      query(':enter, :leave', [
-        style({
-          position: 'absolute',
-          width: '100%',
-          top: 0,
-          left: 0
-        })
-      ], { optional: true }),
-
-      group([   // ✅ IMPORTANT FIX
-
-        query(':leave', [
-          animate('500ms ease',
+    trigger('routeAnimations', [
+      transition('* <=> *', [
+        query(
+          ':enter, :leave',
+          [
             style({
-              opacity: 0,
-              transform: 'translateX(-200px)'
-            })
-          )
-        ], { optional: true }),
+              position: 'absolute',
+              width: '100%',
+              top: 0,
+              left: 0,
+            }),
+          ],
+          { optional: true },
+        ),
 
-        query(':enter', [
-          style({
-            opacity: 0,
-            transform: 'translateX(200px)'
-          }),
-          animate('500ms ease',
-            style({
-              opacity: 1,
-              transform: 'translateX(0)'
-            })
-          )
-        ], { optional: true })
+        group([
+          // ✅ IMPORTANT FIX
 
-      ])
+          query(
+            ':leave',
+            [
+              animate(
+                '500ms ease',
+                style({
+                  opacity: 0,
+                  transform: 'translateX(-200px)',
+                }),
+              ),
+            ],
+            { optional: true },
+          ),
 
-    ])
-  ])
-]
+          query(
+            ':enter',
+            [
+              style({
+                opacity: 0,
+                transform: 'translateX(200px)',
+              }),
+              animate(
+                '500ms ease',
+                style({
+                  opacity: 1,
+                  transform: 'translateX(0)',
+                }),
+              ),
+            ],
+            { optional: true },
+          ),
+        ]),
+      ]),
+    ]),
+  ],
 })
 export class LayoutComponent {
   private dialog = inject(MatDialog);
@@ -94,7 +111,7 @@ export class LayoutComponent {
 
   ngOnInit() {
     this.router.events
-      .pipe(filter(event => event instanceof NavigationEnd))
+      .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event: any) => {
         const url = event.urlAfterRedirects;
 
@@ -120,127 +137,142 @@ export class LayoutComponent {
   }
 
   notifications = [
-  {
-    notification: 'Bob Smith (EMP2371Y) logged in during off hours into file system',
-    sourceIp: '103.25.45.210',
-    resource: 'Fileshare Login',
-    resourceType: '',
-    targetUser: 'Bob Smith',
-    time: '02 / 12 / 2026 12:21 PM'
-  },
-  {
-    notification: 'User Timothy Leet (EMP2391B) from HR requested for access in Legal File',
-    sourceIp: '103.25.45.211',
-    resource: 'Fileshare Legal File',
-    resourceType: 'file',
-    targetUser: 'Timothy Leet',
-    time: '02 / 12 / 2026 09:22 AM'
-  },
-  {
-    notification: 'Multiple requests raised at the same time for a single user Michelle Saget (EMP2015C)',
-    sourceIp: '103.25.45.212',
-    resource: 'Fileshare Access',
-    resourceType: 'folder',
-    targetUser: 'Michelle Saget',
-    time: '02 / 12 / 2026 07:13 AM'
-  },
-  {
-    notification: 'Unauthorised access for Vendor Policy detected by user Ben Smithson (EMP0932V)',
-    sourceIp: '103.25.45.210',
-    resource: 'Vendor Policy',
-    resourceType: 'folder',
-    targetUser: 'Ben Smithson',
-    time: '02 / 11 / 2026 03:36 PM'
-  },
-  {
-    notification: 'Art Schuram (EMP2251Y) logged in during off hours into file system',
-    sourceIp: '103.25.45.210',
-    resource: 'Fileshare Login',
-    resourceType: '',
-    targetUser: 'Art Schuram',
-    time: '02 / 11 / 2026 11:24 AM'
-  },
-  {
-    notification: 'Bob Smith (EMP2371Y) logged in during off hours into file system',
-    sourceIp: '103.25.45.210',
-    resource: 'Fileshare Login',
-    resourceType: '',
-    targetUser: 'Bob Smith',
-    time: '02 / 12 / 2026 12:21 PM'
-  },
-  {
-    notification: 'User Timothy Leet (EMP2391B) from HR requested for access in Legal File',
-    sourceIp: '103.25.45.211',
-    resource: 'Fileshare Legal File',
-    resourceType: 'file',
-    targetUser: 'Timothy Leet',
-    time: '02 / 12 / 2026 09:22 AM'
-  },
-  {
-    notification: 'Multiple requests raised at the same time for a single user Michelle Saget (EMP2015C)',
-    sourceIp: '103.25.45.212',
-    resource: 'Fileshare Access',
-    resourceType: 'folder',
-    targetUser: 'Michelle Saget',
-    time: '02 / 12 / 2026 07:13 AM'
-  },
-  {
-    notification: 'Unauthorised access for Vendor Policy detected by user Ben Smithson (EMP0932V)',
-    sourceIp: '103.25.45.210',
-    resource: 'Vendor Policy',
-    resourceType: 'folder',
-    targetUser: 'Ben Smithson',
-    time: '02 / 11 / 2026 03:36 PM'
-  },
-  {
-    notification: 'Art Schuram (EMP2251Y) logged in during off hours into file system',
-    sourceIp: '103.25.45.210',
-    resource: 'Fileshare Login',
-    resourceType: '',
-    targetUser: 'Art Schuram',
-    time: '02 / 11 / 2026 11:24 AM'
-  },
-  {
-    notification: 'Bob Smith (EMP2371Y) logged in during off hours into file system',
-    sourceIp: '103.25.45.210',
-    resource: 'Fileshare Login',
-    resourceType: '',
-    targetUser: 'Bob Smith',
-    time: '02 / 12 / 2026 12:21 PM'
-  },
-  {
-    notification: 'User Timothy Leet (EMP2391B) from HR requested for access in Legal File',
-    sourceIp: '103.25.45.211',
-    resource: 'Fileshare Legal File',
-    resourceType: 'file',
-    targetUser: 'Timothy Leet',
-    time: '02 / 12 / 2026 09:22 AM'
-  },
-  {
-    notification: 'Multiple requests raised at the same time for a single user Michelle Saget (EMP2015C)',
-    sourceIp: '103.25.45.212',
-    resource: 'Fileshare Access',
-    resourceType: 'folder',
-    targetUser: 'Michelle Saget',
-    time: '02 / 12 / 2026 07:13 AM'
-  },
-  {
-    notification: 'Unauthorised access for Vendor Policy detected by user Ben Smithson (EMP0932V)',
-    sourceIp: '103.25.45.210',
-    resource: 'Vendor Policy',
-    resourceType: 'folder',
-    targetUser: 'Ben Smithson',
-    time: '02 / 11 / 2026 03:36 PM'
-  },
-  {
-    notification: 'Art Schuram (EMP2251Y) logged in during off hours into file system',
-    sourceIp: '103.25.45.210',
-    resource: 'Fileshare Login',
-    resourceType: '',
-    targetUser: 'Art Schuram',
-    time: '02 / 11 / 2026 11:24 AM'
-  }
-];
+    {
+      notification:
+        'Bob Smith (EMP2371Y) logged in during off hours into file system',
+      sourceIp: '103.25.45.210',
+      resource: 'Fileshare Login',
+      resourceType: '',
+      targetUser: 'Bob Smith',
+      time: '02 / 12 / 2026 12:21 PM',
+    },
+    {
+      notification:
+        'User Timothy Leet (EMP2391B) from HR requested for access in Legal File',
+      sourceIp: '103.25.45.211',
+      resource: 'Fileshare Legal File',
+      resourceType: 'file',
+      targetUser: 'Timothy Leet',
+      time: '02 / 12 / 2026 09:22 AM',
+    },
+    {
+      notification:
+        'Multiple requests raised at the same time for a single user Michelle Saget (EMP2015C)',
+      sourceIp: '103.25.45.212',
+      resource: 'Fileshare Access',
+      resourceType: 'folder',
+      targetUser: 'Michelle Saget',
+      time: '02 / 12 / 2026 07:13 AM',
+    },
+    {
+      notification:
+        'Unauthorised access for Vendor Policy detected by user Ben Smithson (EMP0932V)',
+      sourceIp: '103.25.45.210',
+      resource: 'Vendor Policy',
+      resourceType: 'folder',
+      targetUser: 'Ben Smithson',
+      time: '02 / 11 / 2026 03:36 PM',
+    },
+    {
+      notification:
+        'Art Schuram (EMP2251Y) logged in during off hours into file system',
+      sourceIp: '103.25.45.210',
+      resource: 'Fileshare Login',
+      resourceType: '',
+      targetUser: 'Art Schuram',
+      time: '02 / 11 / 2026 11:24 AM',
+    },
+    {
+      notification:
+        'Bob Smith (EMP2371Y) logged in during off hours into file system',
+      sourceIp: '103.25.45.210',
+      resource: 'Fileshare Login',
+      resourceType: '',
+      targetUser: 'Bob Smith',
+      time: '02 / 12 / 2026 12:21 PM',
+    },
+    {
+      notification:
+        'User Timothy Leet (EMP2391B) from HR requested for access in Legal File',
+      sourceIp: '103.25.45.211',
+      resource: 'Fileshare Legal File',
+      resourceType: 'file',
+      targetUser: 'Timothy Leet',
+      time: '02 / 12 / 2026 09:22 AM',
+    },
+    {
+      notification:
+        'Multiple requests raised at the same time for a single user Michelle Saget (EMP2015C)',
+      sourceIp: '103.25.45.212',
+      resource: 'Fileshare Access',
+      resourceType: 'folder',
+      targetUser: 'Michelle Saget',
+      time: '02 / 12 / 2026 07:13 AM',
+    },
+    {
+      notification:
+        'Unauthorised access for Vendor Policy detected by user Ben Smithson (EMP0932V)',
+      sourceIp: '103.25.45.210',
+      resource: 'Vendor Policy',
+      resourceType: 'folder',
+      targetUser: 'Ben Smithson',
+      time: '02 / 11 / 2026 03:36 PM',
+    },
+    {
+      notification:
+        'Art Schuram (EMP2251Y) logged in during off hours into file system',
+      sourceIp: '103.25.45.210',
+      resource: 'Fileshare Login',
+      resourceType: '',
+      targetUser: 'Art Schuram',
+      time: '02 / 11 / 2026 11:24 AM',
+    },
+    {
+      notification:
+        'Bob Smith (EMP2371Y) logged in during off hours into file system',
+      sourceIp: '103.25.45.210',
+      resource: 'Fileshare Login',
+      resourceType: '',
+      targetUser: 'Bob Smith',
+      time: '02 / 12 / 2026 12:21 PM',
+    },
+    {
+      notification:
+        'User Timothy Leet (EMP2391B) from HR requested for access in Legal File',
+      sourceIp: '103.25.45.211',
+      resource: 'Fileshare Legal File',
+      resourceType: 'file',
+      targetUser: 'Timothy Leet',
+      time: '02 / 12 / 2026 09:22 AM',
+    },
+    {
+      notification:
+        'Multiple requests raised at the same time for a single user Michelle Saget (EMP2015C)',
+      sourceIp: '103.25.45.212',
+      resource: 'Fileshare Access',
+      resourceType: 'folder',
+      targetUser: 'Michelle Saget',
+      time: '02 / 12 / 2026 07:13 AM',
+    },
+    {
+      notification:
+        'Unauthorised access for Vendor Policy detected by user Ben Smithson (EMP0932V)',
+      sourceIp: '103.25.45.210',
+      resource: 'Vendor Policy',
+      resourceType: 'folder',
+      targetUser: 'Ben Smithson',
+      time: '02 / 11 / 2026 03:36 PM',
+    },
+    {
+      notification:
+        'Art Schuram (EMP2251Y) logged in during off hours into file system',
+      sourceIp: '103.25.45.210',
+      resource: 'Fileshare Login',
+      resourceType: '',
+      targetUser: 'Art Schuram',
+      time: '02 / 11 / 2026 11:24 AM',
+    },
+  ];
 
   openNotificationDialog() {
     this.dialog.open(NotificationpopupComponent, {
@@ -249,8 +281,8 @@ export class LayoutComponent {
       maxWidth: '100%',
       data: {
         title: 'Notifications',
-        notifications: this.notifications
-      }
+        notifications: this.notifications,
+      },
     });
   }
 

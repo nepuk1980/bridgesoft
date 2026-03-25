@@ -1,13 +1,15 @@
-import { Component, ViewChild, AfterViewInit } from '@angular/core';
+import { Component, ViewChild, AfterViewInit, OnInit } from '@angular/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSort, MatSortModule } from '@angular/material/sort';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { FormsModule } from '@angular/forms';
-
-import { InnerheaderComponent } from '../../shared/components/innerheader/innerheader.component';
 import { RouterModule } from '@angular/router';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+
+import { InnerheaderComponent } from '../../shared/components/innerheader/innerheader.component';
+import { ApiService } from '../../services/api.service';
 
 interface Filter {
   value: string;
@@ -20,7 +22,7 @@ interface Application {
   type: string;
   modified: string;
   assigned: string;
-  link:string;
+  link: string;
 }
 
 @Component({
@@ -32,87 +34,116 @@ interface Application {
     MatSelectModule,
     MatTableModule,
     MatSortModule,
+    MatPaginatorModule, // ✅ added
     FormsModule,
     RouterModule,
-    NgxSkeletonLoaderModule
+    NgxSkeletonLoaderModule,
   ],
   templateUrl: './applications.component.html',
-  styleUrl: './applications.component.css'
+  styleUrl: './applications.component.css',
 })
-export class ApplicationsComponent implements AfterViewInit {
+export class ApplicationsComponent implements OnInit, AfterViewInit {
+  constructor(private api: ApiService) {}
 
-  filters: Filter[] = [
-    { value: 'filter-0', viewValue: 'File Share Permission' },
-    { value: 'filter-1', viewValue: 'Access Control' },
-    { value: 'filter-2', viewValue: 'User Role' },
-  ];
+  // ✅ Filters
+  filters: Filter[] = [];
 
-  displayedColumns: string[] = [
-    'name',
-    'host',
-    'type',
-    'modified',
-    'assigned',
-  ];
+  displayedColumns: string[] = ['name', 'host', 'type', 'modified', 'assigned'];
 
-  data: Application[] = [
-    {
-      name: 'File Share Permission',
-      host: '',
-      type: 'File Share Permission',
-      modified: '02 / 12 / 2026 17:01 PM',
-      assigned: 'Account, Group',
-          link: '/applications/file-share-permission'
-    },
-    {
-      name: 'Access Control',
-      host: 'Server 1',
-      type: 'Access Control',
-      modified: '03 / 12 / 2026 12:00 PM',
-      assigned: 'Admin',
-      link: '/applications/access-control'
-    },
-    {
-      name: 'User Role',
-      host: 'Server 2',
-      type: 'User Role',
-      modified: '04 / 12 / 2026 10:30 AM',
-      assigned: 'User',
-      link: '/applications/user-role'
-    },
-    // you can keep adding more rows...
-  ];
-
-  dataSource = new MatTableDataSource<Application>(this.data);
+  dataSource = new MatTableDataSource<Application>([]);
+  originalData: Application[] = [];
 
   searchText: string = '';
   selectedFilter: string = '';
 
+  isLoading = false; // ✅ loader
+
+  // ✅ Pagination
+  page = 0;
+  size = 100000;
+  totalElements = 0;
+
   @ViewChild(MatSort) sort!: MatSort;
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
+
+  // ✅ Init
+  ngOnInit() {
+    this.getApplications();
+  }
 
   ngAfterViewInit() {
     this.dataSource.sort = this.sort;
   }
 
-  // 🔍 Search
-  applySearch() {
-    this.dataSource.filterPredicate = (data: Application, filter: string) => {
-      const combined = Object.values(data).join(' ').toLowerCase();
-      return combined.includes(filter);
-    };
+  // ✅ API Call with pagination
+  getApplications() {
+    this.isLoading = true;
 
-    this.dataSource.filter = this.searchText.trim().toLowerCase();
+    this.api.getlistofapplications(this.page, this.size).subscribe({
+      next: (res) => {
+        const mappedData: Application[] = res.content.map((item) => ({
+          id: item.id,
+          name: item.applicationName,
+          host: item.applicationHost,
+          type: item.applicationType,
+          modified: new Date(item.lastModifiedDatetime).toLocaleString(),
+          assigned: item.assignedRoleSummary,
+          link:
+            '/applications/' +
+            item.applicationType.toLowerCase().replace(/\s+/g, '-'),
+        }));
+
+        this.originalData = mappedData;
+        this.dataSource.data = mappedData;
+
+        this.totalElements = res.totalElements;
+
+        // ✅ 🔥 Dynamic filter generation
+        const uniqueTypes = [...new Set(mappedData.map((item) => item.type))];
+
+        this.filters = uniqueTypes.map((type) => ({
+          value: type,
+          viewValue: type,
+        }));
+
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('API Error:', err);
+        this.isLoading = false;
+      },
+    });
   }
 
-  // 🔽 Dropdown filter
-  applyDropdownFilter() {
-    if (!this.selectedFilter) {
-      this.dataSource.data = this.data;
-      return;
+  // ✅ Pagination change
+  onPageChange(event: any) {
+    this.page = event.pageIndex;
+    this.size = event.pageSize;
+    this.getApplications();
+  }
+
+  // ✅ Combined Filter
+  applyFilters() {
+    let filteredData = [...this.originalData];
+
+    // Dropdown filter
+    if (this.selectedFilter) {
+      filteredData = filteredData.filter((item) =>
+        item.type.toLowerCase().includes(this.selectedFilter.toLowerCase()),
+      );
     }
 
-    this.dataSource.data = this.data.filter(item =>
-      item.type.toLowerCase().includes(this.selectedFilter.toLowerCase())
-    );
+    // Search filter
+    if (this.searchText) {
+      const search = this.searchText.trim().toLowerCase();
+
+      filteredData = filteredData.filter((item) =>
+        `${item.name} ${item.host} ${item.type} ${item.assigned}`
+          .toLowerCase()
+          .includes(search),
+      );
+    }
+
+    this.dataSource.data = filteredData;
   }
 }

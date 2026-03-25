@@ -8,9 +8,7 @@
   <h3>{{ section.title }}</h3>
 
   <div class="file-form-wrapper">
-    
     <ng-container *ngFor="let field of section.fields; let i = index">
-
       <div class="form-control">
         <label>{{ field.label }}</label>
 
@@ -20,7 +18,7 @@
           [type]="field.type"
           class="form-field"
           [(ngModel)]="model[section.key][field.key]"
-          name="{{section.key}}-{{field.key}}"
+          name="{{ section.key }}-{{ field.key }}"
         />
 
         <!-- Textarea -->
@@ -28,21 +26,23 @@
           *ngIf="field.type === 'textarea'"
           class="form-field"
           [(ngModel)]="model[section.key][field.key]"
-          name="{{section.key}}-{{field.key}}"
+          name="{{ section.key }}-{{ field.key }}"
         ></textarea>
       </div>
 
       <!-- ✅ Add empty div AFTER every 6 items -->
-      <div
-        *ngIf="(i + 1) % 6 === 0"
-        class="form-control empty-div">
-      </div>
-
+      <div *ngIf="(i + 1) % 6 === 0" class="form-control empty-div"></div>
     </ng-container>
-
   </div>
 </div>
 
 <div class="fixed-btn">
- <button mat-flat-button class="btn-blue">Save</button>
+  <button
+    mat-flat-button
+    class="btn-blue"
+    routerLink="/applications"
+    (click)="save()"
+  >
+    Save
+  </button>
 </div>
