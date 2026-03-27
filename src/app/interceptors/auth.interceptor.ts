@@ -13,39 +13,27 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   const token = authService.getToken();
 
-  // 🔁 If token exists AND expired → auto refresh
-  if (token && authService.isTokenExpired()) {
-    return authService.refreshToken().pipe(
-      switchMap((newToken) => {
-        const clonedReq = req.clone({
-          setHeaders: {
-            Authorization: `Bearer ${newToken}`,
-          },
-        });
-        return next(clonedReq);
+  // ✅ If token exists
+  if (token) {
+    return next(
+      req.clone({
+        setHeaders: {
+          Authorization: `Bearer ${token}`,
+        },
       }),
     );
   }
 
-  // ✅ If token exists → attach
-  if (token) {
-    const clonedReq = req.clone({
-      setHeaders: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    return next(clonedReq);
-  }
-
-  // 🟡 First time → auto login
-  return authService.refreshToken().pipe(
+  // 🔁 Wait for token
+  return authService.waitForToken().pipe(
     switchMap((newToken) => {
-      const clonedReq = req.clone({
-        setHeaders: {
-          Authorization: `Bearer ${newToken}`,
-        },
-      });
-      return next(clonedReq);
+      return next(
+        req.clone({
+          setHeaders: {
+            Authorization: `Bearer ${newToken}`,
+          },
+        }),
+      );
     }),
   );
 };

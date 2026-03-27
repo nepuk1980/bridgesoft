@@ -21,46 +21,54 @@ export class AuthService {
   private username = environment.username;
   private password = environment.password;
 
+  // ✅ ADDED (in-memory token)
+  private token: string | null = null;
+
+  // ✅ ADDED (for waiting requests)
+  private tokenSubject = new BehaviorSubject<string | null>(null);
+
   private isRefreshing = false;
   private refreshTokenSubject = new BehaviorSubject<string | null>(null);
 
-  // 🔐 LOGIN → API returns plain text token
+  // 🔐 LOGIN
   login(): Observable<string> {
-    return this.http.post(
-      `${this.API}/auth/login`,
-      {
-        username: this.username,
-        password: this.password,
-      },
-      {
-        responseType: 'text', // 🔥 VERY IMPORTANT FIX
-      },
-    );
+    return this.http
+      .post(
+        `${this.API}/auth/login`,
+        {
+          username: this.username,
+          password: this.password,
+        },
+        {
+          responseType: 'text',
+        },
+      )
+      .pipe(
+        tap((token: string) => {
+          this.setSession(token); // ✅ IMPORTANT FIX
+        }),
+      );
   }
 
-  // 💾 Save token + expiry
+  // 💾 Save token
   setSession(token: string) {
-    localStorage.setItem('token', token);
+    this.token = token;
 
-    // ⏱ 2 hours expiry
-    localStorage.setItem(
-      'token_expiry',
-      (Date.now() + 2 * 60 * 60 * 1000).toString(),
-    );
+    // ✅ notify waiting requests
+    this.tokenSubject.next(token);
   }
 
-  // 🔍 Get token
+  // ✅ ADDED
   getToken(): string | null {
-    return localStorage.getItem('token');
+    return this.token;
   }
 
-  // ⏱ Expiry check (refresh 1 min early)
+  // ⏱ Expiry check (keep if you want)
   isTokenExpired(): boolean {
-    const expiry = localStorage.getItem('token_expiry');
-    return !expiry || Date.now() > +expiry - 60000;
+    return false; // optional (you can customize)
   }
 
-  // 🔁 Refresh token (single call, queue safe)
+  // 🔁 Refresh token
   refreshToken(): Observable<string> {
     if (!this.isRefreshing) {
       this.isRefreshing = true;
@@ -76,22 +84,22 @@ export class AuthService {
         catchError((err) => {
           this.isRefreshing = false;
           this.refreshTokenSubject.next(null);
-
-          console.error('❌ Refresh token failed', err);
-
-          // Optional cleanup
-          localStorage.removeItem('token');
-          localStorage.removeItem('token_expiry');
-
           return throwError(() => err);
         }),
       );
     } else {
-      // ⏳ Wait for ongoing refresh
       return this.refreshTokenSubject.pipe(
         filter((token) => token !== null),
         take(1),
       ) as Observable<string>;
     }
+  }
+
+  // ✅ ADDED (fix for interceptor)
+  waitForToken(): Observable<string> {
+    return this.tokenSubject.pipe(
+      filter((t) => t !== null),
+      take(1),
+    ) as Observable<string>;
   }
 }

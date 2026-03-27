@@ -128,14 +128,7 @@ export class IdentityVaultDetailComponent implements OnInit {
     {
       name: 'Application Accounts',
       key: 'applicationAccounts',
-      data: [
-        {
-          application: 'File share Permission',
-          accountName: 'Christopher Williams (987342)',
-          status: 'Active',
-          lastAccess: '2026-02-12T15:10:00',
-        },
-      ],
+      data: [],
     },
   ];
 
@@ -163,6 +156,7 @@ export class IdentityVaultDetailComponent implements OnInit {
     this.appId = history.state.id;
     if (this.appId) {
       this.getAttributes();
+      this.getApplicationAccounts();
     } else {
       console.error('No ID found');
     }
@@ -194,6 +188,27 @@ export class IdentityVaultDetailComponent implements OnInit {
       error: (err) => {
         console.error(err);
         this.isLoading = false;
+      },
+    });
+  }
+
+  getApplicationAccounts(): void {
+    this.api.getapplicationaccount(this.appId).subscribe({
+      next: (res: any) => {
+        const data = res?.content || res;
+
+        // ✅ HANDLE BOTH OBJECT & ARRAY
+        const list = Array.isArray(data) ? data : [data];
+
+        this.tabs[2].data = list.map((item: any) => ({
+          application: item.fsApplications?.applicationName || '-',
+          accountName: item.accountName || '-',
+          status: item.status || 'Inactive',
+          lastAccess: item.lastAccess || '-',
+        }));
+      },
+      error: (err) => {
+        console.error('Application Accounts Error:', err);
       },
     });
   }

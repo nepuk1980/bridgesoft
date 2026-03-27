@@ -6,6 +6,8 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ApiService } from '../../services/api.service';
 
+type SectionKey = 'googleWorkspace' | 'sharePointOneDrive' | 'aws';
+
 @Component({
   selector: 'app-file-share-permissions',
   standalone: true,
@@ -27,22 +29,26 @@ export class FileSharePermissionsComponent implements OnInit {
     private api: ApiService,
   ) {}
 
-  // ✅ Initialize model to avoid undefined errors
-  model: any = {
+  // ✅ MODEL (final structure)
+  model: Record<SectionKey, any> = {
     googleWorkspace: {},
     sharePointOneDrive: {},
     aws: {},
   };
 
-  // ✅ Form structure
-  formData = [
+  // ✅ FORM CONFIG
+  formData: {
+    title: string;
+    key: SectionKey;
+    fields: { label: string; key: string; type: string }[];
+  }[] = [
     {
       title: 'Google Workspace (G Suite/Drive)',
       key: 'googleWorkspace',
       fields: [
         { label: 'Base URL', key: 'baseUrl', type: 'text' },
         {
-          label: 'Service Account Key (JSON)',
+          label: 'Service Account Key',
           key: 'serviceAccountKey',
           type: 'text',
         },
@@ -57,7 +63,7 @@ export class FileSharePermissionsComponent implements OnInit {
       ],
     },
     {
-      title: 'SharePoint Online & OneDrive',
+      title: 'SharePoint & OneDrive',
       key: 'sharePointOneDrive',
       fields: [
         { label: 'Base URL', key: 'baseUrl', type: 'text' },
@@ -67,7 +73,7 @@ export class FileSharePermissionsComponent implements OnInit {
           type: 'text',
         },
         {
-          label: 'Client Secret / Certificate',
+          label: 'Client Secret',
           key: 'clientSecretOrCertificate',
           type: 'text',
         },
@@ -78,84 +84,150 @@ export class FileSharePermissionsComponent implements OnInit {
       ],
     },
     {
-      title: 'AWS (Amazon Web Services)',
+      title: 'AWS',
       key: 'aws',
       fields: [
         { label: 'Base URL', key: 'baseUrl', type: 'text' },
-        { label: 'IAM User/Role ARN', key: 'iamUserRoleArn', type: 'text' },
-        {
-          label: 'IAM Policy Permissions',
-          key: 'iamPolicyPermissions',
-          type: 'text',
-        },
+        { label: 'IAM Role ARN', key: 'iamUserRoleArn', type: 'text' },
+        { label: 'IAM Policy', key: 'iamPolicyPermissions', type: 'text' },
         { label: 'Description', key: 'description', type: 'textarea' },
-        {
-          label: 'Access Key ID & Secret Access Key',
-          key: 'accessKey',
-          type: 'text',
-        },
+        { label: 'Access Key', key: 'accessKey', type: 'text' },
         { label: 'External ID', key: 'externalId', type: 'text' },
-        { label: 'S3 Bucket List', key: 's3BucketList', type: 'text' },
+        { label: 'S3 Buckets', key: 's3BucketList', type: 'text' },
       ],
     },
   ];
 
   ngOnInit() {
-    this.appId = history.state.id;
+    this.appId = history.state?.id;
 
-    if (this.appId) {
-      this.getDetails();
-    } else {
-      console.error('No ID found');
+    if (!this.appId) {
+      console.error('❌ No ID found');
+      this.router.navigate(['/applications']);
+      return;
     }
+
+    this.getDetails();
   }
 
-  // ✅ API call + mapping
+  // ✅ SAFE GET
+  getField(section: SectionKey, field: string) {
+    return this.model?.[section]?.[field] ?? '';
+  }
+
+  // ✅ SAFE SET
+  setField(section: SectionKey, field: string, value: any) {
+    if (!this.model[section]) {
+      this.model[section] = {};
+    }
+    this.model[section][field] = value;
+  }
+
+  // ✅ API CALL (FIXED 🔥)
   getDetails() {
     this.api.getapplicationdetails(this.appId).subscribe({
       next: (res: any) => {
+        const data = res?.data || res; // 🔥 important fix
+
+        console.log('API DATA:', data);
+
         this.model = {
           googleWorkspace: {
-            baseUrl: res.googleBaseUrl || '',
-            serviceAccountKey: res.googleServiceAccountKey || '',
-            domainWideDelegation: res.googleDomainWideDelegation || '',
-            description: res.googleDescription || '',
-            oauthScopes: res.googleOauthScopes || '',
-            adminEmail: res.googleAdminEmail || '',
+            baseUrl: data.googleBaseUrl || '',
+            serviceAccountKey: data.googleServiceAccountKey || '',
+            domainWideDelegation: data.googleDomainWideDelegation || '',
+            description: data.googleDescription || '',
+            oauthScopes: data.googleOauthScopes || '',
+            adminEmail: data.googleAdminEmail || '',
           },
-
           sharePointOneDrive: {
-            baseUrl: res.sharepointBaseUrl || '',
-            description: res.sharepoint_description || '',
-            azureAppRegistration: res.sharepointAzureAppRegistration || '',
-            tenantId: res.sharepointTenantId || '',
-            siteUrl: res.sharepointSiteUrl || '',
-            clientSecretOrCertificate: res.sharepointClientSecret || '',
-            apiPermission: res.sharepointApiPermission || '',
+            baseUrl: data.sharepointBaseUrl || '',
+            description: data.sharepoint_description || '',
+            azureAppRegistration: data.sharepointAzureAppRegistration || '',
+            tenantId: data.sharepointTenantId || '',
+            siteUrl: data.sharepointSiteUrl || '',
+            clientSecretOrCertificate: data.sharepointClientSecret || '',
+            apiPermission: data.sharepointApiPermission || '',
           },
-
           aws: {
-            baseUrl: res.awsBaseUrl || '',
-            description: res.awsDescription || '',
-            iamUserRoleArn: res.awsIamUser || '',
-            accessKey: res.awsAccessKey || '',
-            s3BucketList: res.awsS3BucketList || '',
-            iamPolicyPermissions: res.awsIamPolicyPermission || '',
-            externalId: res.awsExternalId || '',
+            baseUrl: data.awsBaseUrl || '',
+            description: data.awsDescription || '',
+            iamUserRoleArn: data.awsIamUser || '',
+            accessKey: data.awsAccessKey || '',
+            s3BucketList: data.awsS3BucketList || '',
+            iamPolicyPermissions: data.awsIamPolicyPermission || '',
+            externalId: data.awsExternalId || '',
           },
         };
       },
       error: (err) => {
-        console.error(err);
+        console.error('❌ API Error:', err);
       },
     });
   }
 
-  // ✅ Save handler
+  // ✅ SAVE
   save() {
-    console.log('Saved successfully', this.model);
+    const payload = {
+      // ✅ REQUIRED IDs
+      appId: this.appId,
+      id: this.appId,
 
-    // ✅ Navigate AFTER success
-    // this.router.navigate(['/applications']);
+      // GOOGLE
+      googleBaseUrl: this.getField('googleWorkspace', 'baseUrl'),
+      googleServiceAccountKey: this.getField(
+        'googleWorkspace',
+        'serviceAccountKey',
+      ),
+      googleDomainWideDelegation: this.getField(
+        'googleWorkspace',
+        'domainWideDelegation',
+      ),
+      googleDescription: this.getField('googleWorkspace', 'description'),
+      googleOauthScopes: this.getField('googleWorkspace', 'oauthScopes'),
+      googleAdminEmail: this.getField('googleWorkspace', 'adminEmail'),
+
+      // SHAREPOINT
+      sharepointBaseUrl: this.getField('sharePointOneDrive', 'baseUrl'),
+      sharepoint_description: this.getField(
+        'sharePointOneDrive',
+        'description',
+      ),
+      sharepointAzureAppRegistration: this.getField(
+        'sharePointOneDrive',
+        'azureAppRegistration',
+      ),
+      sharepointTenantId: this.getField('sharePointOneDrive', 'tenantId'),
+      sharepointSiteUrl: this.getField('sharePointOneDrive', 'siteUrl'),
+      sharepointClientSecret: this.getField(
+        'sharePointOneDrive',
+        'clientSecretOrCertificate',
+      ),
+      sharepointApiPermission: this.getField(
+        'sharePointOneDrive',
+        'apiPermission',
+      ),
+
+      // AWS
+      awsBaseUrl: this.getField('aws', 'baseUrl'),
+      awsDescription: this.getField('aws', 'description'),
+      awsIamUser: this.getField('aws', 'iamUserRoleArn'),
+      awsAccessKey: this.getField('aws', 'accessKey'),
+      awsS3BucketList: this.getField('aws', 's3BucketList'),
+      awsIamPolicyPermission: this.getField('aws', 'iamPolicyPermissions'),
+      awsExternalId: this.getField('aws', 'externalId'),
+    };
+
+    console.log('📦 FINAL PAYLOAD:', payload); // ✅ DEBUG
+
+    this.api.updateApplicationDetails(this.appId, payload).subscribe({
+      next: () => {
+        console.log('✅ Saved');
+        this.router.navigate(['/applications']);
+      },
+      error: (err) => {
+        console.error('❌ Save Error:', err);
+      },
+    });
   }
 }

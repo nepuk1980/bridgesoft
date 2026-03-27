@@ -186,3 +186,20 @@ export type IdentityVaultDetailResponseInterface = {
   manager_employee_id: string;
   riskScore: string;
 };
+
+export type ApplicationAccountsResponseInterface = {
+  accountName: string;
+  appId: number;
+  fsApplications: {
+    applicationHost: string;
+    applicationName: string;
+    applicationType: string;
+    assignedRoleSummary: string;
+    createDatetime: string;
+    id: number;
+    lastModifiedDatetime: string;
+  };
+  id: number;
+  lastAccess: string;
+  status: string;
+};
