@@ -91,12 +91,12 @@ export class ApiService {
   }
   // ✅ Identity Vault Application Details
   getapplicationaccount(
-    appId: number,
+    id: number,
   ): Observable<ApplicationAccountsResponseInterface> {
-    const params = new HttpParams().set('appId', appId);
+    const params = new HttpParams().set('id', id);
 
     return this.http.get<ApplicationAccountsResponseInterface>(
-      `${environment.apiUrl}/getapplicationaccount`,
+      `${environment.apiUrl}/getidentityapplicationaccountlist?vaultId=5`,
       { params },
     );
   }
