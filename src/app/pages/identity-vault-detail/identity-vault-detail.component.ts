@@ -202,10 +202,7 @@ export class IdentityVaultDetailComponent implements OnInit {
         // ✅ HANDLE BOTH OBJECT & ARRAY
         const list = Array.isArray(data) ? data : [data];
 
-        // 🔹 FILTER BY ID (only include items matching this.appId)
-        const filteredList = list.filter((item: any) => item.id === this.appId);
-
-        this.tabs[2].data = filteredList.map((item: any) => ({
+        this.tabs[2].data = list.map((item: any) => ({
           application: item.applicationName || '-',
           accountName: item.accountName || '-',
           status: item.status || 'Inactive',
