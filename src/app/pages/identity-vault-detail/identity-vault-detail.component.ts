@@ -23,13 +23,20 @@ type Attributes = {
   company: string;
 };
 
-type Entitlement = {
+interface Entitlement {
   name: string;
   type: string;
   resourcePath: string;
-  access: Record<string, boolean>;
+  access: {
+    F: boolean;
+    M: boolean;
+    R: boolean;
+    W: boolean;
+    X: boolean;
+    L: boolean;
+  };
   accountName: string;
-};
+}
 
 type ApplicationAccount = {
   application: string;
@@ -37,6 +44,7 @@ type ApplicationAccount = {
   status: string;
   lastAccess: string;
 };
+
 @Component({
   selector: 'app-identity-vault-detail',
   standalone: true,
@@ -58,77 +66,22 @@ export class IdentityVaultDetailComponent implements OnInit {
   selectedIndex = 0;
   isLoading = true;
 
-  // ✅ Keep existing static data for other tabs
+  // ✅ Static tab structure
   tabs: any[] = [
     {
       name: 'Attributes',
       key: 'attributes',
-      data: {}, // 👈 will come from API
+      data: {} as Attributes,
     },
     {
       name: 'Entitlements',
       key: 'entitlements',
-      data: [
-        {
-          name: 'Human Resources',
-          type: 'Folder',
-          resourcePath:
-            'https://bridgesoft.sharepoint.com/sites/humanresources/folder/humanresources',
-          access: {
-            F: true,
-            M: false,
-            R: true,
-            W: false,
-            X: false,
-            L: false,
-          },
-          accountName: 'Christopher Williams (987342)',
-        },
-        {
-          name: 'Employee Perks',
-          type: 'File',
-          resourcePath:
-            'https://bridgesoft.sharepoint.com/sites/humanresources/folder/humanresources',
-          access: { F: true, M: true, R: true, W: true, X: true, L: true },
-          accountName: 'Christopher Williams (987342)',
-        },
-        {
-          name: 'Employee Reimbursements',
-          type: 'File',
-          resourcePath:
-            'https://bridgesoft.sharepoint.com/sites/humanresources/folder/humanresources',
-          access: {
-            F: true,
-            M: false,
-            R: true,
-            W: false,
-            X: false,
-            L: false,
-          },
-          accountName: 'Christopher Williams (987342)',
-        },
-        {
-          name: 'Employee Travel Policy',
-          type: 'File',
-          resourcePath:
-            'https://bridgesoft.sharepoint.com/sites/humanresources/folder/humanresources',
-          access: { F: true, M: true, R: true, W: true, X: false, L: false },
-          accountName: 'Christopher Williams (987342)',
-        },
-        {
-          name: 'Employee Medical Policy',
-          type: 'File',
-          resourcePath:
-            'https://bridgesoft.sharepoint.com/sites/humanresources/folder/humanresources',
-          access: { F: true, M: false, R: true, W: false, X: false, L: true },
-          accountName: 'Christopher Williams (987342)',
-        },
-      ],
+      data: [] as Entitlement[],
     },
     {
       name: 'Application Accounts',
       key: 'applicationAccounts',
-      data: [],
+      data: [] as ApplicationAccount[],
     },
   ];
 
@@ -153,60 +106,62 @@ export class IdentityVaultDetailComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.appId = history.state.id;
+    this.appId = history.state?.id;
+
     if (this.appId) {
       this.getAttributes();
       this.getApplicationAccounts();
-      console.log('id.  ==', this.appId);
+      this.getEntitlements(); // ✅ missing call added
+      console.log('id ==', this.appId);
     } else {
       console.error('No ID found');
+      this.isLoading = false;
     }
   }
 
-  // ✅ ONLY ATTRIBUTES API CALL
+  // ✅ ATTRIBUTES API
   getAttributes(): void {
     this.api.getidentityvaultdetails(this.appId).subscribe({
       next: (res: any) => {
         const data = res?.content || res;
 
-        // ✅ Bind ONLY attributes tab
         this.tabs[0].data = {
-          firstName: data.firstName,
-          lastName: data.lastName,
-          email: data.email,
-          department: data.department,
-          manager: data.manager,
-          employeeId: data.manager_employee_id,
-          businessUnit: data.manager_department,
-          location: data.location,
-          jobTitle: data.job_title,
-          employeeCode: data.employee_code,
-          company: data.company,
+          firstName: data?.firstName || '-',
+          lastName: data?.lastName || '-',
+          email: data?.email || '-',
+          department: data?.department || '-',
+          manager: data?.manager || '-',
+          employeeId: data?.manager_employee_id || '-',
+          businessUnit: data?.manager_department || '-',
+          location: data?.location || '-',
+          jobTitle: data?.job_title || '-',
+          employeeCode: data?.employee_code || '-',
+          company: data?.company || '-',
         };
 
         this.isLoading = false;
       },
       error: (err) => {
-        console.error(err);
+        console.error('Attributes Error:', err);
         this.isLoading = false;
       },
     });
   }
 
+  // ✅ APPLICATION ACCOUNTS API
   getApplicationAccounts(): void {
     console.log('this id', this.appId);
+
     this.api.getapplicationaccount(this.appId).subscribe({
       next: (res: any) => {
         const data = res?.content || res;
-
-        // ✅ HANDLE BOTH OBJECT & ARRAY
         const list = Array.isArray(data) ? data : [data];
 
         this.tabs[2].data = list.map((item: any) => ({
-          application: item.applicationName || '-',
-          accountName: item.accountName || '-',
-          status: item.status || 'Inactive',
-          lastAccess: item.lastAccess || '-',
+          application: item?.applicationName || '-',
+          accountName: item?.accountName || '-',
+          status: item?.status || 'Inactive',
+          lastAccess: item?.lastAccess || '-',
         }));
       },
       error: (err) => {
@@ -215,7 +170,45 @@ export class IdentityVaultDetailComponent implements OnInit {
     });
   }
 
-  // ✅ existing function (no change)
+  // ✅ ENTITLEMENTS API
+  getEntitlements(): void {
+    console.log('this id', this.appId);
+
+    this.api.getidentityentitlementlist(this.appId).subscribe({
+      next: (res: any) => {
+        const data = res?.content || res;
+        const list = Array.isArray(data) ? data : [data];
+
+        this.tabs[1].data = list.map((item: any) => {
+          const codes: string[] = (item?.accessCodes || '').split(',');
+
+          return {
+            name: item?.itemName || '-',
+            type: item?.itemType || '-',
+            resourcePath: item?.resourcePath || '-',
+
+            access: {
+              F: codes.includes('F'),
+              M: codes.includes('M'),
+              R: codes.includes('R'),
+              W: codes.includes('W'),
+              X: codes.includes('X'),
+              L: codes.includes('L'),
+            },
+
+            accountName: item?.accountName || '-',
+          };
+        });
+
+        console.log('Entitlements:', this.tabs[1].data);
+      },
+      error: (err) => {
+        console.error('Entitlements Error:', err);
+      },
+    });
+  }
+
+  // ✅ CHECK FULL ACCESS
   isAllAccessTrue(access: any): boolean {
     if (!access) return false;
     return Object.values(access).every((val) => val === true);

@@ -1,0 +1,228 @@
+<app-innerheader
+  title="Review Access"
+  [btn]="true"
+  btntitle="Back To Review Access"
+></app-innerheader>
+
+<div class="file-content-div">
+  <h3>Entitlement SOD Rule</h3>
+  <div class="file-form-wrapper nobg">
+    <div class="form-control">
+      <label>Summary</label>
+
+      <!-- Input -->
+      <input
+        class="form-field"
+        type="text"
+        value="File share business SOD Policy"
+      />
+    </div>
+    <div class="form-control">
+      <label>Compensating Control</label>
+
+      <!-- Input -->
+      <input class="form-field" type="text" />
+    </div>
+    <div></div>
+    <div class="form-control">
+      <label>Description</label>
+
+      <textarea type="textarea" class="form-field"></textarea>
+    </div>
+    <div class="form-control">
+      <label>Correction Advice</label>
+
+      <textarea type="textarea" class="form-field"></textarea>
+    </div>
+    <div></div>
+    <div class="form-control">
+      <mat-slide-toggle [(ngModel)]="isChecked" class="customslide">{{
+        isChecked ? "Enabled" : "Disabled"
+      }}</mat-slide-toggle>
+    </div>
+  </div>
+  <br /><br />
+  <br /><br />
+  <h3>First Entitlement Set</h3>
+  <div class="file-form-wrapper">
+    <div class="form-control">
+      <label>Identity IQ Items</label>
+
+      <!-- Input -->
+      <button class="normalbtn">Add Identity Attribute</button>
+    </div>
+    <div class="form-control">
+      <label>Identity IQ Items</label>
+      <div class="filterBtnDiv">
+        <div class="custom-filter no-icon">
+          <mat-form-field>
+            <mat-label>File Share Permission</mat-label>
+            <mat-select panelClass="custom-filter-panel">
+              <mat-option value="">File Share Permission</mat-option>
+              <mat-option value="">File Share Permission</mat-option>
+              <mat-option value="">File Share Permission</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <!-- Input -->
+        <div class="btngrpdiv">
+          <button class="normalbtn">Add Identity Attribute</button>
+          <button class="normalbtn">Add Identity Attribute</button>
+        </div>
+      </div>
+    </div>
+    <hr />
+    <div class="form-control">
+      <label>Operation</label>
+      <div class="filterBtnDiv">
+        <div class="custom-filter no-icon w-100">
+          <mat-form-field>
+            <mat-label>Or</mat-label>
+            <mat-select panelClass="custom-filter-panel">
+              <mat-option value="">Or</mat-option>
+              <mat-option value="">And</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+    <div class="form-control wrapperDiv">
+      <div>
+        <label>Type</label>
+        <div class="checkboxwrapper">
+          <mat-checkbox class="customcheckbox"> Attribute </mat-checkbox>
+        </div>
+      </div>
+      <div>
+        <label>Source</label>
+        <div class="parawrapper">
+          <p>File Share Permission</p>
+        </div>
+      </div>
+    </div>
+    <div class="form-control wrapperDiv gap-1rem justify-end">
+      <div>
+        <label>Name</label>
+        <div class="filterBtnDiv">
+          <div class="custom-filter no-icon w-200">
+            <mat-form-field>
+              <mat-label>Resource</mat-label>
+              <mat-select panelClass="custom-filter-panel">
+                <mat-option value="">Resource</mat-option>
+                <mat-option value="">Resource</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
+      <div>
+        <label>Value</label>
+        <div class="filterBtnDiv">
+          <div class="custom-filter no-icon w-200">
+            <mat-form-field>
+              <mat-label>Human Resources</mat-label>
+              <mat-select panelClass="custom-filter-panel">
+                <mat-option value="">Human Resources</mat-option>
+                <mat-option value="">Human Resources</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <br /><br />
+  <h3>Second Entitlement Set</h3>
+  <div class="file-form-wrapper">
+    <div class="form-control">
+      <label>Identity IQ Items</label>
+
+      <!-- Input -->
+      <button class="normalbtn">Add Identity Attribute</button>
+    </div>
+    <div class="form-control">
+      <label>Identity IQ Items</label>
+      <div class="filterBtnDiv">
+        <div class="custom-filter no-icon">
+          <mat-form-field>
+            <mat-label>File Share Permission</mat-label>
+            <mat-select panelClass="custom-filter-panel">
+              <mat-option value="">File Share Permission</mat-option>
+              <mat-option value="">File Share Permission</mat-option>
+              <mat-option value="">File Share Permission</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <!-- Input -->
+        <div class="btngrpdiv">
+          <button class="normalbtn">Add Identity Attribute</button>
+          <button class="normalbtn">Add Identity Attribute</button>
+        </div>
+      </div>
+    </div>
+    <hr />
+    <div class="form-control">
+      <label>Operation</label>
+      <div class="filterBtnDiv">
+        <div class="custom-filter no-icon w-100">
+          <mat-form-field>
+            <mat-label>Or</mat-label>
+            <mat-select panelClass="custom-filter-panel">
+              <mat-option value="">Or</mat-option>
+              <mat-option value="">And</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+    <div class="form-control wrapperDiv">
+      <div>
+        <label>Type</label>
+        <div class="checkboxwrapper">
+          <mat-checkbox class="customcheckbox"> Attribute </mat-checkbox>
+        </div>
+      </div>
+      <div>
+        <label>Source</label>
+        <div class="parawrapper">
+          <p>File Share Permission</p>
+        </div>
+      </div>
+    </div>
+    <div class="form-control wrapperDiv gap-1rem justify-end">
+      <div>
+        <label>Name</label>
+        <div class="filterBtnDiv">
+          <div class="custom-filter no-icon w-200">
+            <mat-form-field>
+              <mat-label>Resource</mat-label>
+              <mat-select panelClass="custom-filter-panel">
+                <mat-option value="">Resource</mat-option>
+                <mat-option value="">Resource</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
+      <div>
+        <label>Value</label>
+        <div class="filterBtnDiv">
+          <div class="custom-filter no-icon w-200">
+            <mat-form-field>
+              <mat-label>Human Resources</mat-label>
+              <mat-select panelClass="custom-filter-panel">
+                <mat-option value="">Human Resources</mat-option>
+                <mat-option value="">Human Resources</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="fixed-btn">
+  <button mat-flat-button class="btn-blue" routerLink="/review-access">
+    Save
+  </button>
+</div>

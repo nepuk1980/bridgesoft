@@ -1,0 +1,199 @@
+<app-innerheader
+  title="Review Access"
+  [btn]="false"
+  btntitle="Back To Review Access"
+></app-innerheader>
+<div class="file-content-div">
+  <h3>Decision Statistics</h3>
+  <div class="chartgrp">
+    <div class="chartWrapper">
+      <ul>
+        <li>
+          <strong>Owner :</strong>
+          <span>Christopher Williams</span>
+        </li>
+        <li>
+          <strong>Create Date :</strong>
+          <span>02 / 12 / 2026 | 17:03 PM EST </span>
+        </li>
+        <br />
+        <li>
+          <strong>Access Reviews Completed</strong>
+          <span><small></small>2 / 2 (100%) </span>
+          <strong>Identities Completed</strong>
+          <span><small></small>2 / 2 (100%) </span>
+          <strong>Items Completed</strong>
+          <span><small></small>1.44% / 139 (100%) </span>
+        </li>
+      </ul>
+    </div>
+    <div class="chartWrapper">
+      <h6>Additional Entitlements</h6>
+      <div class="chartContentdiv">
+        <div class="chart">
+          <canvas
+            baseChart
+            [data]="doughnutChartData1"
+            [type]="doughnutChartType"
+            [options]="doughnutChartOptions"
+          >
+          </canvas>
+        </div>
+        <ul>
+          <li>
+            <span><b></b> Approved</span> <small>2</small>
+          </li>
+          <li>
+            <span><b></b> Open</span> <small>137</small>
+          </li>
+          <li>
+            <span><b></b> Remediate</span> <small>0</small>
+          </li>
+          <li>
+            <span><b></b> Allowed</span> <small>0</small>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="chartWrapper">
+      <h6>Additional Entitlements</h6>
+      <div class="chartContentdiv">
+        <div class="chart">
+          <canvas
+            baseChart
+            [data]="doughnutChartData2"
+            [type]="doughnutChartType"
+            [options]="doughnutChartOptions"
+          >
+          </canvas>
+        </div>
+        <ul>
+          <li>
+            <span><b></b> Approved</span> <small>0</small>
+          </li>
+          <li>
+            <span><b></b> Open</span> <small>0</small>
+          </li>
+          <li>
+            <span><b></b> Remediate</span> <small>0</small>
+          </li>
+          <li>
+            <span><b></b> Allowed</span> <small>0</small>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div class="chartWrapper">
+      <h6>Additional Entitlements</h6>
+      <div class="chartContentdiv">
+        <div class="chart">
+          <canvas
+            baseChart
+            [data]="doughnutChartData3"
+            [type]="doughnutChartType"
+            [options]="doughnutChartOptions"
+          >
+          </canvas>
+        </div>
+        <ul>
+          <li>
+            <span><b></b> Approved</span> <small>0</small>
+          </li>
+          <li>
+            <span><b></b> Open</span> <small>0</small>
+          </li>
+          <li>
+            <span><b></b> Remediate</span> <small>0</small>
+          </li>
+          <li>
+            <span><b></b> Allowed</span> <small>0</small>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="solid-table table-wrapper">
+    <table mat-table [dataSource]="dataSource" matSort class="custom-table">
+      <!-- Name Column -->
+      <ng-container matColumnDef="issuer">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Issuer</th>
+        <td mat-cell *matCellDef="let element">
+          <a class="table-link">
+            {{ element.issuer }}
+          </a>
+        </td>
+      </ng-container>
+
+      <!-- Host Column -->
+      <ng-container matColumnDef="filefoldername">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>
+          File / Folder Name
+        </th>
+        <td mat-cell *matCellDef="let element">{{ element.filefoldername }}</td>
+      </ng-container>
+
+      <!-- Type Column -->
+      <ng-container matColumnDef="percentcomplete">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>
+          Percent Complete
+        </th>
+        <td mat-cell *matCellDef="let element">
+          {{ element.percentcomplete }}
+        </td>
+      </ng-container>
+
+      <!-- Modified Column -->
+      <ng-container matColumnDef="phase">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Phase</th>
+        <td mat-cell *matCellDef="let element">{{ element.phase }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="phaseend">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Phase End</th>
+        <td mat-cell *matCellDef="let element">{{ element.phaseend }}</td>
+      </ng-container>
+
+      <!-- Assigned Role Summary Column -->
+      <ng-container matColumnDef="tags">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Tags</th>
+        <td mat-cell *matCellDef="let element">
+          {{ element.tags }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="certifiers">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Certifiers</th>
+        <td mat-cell *matCellDef="let element">
+          {{ element.certifiers }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="due">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Due</th>
+        <td mat-cell *matCellDef="let element">
+          {{ element.due }}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="signdate">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Sign Date</th>
+        <td mat-cell *matCellDef="let element">
+          {{ element.signdate }}
+        </td>
+      </ng-container>
+
+      <!-- Header Row -->
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+
+      <!-- Data Rows -->
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+      <!-- No Data Row -->
+      <tr class="mat-row" *matNoDataRow>
+        <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+          No data found
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>

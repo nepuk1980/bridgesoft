@@ -1,0 +1,641 @@
+<div class="inner-header-wrapper inner-header-wrapper-with-tabs">
+  <app-breadcrumb></app-breadcrumb>
+  <h1>{{ tabs[selectedIndex].name }}</h1>
+</div>
+
+<mat-tab-group
+  mat-stretch-tabs="false"
+  mat-align-tabs="start"
+  class="custom-tab"
+  [(selectedIndex)]="selectedIndex"
+>
+  <mat-tab *ngFor="let tab of tabs" [label]="tab.name">
+    <!-- ✅ Important TAB -->
+    <ng-container *ngIf="tab.key === 'important'">
+      <div class="search-filter-div">
+        <!-- 🔍 Search -->
+        <div class="search-box">
+          <input
+            #searchInput
+            type="text"
+            placeholder="Search"
+            (input)="onSearch(searchInput.value)"
+          />
+          <img src="/svg/search.svg" class="search-icon" />
+        </div>
+
+        <!-- 🔢 Count -->
+        <p>Showing {{ showingCount }} of {{ totalCount }}</p>
+
+        <div class="filter-grp-div">
+          <!-- Bulk Decisions -->
+          <div class="custom-filter no-icon">
+            <mat-form-field>
+              <mat-label>Bulk Decisions</mat-label>
+              <mat-select
+                panelClass="custom-filter-panel"
+                (selectionChange)="applyBulkDecision($event.value)"
+              >
+                <mat-option value="">Bulk Decisions</mat-option>
+                <mat-option value="approve">Approve</mat-option>
+                <mat-option value="reject">Reject</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <!-- Category Filter -->
+          <div class="custom-filter no-icon">
+            <mat-form-field>
+              <mat-label>Select Category</mat-label>
+              <mat-select
+                panelClass="custom-filter-panel"
+                (selectionChange)="filterCategory($event.value)"
+              >
+                <mat-option value="">Select Category</mat-option>
+
+                <mat-option
+                  *ngFor="let cat of categoriesImportant"
+                  [value]="cat"
+                >
+                  {{ cat }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <!-- Type Filter -->
+          <div class="custom-filter">
+            <mat-form-field>
+              <mat-label>Filter</mat-label>
+              <mat-select
+                panelClass="custom-filter-panel"
+                (selectionChange)="filterType($event.value)"
+              >
+                <mat-option value="">Filter</mat-option>
+                <mat-option value="folder">Folder</mat-option>
+                <mat-option value="file">File</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="title-div">
+          <h3>Policy Violations</h3>
+
+          <div class="filter-grp-div">
+            <div class="custom-filter no-icon">
+              <mat-form-field>
+                <mat-label>Columns</mat-label>
+
+                <mat-select panelClass="custom-filter-panel" multiple>
+                  <!-- SELECT ALL -->
+                  <mat-option (click)="toggleAllColumns($event)">
+                    Select All
+                  </mat-option>
+
+                  <!-- COLUMN OPTIONS -->
+
+                  <mat-option (click)="toggleColumn('policyName', $event)">
+                    Policy Name
+                  </mat-option>
+
+                  <mat-option (click)="toggleColumn('rule', $event)">
+                    Rule
+                  </mat-option>
+
+                  <mat-option (click)="toggleColumn('folderFileName', $event)">
+                    Folder / File Names
+                  </mat-option>
+
+                  <mat-option
+                    (click)="toggleColumn('resourceFullPath', $event)"
+                  >
+                    Resource Full Path
+                  </mat-option>
+
+                  <mat-option (click)="toggleColumn('identity', $event)">
+                    Identity
+                  </mat-option>
+
+                  <mat-option (click)="toggleColumn('decision', $event)">
+                    Decision
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="solid-table table-wrapper">
+        <table
+          mat-table
+          [dataSource]="dataSourceImportant"
+          class="mat-elevation-z2"
+        >
+          <!-- PATH -->
+          <ng-container matColumnDef="policyName">
+            <th mat-header-cell *matHeaderCellDef>
+              <div class="checktddiv">
+                <mat-checkbox
+                  (change)="toggleAllRows()"
+                  [checked]="isAllSelected()"
+                  [indeterminate]="isIndeterminate()"
+                ></mat-checkbox>
+
+                <span>Policy Name</span>
+              </div>
+            </th>
+
+            <td mat-cell *matCellDef="let row">
+              <div class="checktddiv">
+                <mat-checkbox
+                  (click)="$event.stopPropagation()"
+                  (change)="toggleRow(row)"
+                  [checked]="selection.has(row)"
+                ></mat-checkbox>
+
+                <span>
+                  <a
+                    routerLink="/review-access/sod-detail"
+                    class="table-link"
+                    >{{ row.policyName }}</a
+                  ></span
+                >
+              </div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="rule">
+            <th mat-header-cell *matHeaderCellDef>Rule</th>
+
+            <td mat-cell *matCellDef="let row">
+              {{ row.rule }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="folderFileName">
+            <th mat-header-cell *matHeaderCellDef>Folder / File Names</th>
+
+            <td mat-cell *matCellDef="let row">
+              <div class="icontexttd">
+                <img src="/svg/folder.svg" *ngIf="row.type === 'folder'" />
+                <img src="/svg/file.svg" *ngIf="row.type === 'file'" />
+
+                {{ row.folderFileName }}
+              </div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="resourceFullPath">
+            <th mat-header-cell *matHeaderCellDef>Resource Full Path</th>
+
+            <td mat-cell *matCellDef="let row">
+              {{ row.resourceFullPath }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="identity">
+            <th mat-header-cell *matHeaderCellDef>Identity</th>
+
+            <td mat-cell *matCellDef="let row">
+              {{ row.identity }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="decision">
+            <th mat-header-cell *matHeaderCellDef>Decision</th>
+
+            <td mat-cell *matCellDef="let row" class="liketd">
+              <div class="likediv">
+                <!-- LIKE -->
+                <span class="like" [ngClass]="{ active: row.approve }">
+                  <img
+                    src="/svg/like.svg"
+                    width="17"
+                    height="17"
+                    class="likeimg"
+                  />
+                </span>
+
+                <!-- DISLIKE -->
+                <span class="dislike" [ngClass]="{ active: row.reject }">
+                  <img
+                    src="/svg/unlike.svg"
+                    width="17"
+                    height="17"
+                    class="likeimg"
+                  />
+                </span>
+
+                <span class="innermenu">
+                  <img
+                    src="/svg/lines3.svg"
+                    width="17"
+                    height="17"
+                    class="likeimg"
+                  />
+                  <div class="menuinnerwrapper">
+                    <div class="menuinner">
+                      <p (click)="openEmployeeDialog()">View Details</p>
+                      <p (click)="openForwoardDialog()">Forward</p>
+                    </div>
+                  </div>
+                </span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- HEADER -->
+          <tr mat-header-row *matHeaderRowDef="displayedColumnsImportant"></tr>
+
+          <!-- ROWS -->
+          <tr
+            mat-row
+            *matRowDef="let row; columns: displayedColumnsImportant"
+            (click)="toggleRow(row)"
+          ></tr>
+
+          <!-- NO DATA -->
+          <tr class="mat-row" *matNoDataRow>
+            <td
+              class="mat-cell"
+              colspan="4"
+              style="text-align: center; padding: 20px"
+            >
+              No data found
+            </td>
+          </tr>
+        </table>
+      </div>
+    </ng-container>
+
+    <!-- ✅ Open TAB -->
+    <ng-container *ngIf="tab.key === 'open'">
+      <div class="search-filter-div">
+        <!-- 🔍 Search -->
+        <div class="search-box">
+          <input
+            #searchInput
+            type="text"
+            placeholder="Search"
+            (input)="onSearch(searchInput.value)"
+          />
+          <img src="/svg/search.svg" class="search-icon" />
+        </div>
+
+        <!-- 🔢 Count -->
+        <p>Showing {{ showingCount }} of {{ totalCount }}</p>
+
+        <div class="filter-grp-div">
+          <!-- Bulk Decisions -->
+          <div class="custom-filter no-icon">
+            <mat-form-field>
+              <mat-label>Bulk Decisions</mat-label>
+              <mat-select
+                panelClass="custom-filter-panel"
+                (selectionChange)="applyBulkDecision($event.value)"
+              >
+                <mat-option value="">Bulk Decisions</mat-option>
+                <mat-option value="approve">Approve</mat-option>
+                <mat-option value="reject">Reject</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <!-- Category Filter -->
+          <div class="custom-filter no-icon">
+            <mat-form-field>
+              <mat-label>Select Category</mat-label>
+              <mat-select
+                panelClass="custom-filter-panel"
+                (selectionChange)="filterCategory($event.value)"
+              >
+                <mat-option value="">Select Category</mat-option>
+
+                <mat-option *ngFor="let cat of categoriesOpen" [value]="cat">
+                  {{ cat }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <!-- Type Filter -->
+          <div class="custom-filter">
+            <mat-form-field>
+              <mat-label>Filter</mat-label>
+              <mat-select
+                panelClass="custom-filter-panel"
+                (selectionChange)="filterType($event.value)"
+              >
+                <mat-option value="">Filter</mat-option>
+                <mat-option value="folder">Folder</mat-option>
+                <mat-option value="file">File</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
+
+      <div class="solid-table table-wrapper">
+        <table mat-table [dataSource]="dataSourceOpen" class="mat-elevation-z2">
+          <!-- PATH -->
+          <ng-container matColumnDef="employeename">
+            <th mat-header-cell *matHeaderCellDef>
+              <div class="checktddiv">
+                <mat-checkbox
+                  (change)="toggleAllRows()"
+                  [checked]="isAllSelected()"
+                  [indeterminate]="isIndeterminate()"
+                ></mat-checkbox>
+
+                <span>Employee Name</span>
+              </div>
+            </th>
+
+            <td mat-cell *matCellDef="let row">
+              <div class="checktddiv">
+                <mat-checkbox
+                  (click)="$event.stopPropagation()"
+                  (change)="toggleRow(row)"
+                  [checked]="selection.has(row)"
+                ></mat-checkbox>
+
+                <span>{{ row.employeename }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="folderFileName">
+            <th mat-header-cell *matHeaderCellDef>Folder / File Names</th>
+
+            <td mat-cell *matCellDef="let row">
+              <div class="icontexttd">
+                <img src="/svg/folder.svg" *ngIf="row.type === 'folder'" />
+                <img src="/svg/file.svg" *ngIf="row.type === 'file'" />
+
+                {{ row.folderFileName }}
+              </div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="resourceFullPath">
+            <th mat-header-cell *matHeaderCellDef>Resource Full Path</th>
+
+            <td mat-cell *matCellDef="let row">
+              {{ row.resourceFullPath }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="categories">
+            <th mat-header-cell *matHeaderCellDef>Categories</th>
+
+            <td mat-cell *matCellDef="let row">
+              {{ row.categories }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="decision">
+            <th mat-header-cell *matHeaderCellDef class="lastcol">Decision</th>
+
+            <td mat-cell *matCellDef="let row" class="liketd">
+              <div class="likediv">
+                <span class="innermenu innermsg">
+                  <img
+                    src="/svg/msg.svg"
+                    width="17"
+                    height="17"
+                    class="likeimg"
+                  />
+                  <div class="menuinnerwrapper">
+                    <div class="menuinner">
+                      <h6>{{ row.messagetitle }}</h6>
+                      <p [innerHTML]="getSafeHtml(row.messagedesc)"></p>
+                    </div>
+                  </div>
+                </span>
+
+                <!-- LIKE -->
+                <span class="like" [ngClass]="{ active: row.approve }">
+                  <img
+                    src="/svg/like.svg"
+                    width="17"
+                    height="17"
+                    class="likeimg"
+                  />
+                </span>
+
+                <!-- DISLIKE -->
+                <span class="dislike" [ngClass]="{ active: row.reject }">
+                  <img
+                    src="/svg/unlike.svg"
+                    width="17"
+                    height="17"
+                    class="likeimg"
+                  />
+                </span>
+
+                <span class="innermenu">
+                  <img
+                    src="/svg/lines3.svg"
+                    width="17"
+                    height="17"
+                    class="likeimg"
+                  />
+                  <div class="menuinnerwrapper">
+                    <div class="menuinner">
+                      <p (click)="openEmployeeDialog()">View Details</p>
+                      <p (click)="openForwoardDialog()">Forward</p>
+                    </div>
+                  </div>
+                </span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- HEADER -->
+          <tr mat-header-row *matHeaderRowDef="displayedColumnsOpen"></tr>
+
+          <!-- ROWS -->
+          <tr
+            mat-row
+            *matRowDef="let row; columns: displayedColumnsOpen"
+            (click)="toggleRow(row)"
+          ></tr>
+
+          <!-- NO DATA -->
+          <tr class="mat-row" *matNoDataRow>
+            <td
+              class="mat-cell"
+              colspan="4"
+              style="text-align: center; padding: 20px"
+            >
+              No data found
+            </td>
+          </tr>
+        </table>
+        <div class="fixed-btn">
+          <button mat-flat-button class="btn-blue">Save</button>
+        </div>
+      </div>
+    </ng-container>
+
+    <!-- ✅ Review TAB -->
+    <ng-container *ngIf="tab.key === 'review'">
+      <div class="search-filter-div">
+        <!-- 🔍 Search -->
+        <div class="search-box">
+          <input
+            #searchInput
+            type="text"
+            placeholder="Search"
+            (input)="onSearch(searchInput.value)"
+          />
+          <img src="/svg/search.svg" class="search-icon" />
+        </div>
+
+        <!-- 🔢 Count -->
+        <p>Showing {{ showingCount }} of {{ totalCount }}</p>
+
+        <div class="filter-grp-div">
+          <!-- Type Filter -->
+          <div class="custom-filter">
+            <mat-form-field>
+              <mat-label>Filter</mat-label>
+              <mat-select
+                panelClass="custom-filter-panel"
+                (selectionChange)="filterType($event.value)"
+              >
+                <mat-option value="">Filter</mat-option>
+                <mat-option value="folder">Folder</mat-option>
+                <mat-option value="file">File</mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+      </div>
+
+      <div class="solid-table table-wrapper">
+        <table
+          mat-table
+          [dataSource]="dataSourceReview"
+          class="mat-elevation-z2"
+        >
+          <!-- PATH -->
+          <ng-container matColumnDef="employeename">
+            <th mat-header-cell *matHeaderCellDef>
+              <div class="checktddiv">
+                <mat-checkbox
+                  (change)="toggleAllRows()"
+                  [indeterminate]="isIndeterminate()"
+                ></mat-checkbox>
+
+                <span>Employee Name</span>
+              </div>
+            </th>
+
+            <td mat-cell *matCellDef="let row">
+              <div class="checktddiv">
+                <mat-checkbox
+                  (click)="$event.stopPropagation()"
+                  (change)="toggleRow(row)"
+                ></mat-checkbox>
+
+                <span>{{ row.employeename }}</span>
+              </div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="folderFileName">
+            <th mat-header-cell *matHeaderCellDef>Folder / File Names</th>
+
+            <td mat-cell *matCellDef="let row">
+              <div class="icontexttd">
+                <img src="/svg/folder.svg" *ngIf="row.type === 'folder'" />
+                <img src="/svg/file.svg" *ngIf="row.type === 'file'" />
+
+                {{ row.folderFileName }}
+              </div>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="resourceFullPath">
+            <th mat-header-cell *matHeaderCellDef>Resource Full Path</th>
+
+            <td mat-cell *matCellDef="let row">
+              {{ row.resourceFullPath }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="categories">
+            <th mat-header-cell *matHeaderCellDef>Categories</th>
+
+            <td mat-cell *matCellDef="let row">
+              {{ row.categories }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="decision">
+            <th mat-header-cell *matHeaderCellDef class="lastcol">Decision</th>
+
+            <td mat-cell *matCellDef="let row" class="liketd">
+              <div class="likediv">
+                <!-- LIKE -->
+                <span *ngIf="row.approve" class="like active">
+                  <img
+                    src="/svg/like.svg"
+                    width="17"
+                    height="17"
+                    class="likeimg"
+                  />
+                </span>
+
+                <!-- DISLIKE -->
+                <span *ngIf="row.reject" class="dislike active">
+                  <img
+                    src="/svg/unlike.svg"
+                    width="17"
+                    height="17"
+                    class="likeimg"
+                  />
+                </span>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- HEADER -->
+          <tr mat-header-row *matHeaderRowDef="displayedColumnsReview"></tr>
+
+          <!-- ROWS -->
+          <tr
+            mat-row
+            *matRowDef="let row; columns: displayedColumnsReview"
+            (click)="toggleRow(row)"
+          ></tr>
+
+          <!-- NO DATA -->
+          <tr class="mat-row" *matNoDataRow>
+            <td
+              class="mat-cell"
+              colspan="4"
+              style="text-align: center; padding: 20px"
+            >
+              No data found
+            </td>
+          </tr>
+        </table>
+        <div class="fixed-btn">
+          <button
+            mat-flat-button
+            class="btn-blue"
+            routerLink="/review-access/review-access-detail"
+          >
+            Sign-off And Finish
+          </button>
+        </div>
+      </div>
+    </ng-container>
+  </mat-tab>
+</mat-tab-group>

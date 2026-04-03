@@ -14,6 +14,10 @@ import { RequestReviewAccessComponent } from './pages/request-review-access/requ
 import { AudittrailLayoutComponent } from './layout/audittrail-layout/audittrail-layout.component';
 import { AuditTrailComponent } from './pages/audit-trail/audit-trail.component';
 import { AuditTrailDetailComponent } from './pages/audit-trail-detail/audit-trail-detail.component';
+import { ReviewaccessLayoutComponent } from './layout/reviewaccess-layout/reviewaccess-layout.component';
+import { ReviewAccessComponent } from './pages/review-access/review-access.component';
+import { ReviewAccessDetailComponent } from './pages/review-access-detail/review-access-detail.component';
+import { SodDetailComponent } from './pages/sod-detail/sod-detail.component';
 
 export const routes: Routes = [
   {
@@ -105,6 +109,33 @@ export const routes: Routes = [
           dynamic: true,
           animation: 'AuditDetailPage',
           showPrefix: true,
+        },
+      },
+    ],
+  },
+  {
+    path: 'review-access',
+    component: RequestaccessLayoutComponent,
+    data: { breadcrumb: 'Review Access', animation: 'ReviewAccessPage' },
+    children: [
+      {
+        path: '',
+        component: ReviewAccessComponent,
+      },
+      {
+        path: 'review-access-detail',
+        component: ReviewAccessDetailComponent,
+        data: {
+          breadcrumb: 'Review Access',
+          animation: 'ReviewAccessDetailPage',
+        },
+      },
+      {
+        path: 'sod-detail',
+        component: SodDetailComponent,
+        data: {
+          breadcrumb: 'Review Access',
+          animation: 'SodDetailPage',
         },
       },
     ],
