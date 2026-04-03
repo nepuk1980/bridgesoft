@@ -1,0 +1,8 @@
+.fixed-btn {
+  margin-top: 1rem;
+  padding: 1rem 1.5rem;
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: flex-end;
+}

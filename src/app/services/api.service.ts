@@ -101,6 +101,18 @@ export class ApiService {
     );
   }
 
+  // ✅ Identity Vault Application Details
+  getidentityentitlementlist(
+    id: number,
+  ): Observable<ApplicationAccountsResponseInterface> {
+    const params = new HttpParams().set('vaultId', id);
+
+    return this.http.get<ApplicationAccountsResponseInterface>(
+      `${environment.apiUrl}/getidentityentitlementlist`,
+      { params },
+    );
+  }
+
   private authService = inject(AuthService);
 
   updateApplicationDetails(id: number, data: any): Observable<any> {
