@@ -7,6 +7,9 @@ import { CloudresourcespopupComponent } from '../../shared/components/cloudresou
 import { ApiService } from '../../services/api.service';
 import { FileSystemAccessSummaryInterface } from '../../models/type';
 import { NgIf } from '@angular/common';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import { ReportService } from '../../services/report.service';
 
 export interface Folder {
   name: string;
@@ -695,7 +698,10 @@ export class DashboardComponent {
 
   showSuccess = false;
 
-  constructor(private api: ApiService) {}
+  constructor(
+    private api: ApiService,
+    private reportService: ReportService,
+  ) {}
 
   ngOnInit() {
     if (history.state?.submitted) {
@@ -754,5 +760,23 @@ export class DashboardComponent {
           console.error(err);
         },
       });
+  }
+
+  reportData = [
+    { name: 'John', department: 'IT', salary: 50000 },
+    { name: 'Mary', department: 'HR', salary: 45000 },
+    { name: 'Alex', department: 'Finance', salary: 60000 },
+  ];
+
+  downloadExcel() {
+    this.reportService.downloadExcel(this.reportData, 'dashboard-report');
+  }
+
+  downloadCSV() {
+    this.reportService.downloadCSV(this.reportData, 'dashboard-report');
+  }
+
+  downloadPDF() {
+    this.reportService.downloadPDF(this.reportData, 'dashboard-report');
   }
 }

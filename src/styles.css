@@ -136,6 +136,10 @@ body {
 .lastcol .mat-sort-header-container {
   justify-content: flex-end !important;
 }
+.lastcol {
+  text-align: right !important;
+  justify-content: flex-end !important;
+}
 [mat-sort-header].cdk-keyboard-focused .mat-sort-header-container,
 [mat-sort-header].cdk-program-focused .mat-sort-header-container {
   border-bottom: 0 !important;
@@ -256,6 +260,11 @@ body {
   border: 0;
   background: transparent;
 }
+.search-box img {
+  width: 0.875rem;
+  height: 0.875rem;
+  object-fit: contain;
+}
 .custom-filter {
   width: 14rem;
 }
@@ -310,6 +319,10 @@ body {
   background-size: contain;
   position: absolute;
   left: 1.25rem;
+}
+.custom-filter-arrange .mat-mdc-text-field-wrapper:before {
+  background: url("/svg/arrange.svg") no-repeat center center;
+  background-size: contain;
 }
 .no-icon .mat-mdc-text-field-wrapper:before {
   display: none;
@@ -463,28 +476,28 @@ body {
   justify-content: center;
   align-items: center;
 }
-.solid-table .activeinactivediv {
+.activeinactivediv {
   display: flex;
   align-items: center;
   gap: 1rem;
 }
-.solid-table .activeinactivediv span.inactive {
+.activeinactivediv span.inactive {
   color: #676767;
   font-weight: 500;
 }
-.solid-table .activeinactivediv span.active {
+.activeinactivediv span.active {
   color: #38ae47;
   font-weight: 500;
 }
-.solid-table .inactivestatus,
-.solid-table .activestatus {
+.inactivestatus,
+.activestatus {
   position: relative;
   display: flex;
   align-items: center;
   gap: 0.625rem;
 }
-.solid-table .inactivestatus:before,
-.solid-table .activestatus:before {
+.inactivestatus:before,
+.activestatus:before {
   content: "";
   width: 1rem;
   height: 1rem;
@@ -492,7 +505,7 @@ body {
   overflow: hidden;
   background: #38ae47;
 }
-.solid-table .inactivestatus:before {
+.inactivestatus:before {
   background: #ef4444;
 }
 .liketd {
@@ -823,21 +836,21 @@ router-outlet + * {
   font-weight: 500;
   color: #000;
 }
-.custonChip .mat-mdc-chip {
+.customChip .mat-mdc-chip {
   border-radius: 0.625rem !important;
   background: #d1d1d1 !important;
   height: 1.625rem !important;
 }
-.custonChip .mat-mdc-chip .mat-mdc-chip-focus-overlay {
+.customChip .mat-mdc-chip .mat-mdc-chip-focus-overlay {
   border: 0 !important;
   border-radius: 0.625rem !important;
 }
-.custonChip
+.customChip
   .mat-mdc-standard-chip
   .mdc-evolution-chip__action--primary::before {
   border: 0 !important;
 }
-.custonChip .mat-mdc-chip-remove .mat-icon {
+.customChip .mat-mdc-chip-remove .mat-icon {
   border: 1px solid #231f20;
   border-radius: 50%;
   width: 1rem !important;
@@ -954,6 +967,9 @@ hr {
 .w-200 {
   width: 12.5rem !important;
 }
+.cursor-pointer {
+  cursor: pointer !important;
+}
 .wrapperDiv {
   display: flex;
   gap: 10rem;
@@ -963,4 +979,31 @@ hr {
 }
 .justify-end {
   justify-content: flex-end;
+}
+
+.innertabdiv .mat-mdc-icon-button .mat-mdc-button-touch-target {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.innertabdiv .mdc-tab {
+  padding: 0 !important;
+  min-width: auto;
+  margin-right: 1.25rem;
+}
+.innertabdiv .mat-mdc-tab-body-wrapper {
+  max-height: calc(100vh - 31.1rem);
+}
+.innertabdiv .mat-mdc-tab-body-content {
+  padding: 2rem 0;
+}
+
+.innertabdiv .mat-mdc-tab .mdc-tab-indicator__content--underline {
+  border-color: #000 !important;
+}
+.innertabdiv .mat-mdc-tab-label-container {
+  border: 0;
+}
+.innertabdiv .mat-mdc-tab .mdc-tab__text-label {
+  color: #d1d1d1;
 }

@@ -18,6 +18,8 @@ import { ReviewaccessLayoutComponent } from './layout/reviewaccess-layout/review
 import { ReviewAccessComponent } from './pages/review-access/review-access.component';
 import { ReviewAccessDetailComponent } from './pages/review-access-detail/review-access-detail.component';
 import { SodDetailComponent } from './pages/sod-detail/sod-detail.component';
+import { AdministrativecontrolsLayoutComponent } from './layout/administrativecontrols-layout/administrativecontrols-layout.component';
+import { AdministrativeControlComponent } from './pages/administrative-control/administrative-control.component';
 
 export const routes: Routes = [
   {
@@ -138,6 +140,36 @@ export const routes: Routes = [
           animation: 'SodDetailPage',
         },
       },
+    ],
+  },
+  {
+    path: 'administrative-control',
+    component: AdministrativecontrolsLayoutComponent,
+    data: {
+      breadcrumb: 'Administrative Control',
+      animation: 'AdministrativeControlPage',
+    },
+    children: [
+      {
+        path: '',
+        component: AdministrativeControlComponent,
+      },
+      // {
+      //   path: 'review-access-detail',
+      //   component: ReviewAccessDetailComponent,
+      //   data: {
+      //     breadcrumb: 'Review Access',
+      //     animation: 'ReviewAccessDetailPage',
+      //   },
+      // },
+      // {
+      //   path: 'sod-detail',
+      //   component: SodDetailComponent,
+      //   data: {
+      //     breadcrumb: 'Review Access',
+      //     animation: 'SodDetailPage',
+      //   },
+      // },
     ],
   },
 ];
