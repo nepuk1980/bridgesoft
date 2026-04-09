@@ -1,7 +1,7 @@
 <div class="inner-header-wrapper">
   <app-breadcrumb></app-breadcrumb>
 
-  <mat-chip-set class="custonChip">
+  <mat-chip-set class="customChip">
     <mat-chip-row *ngFor="let user of users" (removed)="remove(user)">
       {{ user }}
       <button matChipRemove>

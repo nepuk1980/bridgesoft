@@ -19,7 +19,7 @@
       <p>Showing {{ filteredCount }} of {{ totalCount }}</p>
     </div>
 
-    <mat-chip-set class="custonChip">
+    <mat-chip-set class="customChip">
       <mat-chip-row *ngFor="let user of users" (removed)="remove(user)">
         {{ user }}
         <button matChipRemove>

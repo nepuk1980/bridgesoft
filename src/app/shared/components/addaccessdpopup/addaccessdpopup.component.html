@@ -1,0 +1,43 @@
+<mat-dialog-actions align="end" class="popupclose">
+  <img mat-dialog-close src="/svg/close.svg" />
+</mat-dialog-actions>
+<div class="popup-content">
+  <h6 mat-dialog-title class="popup-title">Edit Permissions</h6>
+  <mat-chip-set class="customChip">
+    <mat-chip-row>
+      <div class="chipsrow">
+        <img src="/svg/usertable.svg" width="18" height="18" />
+        Human Resources
+      </div>
+    </mat-chip-row>
+  </mat-chip-set>
+  <div>
+    <div class="checkboxwrapper">
+      <div>
+        <mat-checkbox class="customcheckbox"> Full Control </mat-checkbox>
+      </div>
+
+      <div>
+        <mat-checkbox class="customcheckbox"> Modify </mat-checkbox>
+      </div>
+
+      <div>
+        <mat-checkbox class="customcheckbox"> Read & Execute </mat-checkbox>
+      </div>
+      <div>
+        <mat-checkbox class="customcheckbox">
+          List Folder Content
+        </mat-checkbox>
+      </div>
+      <div>
+        <mat-checkbox class="customcheckbox"> Read </mat-checkbox>
+      </div>
+      <div>
+        <mat-checkbox class="customcheckbox"> Write </mat-checkbox>
+      </div>
+    </div>
+  </div>
+  <mat-dialog-actions align="end" class="forwardbtn">
+    <button mat-dialog-close mat-flat-button class="btn-blue">Apply</button>
+  </mat-dialog-actions>
+</div>
