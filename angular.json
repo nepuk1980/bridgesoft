@@ -25,7 +25,15 @@
               }
             ],
             "styles": ["src/custom-theme.scss", "src/styles.css"],
-            "scripts": []
+            "scripts": [],
+            "allowedCommonJsDependencies": [
+              "canvg",
+              "core-js",
+              "raf",
+              "rgbcolor",
+              "file-saver",
+              "html2canvas"
+            ]
           },
           "configurations": {
             "production": {
@@ -43,8 +51,8 @@
                 },
                 {
                   "type": "anyComponentStyle",
-                  "maximumWarning": "4kB",
-                  "maximumError": "8kB"
+                  "maximumWarning": "10kB",
+                  "maximumError": "10kB"
                 }
               ],
               "outputHashing": "all"

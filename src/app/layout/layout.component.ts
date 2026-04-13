@@ -27,6 +27,8 @@ import {
   query,
   group,
 } from '@angular/animations';
+import { MatDividerModule } from '@angular/material/divider';
+import { NgFor, NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-layout',
@@ -40,7 +42,10 @@ import {
     MatIconModule,
     MatButtonModule,
     MatListModule,
+    MatDividerModule,
     NgxSkeletonLoaderComponent,
+    NgFor,
+    NgIf,
   ],
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.css',
@@ -131,6 +136,7 @@ export class LayoutComponent {
   }
 
   hidden = false;
+  notification = 15;
 
   toggleBadgeVisibility() {
     this.hidden = true;
@@ -273,7 +279,7 @@ export class LayoutComponent {
       time: '02 / 11 / 2026 11:24 AM',
     },
   ];
-
+  dataSource = [...this.notifications];
   openNotificationDialog() {
     this.dialog.open(NotificationpopupComponent, {
       width: '85.75rem',
