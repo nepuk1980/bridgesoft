@@ -1,0 +1,429 @@
+<app-innerheader
+  title="Alerts"
+  [btn]="false"
+  btntitle="Back To Dashboard"
+></app-innerheader>
+
+<div class="multiwrapper">
+  <h3>Create An Alert</h3>
+  <div class="fieldWrapper">
+    <div class="form-control w-25">
+      <label>Summary</label>
+
+      <!-- Input -->
+      <input class="form-field" type="text" placeholder="Enter Name Here" />
+    </div>
+    <div class="form-control w-75">
+      <label>Description</label>
+
+      <!-- Input -->
+      <input class="form-field" type="text" />
+    </div>
+    <div class="form-control w-25">
+      <label>When Someone</label>
+
+      <div class="filter-field no-icon custom-filter">
+        <mat-form-field>
+          <mat-label>Add Access Folder</mat-label>
+          <mat-select panelClass="custom-filter-panel">
+            <mat-option value="">Add Access Folder</mat-option>
+            <mat-option value="">Everyone</mat-option>
+            <mat-option value="">Human Resources</mat-option>
+            <mat-option value="">Finance</mat-option>
+            <mat-option value="">Legal</mat-option>
+            <mat-option value="">Administration</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+    <div class="w-75 fieldGroup">
+      <div class="form-control">
+        <mat-radio-group aria-label="Select an option" class="customRadio">
+          <mat-radio-button value="1">Add</mat-radio-button>
+          <mat-radio-button value="2">Remove</mat-radio-button>
+        </mat-radio-group>
+      </div>
+      <div class="form-control search-control">
+        <div class="no-icon custom-filter custom-filter-cehckbox">
+          <mat-form-field>
+            <mat-label>Select Resource/s</mat-label>
+
+            <mat-select
+              multiple
+              [(ngModel)]="selectedResources"
+              panelClass="custom-filter-panel"
+            >
+              <!-- SEARCH (NO CHECKBOX) -->
+              <mat-option class="search-option">
+                <div class="searchslelect" (click)="$event.stopPropagation()">
+                  <img src="/svg/search.svg" class="search-icon" />
+
+                  <input
+                    placeholder="Search"
+                    [(ngModel)]="searchText"
+                    [ngModelOptions]="{ standalone: true }"
+                    (keyup)="filterResources()"
+                  />
+                </div>
+              </mat-option>
+
+              <!-- OPTIONS -->
+              <mat-option *ngFor="let item of filteredResources" [value]="item">
+                <div class="icontexttd">
+                  <img
+                    src="/svg/folder.svg"
+                    class="folderico"
+                    *ngIf="item.type === 'folder'"
+                  />
+                  <img
+                    src="/svg/file.svg"
+                    class="fileico"
+                    *ngIf="item.type === 'file'"
+                  />
+                  {{ item.name }}
+                </div>
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="mainboxwrapper">
+    <div class="boxWrapper">
+      <h6>Include</h6>
+      <div class="leftNav">
+        <div class="filter-grp-div">
+          <div class="search-box w-full">
+            <input #searchInput type="text" placeholder="Search" />
+            <img src="/svg/search.svg" class="search-icon" />
+          </div>
+        </div>
+
+        <div class="innertabdiv">
+          <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start">
+            <!-- GROUPS -->
+            <mat-tab label="Groups">
+              <mat-tree
+                [dataSource]="includeDataSource"
+                [treeControl]="includeTreeControl"
+              >
+                <mat-nested-tree-node
+                  *matTreeNodeDef="let node; when: hasChild"
+                >
+                  <div class="node-row">
+                    <button mat-icon-button matTreeNodeToggle>
+                      <mat-icon>
+                        {{
+                          includeTreeControl.isExpanded(node) ? "remove" : "add"
+                        }}
+                      </mat-icon>
+                    </button>
+
+                    <div
+                      class="treeheading cursor-pointer"
+                      (click)="selectNode(node, 'include')"
+                      [ngClass]="{ active: selectedIncludeNode === node }"
+                    >
+                      <img src="/svg/multiuser.svg" width="22" height="18" />
+                      <span class="dept-name">{{ node.name }}</span>
+                    </div>
+                  </div>
+
+                  <div
+                    class="children"
+                    *ngIf="includeTreeControl.isExpanded(node)"
+                  >
+                    <ng-container matTreeNodeOutlet></ng-container>
+                  </div>
+                </mat-nested-tree-node>
+
+                <mat-tree-node *matTreeNodeDef="let node">
+                  <div class="node-row user-row">
+                    <span class="empty"></span>
+
+                    <div
+                      class="treeheading cursor-pointer"
+                      (click)="selectNode(node, 'include')"
+                      [ngClass]="{ active: selectedIncludeNode === node }"
+                    >
+                      <img src="/svg/singleuser.svg" width="22" height="18" />
+                      <span>{{ node.name }}</span>
+                    </div>
+                  </div>
+                </mat-tree-node>
+              </mat-tree>
+            </mat-tab>
+
+            <!-- USERS -->
+            <mat-tab label="Users">
+              <mat-tree
+                class="usertree"
+                [dataSource]="includeUsersDataSource"
+                [treeControl]="usersTreeControl"
+              >
+                <mat-tree-node *matTreeNodeDef="let node">
+                  <div class="node-row user-row">
+                    <div
+                      class="treeheading cursor-pointer"
+                      (click)="selectNode(node, 'include')"
+                      [ngClass]="{ active: selectedIncludeNode === node }"
+                    >
+                      <img src="/svg/singleuser.svg" width="22" height="18" />
+                      <span>{{ node.name }}</span>
+                    </div>
+                  </div>
+                </mat-tree-node>
+              </mat-tree>
+            </mat-tab>
+
+            <!-- ACCESS -->
+            <mat-tab label="Access">
+              <mat-tree
+                class="accesstree"
+                [dataSource]="includeAccessDataSource"
+                [treeControl]="accessTreeControl"
+              >
+                <mat-tree-node *matTreeNodeDef="let node">
+                  <div
+                    class="node-row cursor-pointer"
+                    (click)="selectNode(node, 'include')"
+                    [ngClass]="{ active: selectedIncludeNode === node }"
+                  >
+                    <img src="/svg/folder.svg" width="18" height="18" />
+                    <span class="dept-name">{{ node.name }}</span>
+                  </div>
+                </mat-tree-node>
+              </mat-tree>
+            </mat-tab>
+          </mat-tab-group>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= EXCLUDE ================= -->
+
+    <div class="boxWrapper">
+      <h6>Exclude</h6>
+
+      <div class="leftNav">
+        <div class="filter-grp-div">
+          <div class="search-box w-full">
+            <input #searchInput type="text" placeholder="Search" />
+            <img src="/svg/search.svg" class="search-icon" />
+          </div>
+        </div>
+
+        <div class="innertabdiv">
+          <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start">
+            <!-- GROUPS -->
+            <mat-tab label="Groups">
+              <mat-tree
+                [dataSource]="excludeDataSource"
+                [treeControl]="excludeTreeControl"
+              >
+                <mat-nested-tree-node
+                  *matTreeNodeDef="let node; when: hasChild"
+                >
+                  <div class="node-row">
+                    <button mat-icon-button matTreeNodeToggle>
+                      <mat-icon>
+                        {{
+                          excludeTreeControl.isExpanded(node) ? "remove" : "add"
+                        }}
+                      </mat-icon>
+                    </button>
+
+                    <div
+                      class="treeheading cursor-pointer"
+                      (click)="selectNode(node, 'exclude')"
+                      [ngClass]="{ active: selectedExcludeNode === node }"
+                    >
+                      <img src="/svg/multiuser.svg" width="22" height="18" />
+                      <span class="dept-name">{{ node.name }}</span>
+                    </div>
+                  </div>
+
+                  <div
+                    class="children"
+                    *ngIf="excludeTreeControl.isExpanded(node)"
+                  >
+                    <ng-container matTreeNodeOutlet></ng-container>
+                  </div>
+                </mat-nested-tree-node>
+
+                <mat-tree-node *matTreeNodeDef="let node">
+                  <div class="node-row user-row">
+                    <span class="empty"></span>
+
+                    <div
+                      class="treeheading cursor-pointer"
+                      (click)="selectNode(node, 'exclude')"
+                      [ngClass]="{ active: selectedExcludeNode === node }"
+                    >
+                      <img src="/svg/singleuser.svg" width="22" height="18" />
+                      <span>{{ node.name }}</span>
+                    </div>
+                  </div>
+                </mat-tree-node>
+              </mat-tree>
+            </mat-tab>
+
+            <!-- USERS -->
+            <mat-tab label="Users">
+              <mat-tree
+                class="usertree"
+                [dataSource]="excludeUsersDataSource"
+                [treeControl]="usersTreeControl"
+              >
+                <mat-tree-node *matTreeNodeDef="let node">
+                  <div class="node-row user-row">
+                    <div
+                      class="treeheading cursor-pointer"
+                      (click)="selectNode(node, 'exclude')"
+                      [ngClass]="{ active: selectedExcludeNode === node }"
+                    >
+                      <img src="/svg/singleuser.svg" width="22" height="18" />
+                      <span>{{ node.name }}</span>
+                    </div>
+                  </div>
+                </mat-tree-node>
+              </mat-tree>
+            </mat-tab>
+
+            <!-- ACCESS -->
+            <mat-tab label="Access">
+              <mat-tree
+                class="accesstree"
+                [dataSource]="excludeAccessDataSource"
+                [treeControl]="accessTreeControl"
+              >
+                <mat-tree-node *matTreeNodeDef="let node">
+                  <div
+                    class="node-row cursor-pointer"
+                    (click)="selectNode(node, 'exclude')"
+                    [ngClass]="{ active: selectedExcludeNode === node }"
+                  >
+                    <img src="/svg/folder.svg" width="18" height="18" />
+                    <span class="dept-name">{{ node.name }}</span>
+                  </div>
+                </mat-tree-node>
+              </mat-tree>
+            </mat-tab>
+          </mat-tab-group>
+        </div>
+      </div>
+    </div>
+
+    <div class="boxWrapper">
+      <h6>Set Date & Time Range</h6>
+      <div class="leftNav datetimewrap">
+        <div class="form-control">
+          <mat-slide-toggle
+            [(ngModel)]="isCheckedAllTheTime"
+            class="customslide"
+            >&nbsp;All The Time</mat-slide-toggle
+          >
+        </div>
+        <h6>Date & Time Range</h6>
+        <div class="dateWraper">
+          <div class="form-control-label">
+            <label>From</label>
+            <input
+              class="field"
+              [matDatepicker]="pickerFrom"
+              placeholder="MM / DD / YY"
+              (click)="pickerFrom.open()"
+            />
+            <mat-datepicker #pickerFrom></mat-datepicker>
+          </div>
+          <div class="form-control-label">
+            <label>To</label>
+            <input
+              class="field"
+              [matDatepicker]="pickerTo"
+              placeholder="MM / DD / YY"
+              (click)="pickerTo.open()"
+            />
+            <mat-datepicker #pickerTo></mat-datepicker>
+          </div>
+        </div>
+        <h6>Days</h6>
+        <div class="daysWrapper">
+          <button
+            mat-button
+            *ngFor="let day of days"
+            (click)="toggleDay(day.value)"
+            [class.active]="selectedDays.includes(day.value)"
+          >
+            {{ day.label }}
+          </button>
+        </div>
+
+        <h6>Time</h6>
+        <div class="timeWrapper">
+          <div class="form-control-label">
+            <label>Time Zone</label>
+            <div class="custom-filter no-icon">
+              <mat-form-field>
+                <mat-select
+                  panelClass="custom-filter-panel"
+                  [(ngModel)]="selectedTimezone"
+                >
+                  <mat-option value="GMT">GMT</mat-option>
+                  <mat-option value="GMT+05:30">GMT +05:30</mat-option>
+                </mat-select>
+              </mat-form-field>
+            </div>
+          </div>
+          <div class="form-control-label">
+            <label>Time</label>
+            <input
+              class="field"
+              [matTimepicker]="pickerTime"
+              placeholder="00 : 00 : 00"
+              (click)="pickerTime.open()"
+            />
+            <mat-timepicker #pickerTime />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="boxWrapper">
+      <h6>Alert Mode</h6>
+      <div class="leftNav">
+        <div class="alertModeWrapper">
+          <div class="form-control">
+            <mat-slide-toggle
+              [(ngModel)]="isCheckedWebAlert"
+              class="customslide"
+              >&nbsp;Web Alert</mat-slide-toggle
+            >
+          </div>
+          <div class="form-control">
+            <mat-slide-toggle
+              [(ngModel)]="isCheckedEmailAlert"
+              class="customslide"
+              >&nbsp;Email Alert</mat-slide-toggle
+            >
+            <input
+              class="form-field"
+              type="text"
+              placeholder="Enter Recipients Email Id"
+              *ngIf="isCheckedEmailAlert"
+            />
+          </div>
+        </div>
+        <div class="fixed-btn">
+          <button mat-flat-button class="btn-grey" routerLink="/review-access">
+            Cancel
+          </button>
+          <button mat-flat-button class="btn-blue" routerLink="/review-access">
+            Save Alert
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

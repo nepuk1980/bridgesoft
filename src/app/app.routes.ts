@@ -20,6 +20,11 @@ import { ReviewAccessDetailComponent } from './pages/review-access-detail/review
 import { SodDetailComponent } from './pages/sod-detail/sod-detail.component';
 import { AdministrativecontrolsLayoutComponent } from './layout/administrativecontrols-layout/administrativecontrols-layout.component';
 import { AdministrativeControlComponent } from './pages/administrative-control/administrative-control.component';
+import { AlertLayoutComponent } from './layout/alert-layout/alert-layout.component';
+import { AlertComponent } from './pages/alert/alert.component';
+import { AlertConfigurationComponent } from './pages/alert-configuration/alert-configuration.component';
+import { RulesLayoutComponent } from './layout/rules-layout/rules-layout.component';
+import { RulesComponent } from './pages/rules/rules.component';
 
 export const routes: Routes = [
   {
@@ -154,22 +159,39 @@ export const routes: Routes = [
         path: '',
         component: AdministrativeControlComponent,
       },
-      // {
-      //   path: 'review-access-detail',
-      //   component: ReviewAccessDetailComponent,
-      //   data: {
-      //     breadcrumb: 'Review Access',
-      //     animation: 'ReviewAccessDetailPage',
-      //   },
-      // },
-      // {
-      //   path: 'sod-detail',
-      //   component: SodDetailComponent,
-      //   data: {
-      //     breadcrumb: 'Review Access',
-      //     animation: 'SodDetailPage',
-      //   },
-      // },
+    ],
+  },
+  {
+    path: 'alerts',
+    component: AlertLayoutComponent,
+    data: { breadcrumb: 'Alert', animation: 'AlertPage' },
+    children: [
+      {
+        path: '',
+        component: AlertComponent,
+      },
+      {
+        path: 'alerts-configuration',
+        component: AlertConfigurationComponent,
+        data: {
+          breadcrumb: 'Alert',
+          animation: 'AlertConfigurationPage',
+        },
+      },
+    ],
+  },
+  {
+    path: 'rules',
+    component: RulesLayoutComponent,
+    data: {
+      breadcrumb: 'Rules Control',
+      animation: 'RulesPage',
+    },
+    children: [
+      {
+        path: '',
+        component: RulesComponent,
+      },
     ],
   },
 ];

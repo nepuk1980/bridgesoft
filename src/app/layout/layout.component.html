@@ -17,16 +17,24 @@
   </div>
 
   <div class="rightnav">
-    <button
-      mat-icon-button
-      matBadge="15"
-      matBadgeSize="large"
-      [matBadgeHidden]="hidden"
-      (click)="handleNotificationClick()"
-      class="notibtn"
-    >
-      <img src="/svg/alerts.svg" />
-    </button>
+    <div class="notificationWrapper">
+      <button
+        mat-icon-button
+        [matBadge]="notification"
+        matBadgeSize="large"
+        [matBadgeHidden]="hidden"
+        (click)="handleNotificationClick()"
+        class="notibtn"
+      >
+        <img src="/svg/alerts.svg" />
+      </button>
+
+      <div class="notificationlist" *ngIf="!hidden">
+        <p *ngFor="let item of dataSource">
+          {{ item.notification }}
+        </p>
+      </div>
+    </div>
 
     <button mat-icon-button class="profileBtn">
       <img src="/images/profile.png" class="profileImg" />
