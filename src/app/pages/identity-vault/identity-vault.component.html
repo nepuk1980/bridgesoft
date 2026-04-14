@@ -27,6 +27,32 @@
 
       <!-- 🔽 Filters -->
       <div class="filter-grp-div">
+        <div class="custom-filter no-icon">
+          <mat-form-field>
+            <mat-label>Download</mat-label>
+            <mat-select
+              [(ngModel)]="selectedDownload"
+              panelClass="custom-filter-panel"
+            >
+              <mat-option value="download">Download</mat-option>
+              <mat-option value="pdf" (click)="downloadPDF()"
+                ><div class="icontexttd">
+                  <img src="/svg/pdf.svg" class="icons" alt="pdf" /> PDF
+                </div></mat-option
+              >
+              <mat-option value="excel" (click)="downloadExcel()"
+                ><div class="icontexttd">
+                  <img src="/svg/excel.svg" class="icons" alt="excel" /> Excel
+                </div></mat-option
+              >
+              <mat-option value="csv" (click)="downloadCSV()"
+                ><div class="icontexttd">
+                  <img src="/svg/csv.svg" class="icons" alt="csv" /> CSV
+                </div></mat-option
+              >
+            </mat-select>
+          </mat-form-field>
+        </div>
         <!-- Category -->
         <div class="custom-filter no-icon">
           <mat-form-field>

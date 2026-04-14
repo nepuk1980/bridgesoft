@@ -10,6 +10,8 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 import { InnerheaderComponent } from '../../shared/components/innerheader/innerheader.component';
 import { ApiService } from '../../services/api.service';
+import { ReportService } from '../../services/report.service';
+import { MatIconModule } from '@angular/material/icon';
 
 interface Filter {
   value: string;
@@ -38,12 +40,16 @@ interface Application {
     FormsModule,
     RouterModule,
     NgxSkeletonLoaderModule,
+    MatIconModule,
   ],
   templateUrl: './applications.component.html',
   styleUrl: './applications.component.css',
 })
 export class ApplicationsComponent implements OnInit, AfterViewInit {
-  constructor(private api: ApiService) {}
+  constructor(
+    private api: ApiService,
+    private reportService: ReportService,
+  ) {}
 
   // ✅ Filters
   filters: Filter[] = [];
@@ -55,6 +61,7 @@ export class ApplicationsComponent implements OnInit, AfterViewInit {
 
   searchText: string = '';
   selectedFilter: string = '';
+  selectedDownload: string = 'download';
 
   isLoading = false; // ✅ loader
 
@@ -145,5 +152,59 @@ export class ApplicationsComponent implements OnInit, AfterViewInit {
     }
 
     this.dataSource.data = filteredData;
+  }
+
+  private getFormattedDateTime(): string {
+    const now = new Date();
+
+    const date = now.toLocaleDateString('en-GB').replace(/\//g, '-'); // DD-MM-YYYY
+    const time = now
+      .toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      })
+      .replace(/:/g, '-'); // HH-MM-SS
+
+    return `${date}_${time}`;
+  }
+
+  private getExportData() {
+    return this.originalData.map((item) => ({
+      Name: item.name,
+      Host: item.host,
+      Type: item.type,
+      Modified: item.modified,
+      'Assigned Role Summary': item.assigned,
+    }));
+  }
+  downloadExcel() {
+    const data = this.getExportData();
+    const timestamp = this.getFormattedDateTime();
+    this.reportService.downloadExcel(
+      data,
+      `application-report_${timestamp}`,
+      'Applications',
+    );
+  }
+
+  downloadCSV() {
+    const data = this.getExportData();
+    const timestamp = this.getFormattedDateTime();
+    this.reportService.downloadCSV(
+      data,
+      `application-report_${timestamp}`,
+      'Applications',
+    );
+  }
+
+  downloadPDF() {
+    const data = this.getExportData();
+    const timestamp = this.getFormattedDateTime();
+    this.reportService.downloadPDF(
+      data,
+      `application-report_${timestamp}`,
+      'Applications',
+    );
   }
 }

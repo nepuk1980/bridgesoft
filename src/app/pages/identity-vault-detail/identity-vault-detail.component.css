@@ -21,3 +21,7 @@
 .solid-table {
   height: calc(100vh - 19rem);
 }
+.filter-grp-div {
+  display: flex;
+  justify-content: flex-end;
+}

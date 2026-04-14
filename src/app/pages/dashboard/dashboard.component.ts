@@ -39,6 +39,7 @@ export interface externalFilesData {
 
 interface CardData {
   title: string;
+  reporttitle?: string;
   value: number | string;
   file: boolean;
   fileicon: boolean;
