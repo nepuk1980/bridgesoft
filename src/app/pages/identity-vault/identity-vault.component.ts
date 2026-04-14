@@ -11,6 +11,8 @@ import { MatPaginator } from '@angular/material/paginator';
 
 import { InnerheaderComponent } from '../../shared/components/innerheader/innerheader.component';
 import { ApiService } from '../../services/api.service';
+import { ReportService } from '../../services/report.service';
+import { timestamp } from 'rxjs';
 
 interface Filter {
   value: string;
@@ -73,6 +75,7 @@ export class IdentityVaultComponent implements AfterViewInit, OnInit {
   searchText: string = '';
   selectedCategory: string = '';
   selectedFilter: string = '';
+  selectedDownload: string = 'Download';
 
   // pagination
   page = 0;
@@ -85,6 +88,7 @@ export class IdentityVaultComponent implements AfterViewInit, OnInit {
   constructor(
     private router: Router,
     private api: ApiService,
+    private reportService: ReportService,
   ) {}
 
   ngOnInit() {
@@ -206,5 +210,59 @@ export class IdentityVaultComponent implements AfterViewInit, OnInit {
       .replace(/[^a-z0-9\s-]/g, '')
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-');
+  }
+  private getFormattedDateTime(): string {
+    const now = new Date();
+
+    const date = now.toLocaleDateString('en-GB').replace(/\//g, '-'); // DD-MM-YYYY
+    const time = now
+      .toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      })
+      .replace(/:/g, '-'); // HH-MM-SS
+
+    return `${date}_${time}`;
+  }
+  private getExportData() {
+    return this.originalData.map((item) => ({
+      'First Name': item.firstName || '-',
+      'Last Name': item.lastName || '-',
+      'Email Id': item.email || '-',
+      Manager: item.manager || '-',
+      'Assigned Role Summary': item.roleSummary || '-',
+      'Last Refresh': item.lastRefresh || '-',
+      'Risk Score': item.riskScore ?? 0,
+    }));
+  }
+  downloadExcel() {
+    const data = this.getExportData();
+    const timestamp = this.getFormattedDateTime();
+    this.reportService.downloadExcel(
+      data,
+      `identity-vault-report_${timestamp}`,
+      'Identity Vault',
+    );
+  }
+
+  downloadCSV() {
+    const data = this.getExportData();
+    const timestamp = this.getFormattedDateTime();
+    this.reportService.downloadCSV(
+      data,
+      `identity-vault-report_${timestamp}`,
+      'Identity Vault',
+    );
+  }
+
+  downloadPDF() {
+    const data = this.getExportData();
+    const timestamp = this.getFormattedDateTime();
+    this.reportService.downloadPDF(
+      data,
+      `identity-vault-report_${timestamp}`,
+      'Identity Vault',
+    );
   }
 }

@@ -17,6 +17,8 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { FormsModule } from '@angular/forms';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NgIf } from '@angular/common';
+import { ReportService } from '../../../services/report.service';
+import { MatSelectModule } from '@angular/material/select';
 
 export interface Folder {
   name: string;
@@ -32,6 +34,7 @@ export interface Folder {
     MatDialogModule,
     MatTableModule,
     MatSortModule,
+    MatSelectModule,
     FormsModule,
     MatProgressSpinnerModule,
     NgIf,
@@ -42,16 +45,21 @@ export interface Folder {
 export class FilefolderpopupComponent implements AfterViewInit, OnInit {
   private dialogRef = inject(MatDialogRef<FilefolderpopupComponent>);
 
-  constructor(@Inject(MAT_DIALOG_DATA) public data: any) {}
+  constructor(
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    private reportService: ReportService,
+  ) {}
 
   displayedColumns: string[] = ['name', 'category', 'created'];
 
   dataSource!: MatTableDataSource<Folder>;
+  selectedDownload: string = 'Download';
 
   @ViewChild(MatSort) sort!: MatSort;
 
   ngOnInit() {
     const isFile = this.data?.fileicon; // true = File, false = Folder
+    console.log('dad', this.data.reporttitle);
 
     // ✅ Dynamic columns
     this.displayedColumns = isFile
@@ -91,5 +99,66 @@ export class FilefolderpopupComponent implements AfterViewInit, OnInit {
 
   closeDialog() {
     this.dialogRef.close();
+  }
+
+  private getFormattedDateTime(): string {
+    const now = new Date();
+
+    const date = now.toLocaleDateString('en-GB').replace(/\//g, '-'); // DD-MM-YYYY
+    const time = now
+      .toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      })
+      .replace(/:/g, '-'); // HH-MM-SS
+
+    return `${date}_${time}`;
+  }
+  private getExportData() {
+    const isFile = this.data?.fileicon;
+
+    return (this.data?.folders || []).map((item: any) => ({
+      'Folder Names': isFile
+        ? (item.fileName ?? item.itemName ?? '-')
+        : (item.itemName ?? '-'),
+
+      Categories: isFile
+        ? (item.fileType ?? item.itemType ?? '-')
+        : (item.itemType ?? '-'),
+
+      'Created On': item.createDatetime
+        ? new Date(item.createDatetime).toLocaleDateString()
+        : '-',
+    }));
+  }
+  downloadExcel() {
+    const data = this.getExportData();
+    const timestamp = this.getFormattedDateTime();
+    this.reportService.downloadExcel(
+      data,
+      `dashboard-${this.data.reporttitle}_${timestamp}`,
+      `Dashboard-${this.data.title}`,
+    );
+  }
+
+  downloadCSV() {
+    const data = this.getExportData();
+    const timestamp = this.getFormattedDateTime();
+    this.reportService.downloadCSV(
+      data,
+      `dashboard-${this.data.reporttitle}_${timestamp}`,
+      `Dashboard-${this.data.title}`,
+    );
+  }
+
+  downloadPDF() {
+    const data = this.getExportData();
+    const timestamp = this.getFormattedDateTime();
+    this.reportService.downloadPDF(
+      data,
+      `dashboard-${this.data.reporttitle}_${timestamp}`,
+      `Dashboard-${this.data.title}`,
+    );
   }
 }

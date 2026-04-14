@@ -28,6 +28,16 @@
   line-height: 3.125rem;
   padding: 0;
 }
+.popup-search-filter-div .search-box {
+  margin-left: 0;
+  margin-top: 0;
+}
+.popup-search-filter-div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 1.625rem;
+}
 
 .popup-content p {
   text-align: center;

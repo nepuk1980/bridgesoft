@@ -7,6 +7,8 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { NgClass, NgFor, NgIf } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { ApiService } from '../../services/api.service';
+import { FormsModule } from '@angular/forms';
+import { ReportService } from '../../services/report.service';
 
 // ✅ TYPES
 type Attributes = {
@@ -57,6 +59,7 @@ type ApplicationAccount = {
     NgIf,
     MatTableModule,
     NgClass,
+    FormsModule,
   ],
   templateUrl: './identity-vault-detail.component.html',
   styleUrl: './identity-vault-detail.component.css',
@@ -65,6 +68,8 @@ export class IdentityVaultDetailComponent implements OnInit {
   appId!: number;
   selectedIndex = 0;
   isLoading = true;
+  selectedEntitlementsDownload: string = 'Download';
+  selectedApplicationDownload: string = 'Download';
 
   // ✅ Static tab structure
   tabs: any[] = [
@@ -103,6 +108,7 @@ export class IdentityVaultDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private api: ApiService,
+    private reportService: ReportService,
   ) {}
 
   ngOnInit(): void {
@@ -212,5 +218,109 @@ export class IdentityVaultDetailComponent implements OnInit {
   isAllAccessTrue(access: any): boolean {
     if (!access) return false;
     return Object.values(access).every((val) => val === true);
+  }
+
+  private getFormattedDateTime(): string {
+    const now = new Date();
+
+    const date = now.toLocaleDateString('en-GB').replace(/\//g, '-'); // DD-MM-YYYY
+    const time = now
+      .toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      })
+      .replace(/:/g, '-'); // HH-MM-SS
+
+    return `${date}_${time}`;
+  }
+
+  private getExportApplicationData() {
+    const appData = this.tabs[2].data as ApplicationAccount[];
+
+    return appData.map((item) => ({
+      Application: item.application || '-',
+      'Account Name': item.accountName || '-',
+      Status: item.status || '-',
+      'Last Access': item.lastAccess || '-',
+    }));
+  }
+  downloadApplicationExcel() {
+    const data = this.getExportApplicationData();
+    const timestamp = this.getFormattedDateTime();
+    this.reportService.downloadExcel(
+      data,
+      `application-accounts-application-accounts-report_${timestamp}`,
+      'Application Accounts - Application Accounts',
+    );
+  }
+
+  downloadApplicationCSV() {
+    const data = this.getExportApplicationData();
+    const timestamp = this.getFormattedDateTime();
+    this.reportService.downloadCSV(
+      data,
+      `application-accounts-application-accounts-report_${timestamp}`,
+      'Application Accounts - Application Accounts',
+    );
+  }
+
+  downloadApplicationPDF() {
+    const data = this.getExportApplicationData();
+    const timestamp = this.getFormattedDateTime();
+    this.reportService.downloadPDF(
+      data,
+      `application-accounts-application-accounts-report_${timestamp}`,
+      'Application Accounts - Application Accounts',
+    );
+  }
+
+  private getExportEntitlementsData() {
+    const entitlements = this.tabs[1].data as Entitlement[];
+
+    return entitlements.map((item) => {
+      const accessList =
+        Object.entries(item.access)
+          .filter(([_, value]) => value)
+          .map(([key]) => key)
+          .join(', ') || '-';
+
+      return {
+        'Folder / File Names': item.name || '-',
+        'Resource Path': item.resourcePath || '-',
+        Type: item.type || '-',
+        'File Share Access': accessList,
+        'Account Name': item.accountName || '-',
+      };
+    });
+  }
+  downloadEntitlementsExcel() {
+    const data = this.getExportEntitlementsData();
+    const timestamp = this.getFormattedDateTime();
+    this.reportService.downloadExcel(
+      data,
+      `application-accounts-entitlements-report_${timestamp}`,
+      'Application Accounts - Entitlements',
+    );
+  }
+
+  downloadEntitlementsCSV() {
+    const data = this.getExportEntitlementsData();
+    const timestamp = this.getFormattedDateTime();
+    this.reportService.downloadCSV(
+      data,
+      `application-accounts-entitlements-report_${timestamp}`,
+      'Application Accounts - Entitlements',
+    );
+  }
+
+  downloadEntitlementsPDF() {
+    const data = this.getExportEntitlementsData();
+    const timestamp = this.getFormattedDateTime();
+    this.reportService.downloadPDF(
+      data,
+      `application-accounts-entitlements-report_${timestamp}`,
+      'Application Accounts - Entitlements',
+    );
   }
 }
