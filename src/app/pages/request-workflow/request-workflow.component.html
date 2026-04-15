@@ -1,0 +1,156 @@
+<app-innerheader
+  title="Review Access"
+  [btn]="false"
+  btntitle="Back To Request Access"
+></app-innerheader>
+<div class="mainWrapper">
+  <ng-container>
+    <div class="search-filter-div">
+      <!-- 🔍 Search -->
+      <div class="search-box">
+        <input
+          #searchInput
+          type="text"
+          placeholder="Search"
+          (input)="onSearch(searchInput.value)"
+        />
+        <img src="/svg/search.svg" class="search-icon" />
+      </div>
+
+      <!-- 🔢 Count -->
+      <p>Showing {{ showingCount }} of {{ totalCount }}</p>
+
+      <div class="filter-grp-div">
+        <!-- Category Filter -->
+        <div class="custom-filter no-icon">
+          <mat-form-field>
+            <mat-label>Select Category</mat-label>
+            <mat-select
+              panelClass="custom-filter-panel"
+              (selectionChange)="filterCategory($event.value)"
+            >
+              <mat-option value="">Select Category</mat-option>
+
+              <mat-option *ngFor="let cat of categoriesImportant" [value]="cat">
+                {{ cat }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- Type Filter -->
+        <div class="custom-filter">
+          <mat-form-field>
+            <mat-label>Filter</mat-label>
+            <mat-select
+              panelClass="custom-filter-panel"
+              (selectionChange)="filterType($event.value)"
+            >
+              <mat-option value="">Filter</mat-option>
+              <mat-option value="folder">Folder</mat-option>
+              <mat-option value="file">File</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+
+    <div class="solid-table table-wrapper">
+      <table
+        mat-table
+        [dataSource]="dataSourceImportant"
+        class="mat-elevation-z2"
+      >
+        <!-- POLICY -->
+        <ng-container matColumnDef="policyName">
+          <th mat-header-cell *matHeaderCellDef>
+            <div class="checktddiv">
+              <mat-checkbox
+                (change)="toggleAllRows()"
+                [checked]="isAllSelected()"
+                [indeterminate]="isIndeterminate()"
+              ></mat-checkbox>
+
+              <span>Policy Name</span>
+            </div>
+          </th>
+
+          <td mat-cell *matCellDef="let row">
+            <div class="checktddiv">
+              <mat-checkbox
+                (click)="$event.stopPropagation()"
+                (change)="toggleRow(row)"
+                [checked]="selection.has(row)"
+              ></mat-checkbox>
+
+              <span>
+                <a routerLink="/review-access/sod-detail" class="table-link">
+                  {{ row.policyName }}
+                </a>
+              </span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- RULE -->
+        <ng-container matColumnDef="rule">
+          <th mat-header-cell *matHeaderCellDef>Rule</th>
+          <td mat-cell *matCellDef="let row">
+            {{ row.rule }}
+          </td>
+        </ng-container>
+
+        <!-- FOLDER/FILE -->
+        <ng-container matColumnDef="folderFileName">
+          <th mat-header-cell *matHeaderCellDef>Folder / File Names</th>
+          <td mat-cell *matCellDef="let row">
+            <div class="icontexttd">
+              <img src="/svg/folder.svg" *ngIf="row.type === 'folder'" />
+              <img src="/svg/file.svg" *ngIf="row.type === 'file'" />
+              {{ row.folderFileName }}
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- PATH -->
+        <ng-container matColumnDef="resourceFullPath">
+          <th mat-header-cell *matHeaderCellDef>Resource Full Path</th>
+          <td mat-cell *matCellDef="let row">
+            {{ row.resourceFullPath }}
+          </td>
+        </ng-container>
+
+        <!-- HEADER -->
+        <tr mat-header-row *matHeaderRowDef="displayedColumnsImportant"></tr>
+
+        <!-- ROW -->
+        <tr
+          mat-row
+          *matRowDef="let row; columns: displayedColumnsImportant"
+          (click)="toggleRow(row)"
+        ></tr>
+
+        <!-- NO DATA -->
+        <tr class="mat-row" *matNoDataRow>
+          <td
+            class="mat-cell"
+            [attr.colspan]="displayedColumnsImportant.length"
+            style="text-align: center; padding: 20px"
+          >
+            No data found
+          </td>
+        </tr>
+      </table>
+    </div>
+  </ng-container>
+</div>
+
+<div class="fixed-btn">
+  <button
+    routerLink="../request-access-detail"
+    mat-flat-button
+    class="btn-blue"
+  >
+    Submit
+  </button>
+</div>

@@ -19,6 +19,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NgIf } from '@angular/common';
 import { ReportService } from '../../../services/report.service';
 import { MatSelectModule } from '@angular/material/select';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 export interface Folder {
   name: string;
@@ -38,6 +39,7 @@ export interface Folder {
     FormsModule,
     MatProgressSpinnerModule,
     NgIf,
+    MatTooltipModule,
   ],
   templateUrl: './filefolderpopup.component.html',
   styleUrls: ['./filefolderpopup.component.css'],
@@ -50,7 +52,14 @@ export class FilefolderpopupComponent implements AfterViewInit, OnInit {
     private reportService: ReportService,
   ) {}
 
-  displayedColumns: string[] = ['name', 'category', 'created'];
+  displayedColumns: string[] = [
+    'name',
+    'category',
+    'adgroup',
+    'user',
+    'duration',
+    'created',
+  ];
 
   dataSource!: MatTableDataSource<Folder>;
   selectedDownload: string = 'Download';
@@ -63,8 +72,8 @@ export class FilefolderpopupComponent implements AfterViewInit, OnInit {
 
     // ✅ Dynamic columns
     this.displayedColumns = isFile
-      ? ['name', 'category', 'created'] // you can customize later
-      : ['name', 'category', 'created'];
+      ? ['name', 'category', 'adgroup', 'user', 'duration', 'created'] // you can customize later
+      : ['name', 'category', 'adgroup', 'created'];
 
     // ✅ Dynamic mapping
     const mappedData = (this.data?.folders || []).map((item: any) => ({
@@ -79,7 +88,8 @@ export class FilefolderpopupComponent implements AfterViewInit, OnInit {
       category: isFile
         ? (item.fileType ?? item.itemType ?? '-')
         : (item.itemType ?? '-'),
-
+      user: item.userName ?? item.owner ?? '-',
+      duration: item.duration ?? '-',
       created: item.createDatetime
         ? new Date(item.createDatetime).toLocaleDateString()
         : '-',
@@ -137,7 +147,7 @@ export class FilefolderpopupComponent implements AfterViewInit, OnInit {
     const timestamp = this.getFormattedDateTime();
     this.reportService.downloadExcel(
       data,
-      `dashboard-${this.data.reporttitle}_${timestamp}`,
+      `ashboard-${this.data.reporttitle}_${timestamp}`,
       `Dashboard-${this.data.title}`,
     );
   }
@@ -147,7 +157,7 @@ export class FilefolderpopupComponent implements AfterViewInit, OnInit {
     const timestamp = this.getFormattedDateTime();
     this.reportService.downloadCSV(
       data,
-      `dashboard-${this.data.reporttitle}_${timestamp}`,
+      `ashboard-${this.data.reporttitle}_${timestamp}`,
       `Dashboard-${this.data.title}`,
     );
   }
@@ -157,7 +167,7 @@ export class FilefolderpopupComponent implements AfterViewInit, OnInit {
     const timestamp = this.getFormattedDateTime();
     this.reportService.downloadPDF(
       data,
-      `dashboard-${this.data.reporttitle}_${timestamp}`,
+      `ashboard-${this.data.reporttitle}_${timestamp}`,
       `Dashboard-${this.data.title}`,
     );
   }

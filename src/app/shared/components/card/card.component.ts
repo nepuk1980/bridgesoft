@@ -20,4 +20,7 @@ export class CardComponent {
   @Input() chart: boolean = false;
   @Input() file: boolean = false;
   @Input() fileicon: boolean = false;
+  @Input() static?: boolean = false;
+  @Input() foldercount?: number;
+  @Input() totalcount?: number;
 }

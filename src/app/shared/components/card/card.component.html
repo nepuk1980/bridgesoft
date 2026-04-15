@@ -1,4 +1,4 @@
-<mat-card class="card-wrapper">
+<mat-card class="card-wrapper" *ngIf="!static">
   @defer {
     <div class="card-header">
       <h6 class="card-title">{{ title }}</h6>
@@ -49,6 +49,59 @@
       <div class="card-value">
         <ngx-skeleton-loader animation="progress" />
         <ngx-skeleton-loader animation="progress" />
+      </div>
+    </div>
+  }
+</mat-card>
+<mat-card class="card-wrapper static-card-wrapper" *ngIf="static">
+  @defer {
+    <div class="card-header">
+      <h6 class="card-title">{{ title }}</h6>
+    </div>
+    <div class="card-content">
+      <div class="card-content-data">
+        <h6>
+          {{ filecount }}
+          <span>Files</span>
+        </h6>
+      </div>
+      <div class="card-content-data">
+        <h6>
+          {{ foldercount }}
+          <span>Folders</span>
+        </h6>
+      </div>
+      <div class="card-content-data">
+        <h6>
+          {{ totalcount }}
+          <span>Total</span>
+        </h6>
+      </div>
+    </div>
+  } @placeholder (minimum 1000ms) {
+    <div class="card-header">
+      <h6 class="card-title">
+        <ngx-skeleton-loader animation="progress" />
+      </h6>
+    </div>
+    <div class="card-content">
+      <div class="card-content-data">
+        <h6>
+          <ngx-skeleton-loader animation="progress" />
+          <ngx-skeleton-loader animation="progress" />
+        </h6>
+      </div>
+      <div class="card-content-data">
+        <h6>
+          <ngx-skeleton-loader animation="progress" />
+          <ngx-skeleton-loader animation="progress" />
+        </h6>
+      </div>
+      <div class="card-content-data">
+        <h6>
+          <ngx-skeleton-loader animation="progress" />
+          <ngx-skeleton-loader animation="progress" />
+        </h6>
       </div>
     </div>
   }

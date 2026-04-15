@@ -748,8 +748,8 @@ export class DashboardComponent {
           const folders = res?.content ?? res?.data ?? res ?? [];
 
           this.dialog.open(FilefolderpopupComponent, {
-            width: '58rem',
-            minWidth: '58rem',
+            width: '75rem',
+            minWidth: '75rem',
             maxWidth: '100%', // ✅ added
             data: {
               ...card,

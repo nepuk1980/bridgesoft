@@ -25,6 +25,7 @@ import { AlertComponent } from './pages/alert/alert.component';
 import { AlertConfigurationComponent } from './pages/alert-configuration/alert-configuration.component';
 import { RulesLayoutComponent } from './layout/rules-layout/rules-layout.component';
 import { RulesComponent } from './pages/rules/rules.component';
+import { RequestWorkflowComponent } from './pages/request-workflow/request-workflow.component';
 
 export const routes: Routes = [
   {
@@ -80,6 +81,14 @@ export const routes: Routes = [
       {
         path: '',
         component: RequestAccessComponent,
+      },
+      {
+        path: 'request-access-workflow',
+        component: RequestWorkflowComponent,
+        data: {
+          breadcrumb: 'Request Access workflow',
+          animation: 'RequestAccessworkflowPage',
+        },
       },
       {
         path: 'request-access-detail',
