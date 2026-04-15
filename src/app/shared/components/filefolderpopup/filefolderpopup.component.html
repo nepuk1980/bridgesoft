@@ -94,14 +94,12 @@
         <!-- User -->
         <ng-container matColumnDef="user">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>User</th>
-          <td mat-cell *matCellDef="let element">User</td>
+          <td mat-cell *matCellDef="let element">User Name</td>
         </ng-container>
         <!-- Duration -->
         <ng-container matColumnDef="duration">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Duration</th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.category }}
-          </td>
+          <td mat-cell *matCellDef="let element">00:00</td>
         </ng-container>
 
         <!-- Created -->
