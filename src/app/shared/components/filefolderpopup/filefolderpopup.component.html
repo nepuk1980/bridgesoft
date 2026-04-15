@@ -76,6 +76,34 @@
           </td>
         </ng-container>
 
+        <!-- Category -->
+        <ng-container matColumnDef="adgroup" class="adgroup">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>AD Group</th>
+          <td
+            mat-cell
+            *matCellDef="let element"
+            class="adgroup"
+            matTooltipPosition="right"
+            matTooltip="AD Group Name1, AD Group Name2, AD Group Name3, AD Group Name4"
+            aria-label="Button that displays a tooltip when focused or hovered over"
+          >
+            AD Group Name1, AD Group Name2, AD Group Name3, AD Group Name4
+          </td>
+        </ng-container>
+
+        <!-- User -->
+        <ng-container matColumnDef="user">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>User</th>
+          <td mat-cell *matCellDef="let element">User</td>
+        </ng-container>
+        <!-- Duration -->
+        <ng-container matColumnDef="duration">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Duration</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.category }}
+          </td>
+        </ng-container>
+
         <!-- Created -->
         <ng-container matColumnDef="created">
           <th mat-header-cell *matHeaderCellDef mat-sort-header class="lastcol">
