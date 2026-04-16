@@ -10,6 +10,7 @@ import {
   FileSystemResponseInterface,
   IdentityVaultDetailResponseInterface,
   IdentityVaultResponseInterface,
+  RuleResponseInterface,
 } from '../models/type';
 import { AuthService } from '../core/services/auth.service';
 
@@ -25,7 +26,12 @@ export class ApiService {
       `${environment.apiUrl}/getfilesystemaccesspermissionsummary`,
     );
   }
-
+  // ✅ Total Summary API
+  getaccessdataprocessorsummary(): Observable<FileSystemAccessSummaryInterface> {
+    return this.http.get<FileSystemAccessSummaryInterface>(
+      `${environment.apiUrl}/getaccessdataprocessorsummary`,
+    );
+  }
   // ✅ Details API
   getFilesystemAccessPermissionDetails(
     ruleCategory: string,
@@ -118,10 +124,6 @@ export class ApiService {
   updateApplicationDetails(id: number, data: any): Observable<any> {
     const token = this.authService.getToken();
 
-    console.log('🆔 ID:', id);
-    console.log('📦 DATA:', data);
-    console.log('🔑 TOKEN:', token);
-
     // ❌ Stop if no token
     if (!token) {
       console.error('❌ No token found');
@@ -146,5 +148,47 @@ export class ApiService {
       payload,
       { headers },
     );
+  }
+
+  // ✅ Identity Vault List
+  getrules(
+    filter: string,
+    sortByDate: 'Asc' | 'Desc' = 'Desc',
+  ): Observable<RuleResponseInterface[]> {
+    const params = new HttpParams()
+      .set('filter', filter)
+      .set('sortByDate', sortByDate);
+
+    return this.http.get<RuleResponseInterface[]>(
+      `${environment.apiUrl}/getrules`,
+      { params },
+    );
+  }
+
+  updaterule(id: number, data: any): Observable<any> {
+    const token = this.authService.getToken();
+
+    // ❌ Stop if no token
+    if (!token) {
+      console.error('❌ No token found');
+      throw new Error('User not authenticated');
+    }
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`, // ✅ dynamic token
+      'Content-Type': 'application/json',
+    });
+
+    const payload = {
+      appId: id,
+      id: id, // ✅ IMPORTANT (backend expects this)
+      ...data,
+    };
+
+    console.log('🚀 FINAL PAYLOAD:', payload);
+
+    return this.http.put(`${environment.apiUrl}/updaterule`, payload, {
+      headers,
+    });
   }
 }

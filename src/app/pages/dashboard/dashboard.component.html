@@ -1,20 +1,26 @@
 <div class="dashboard-card-list">
-  <div class="dashboard-card static-dashboard-card">
+  <div
+    class="dashboard-card static-dashboard-card"
+    *ngIf="totalFileSystemSummary as data"
+  >
     <app-card
       title="Windows File Share"
       [static]="true"
-      [filecount]="1000"
-      [foldercount]="1000"
-      [totalcount]="2000"
+      [filecount]="data.fileShareFiles"
+      [foldercount]="data.fileShareFolders"
+      [totalcount]="data.fileShareTotal"
     ></app-card>
   </div>
-  <div class="dashboard-card static-dashboard-card">
+  <div
+    class="dashboard-card static-dashboard-card"
+    *ngIf="totalFileSystemSummary as data"
+  >
     <app-card
       title="SharePoint"
       [static]="true"
-      [filecount]="1000"
-      [foldercount]="1000"
-      [totalcount]="2000"
+      [filecount]="data.sharePointFiles"
+      [foldercount]="data.sharePointFolders"
+      [totalcount]="data.sharePointTotal"
     ></app-card>
   </div>
 

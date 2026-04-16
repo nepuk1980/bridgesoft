@@ -938,6 +938,28 @@ router-outlet + * {
 .customslide .mdc-switch__track::after {
   border: 0 !important;
 }
+
+.customslide .mdc-switch__track::before {
+  background: #cccccc;
+}
+.customslide .mdc-switch__track::after {
+  background: #1176bd !important;
+}
+.customslide .mdc-switch__track {
+  width: 2.875rem;
+  height: 1.5rem;
+}
+.customslide .mdc-switch__icons {
+  display: none;
+}
+.customslide .mdc-switch__handle {
+  width: 1rem !important;
+  height: 1rem !important;
+  background: #fff;
+}
+.customslide .mdc-switch__shadow {
+  background: #fff;
+}
 .normalbtn {
   border: 1px solid #d1d1d1;
   padding: 0.625rem 1.5rem;

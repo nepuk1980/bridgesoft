@@ -25,17 +25,16 @@
         <mat-label>Sort by date</mat-label>
         <mat-select
           [(value)]="selectedSort"
-          (selectionChange)="filterData()"
+          (selectionChange)="onSortChange($event.value)"
           panelClass="custom-filter-panel"
         >
-          <mat-option value="">Sort by date</mat-option>
           <mat-option value="latest">Latest</mat-option>
           <mat-option value="oldest">Oldest</mat-option>
         </mat-select>
       </mat-form-field>
     </div>
 
-    <!-- 🔽 Filter -->
+    <!-- 🔽 Filter (DYNAMIC NOW) -->
     <div class="custom-filter">
       <mat-form-field>
         <mat-label>Filter</mat-label>
@@ -44,11 +43,12 @@
           (selectionChange)="filterData()"
           panelClass="custom-filter-panel"
         >
-          <mat-option value="">Filter</mat-option>
-          <mat-option value="PII">PII</mat-option>
-          <mat-option value="LGPD">LGPD</mat-option>
-          <mat-option value="HIPAA">HIPAA</mat-option>
-          <mat-option value="PHI">PHI</mat-option>
+          <mat-option value="">All</mat-option>
+
+          <!-- ✅ Dynamic categories -->
+          <mat-option *ngFor="let filter of filters" [value]="filter.value">
+            {{ filter.viewValue }}
+          </mat-option>
         </mat-select>
       </mat-form-field>
     </div>
@@ -69,7 +69,11 @@
     </div>
 
     <div class="form-control">
-      <mat-slide-toggle [(ngModel)]="item.active" class="customslide">
+      <mat-slide-toggle
+        [(ngModel)]="item.active"
+        (change)="onToggleChange(item, $event.checked)"
+        class="customslide"
+      >
       </mat-slide-toggle>
     </div>
   </div>
