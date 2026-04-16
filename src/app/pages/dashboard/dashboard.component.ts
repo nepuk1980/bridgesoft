@@ -5,7 +5,10 @@ import { ExternalresourcespopupComponent } from '../../shared/components/externa
 import { FilefolderpopupComponent } from '../../shared/components/filefolderpopup/filefolderpopup.component';
 import { CloudresourcespopupComponent } from '../../shared/components/cloudresourcespopup/cloudresourcespopup.component';
 import { ApiService } from '../../services/api.service';
-import { FileSystemAccessSummaryInterface } from '../../models/type';
+import {
+  FileSystemAccessSummaryInterface,
+  TotalFileSystemAccessSummaryInterface,
+} from '../../models/type';
 import { NgIf } from '@angular/common';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
@@ -713,9 +716,11 @@ export class DashboardComponent {
       }, 3000);
     }
     this.getFileSystemAccessSummary();
+    this.getTotalFileSystemAccessSummary();
   }
   // ✅ API DATA
   fileSystemData: FileSystemAccessSummaryInterface[] = [];
+  totalFileSystemData!: TotalFileSystemAccessSummaryInterface;
   loadingFs = false;
 
   getFileSystemAccessSummary() {
@@ -725,6 +730,21 @@ export class DashboardComponent {
       next: (res: any) => {
         // ✅ correct handling (array response)
         this.fileSystemData = res?.data ?? res ?? [];
+        this.loadingFs = false;
+      },
+      error: (err) => {
+        console.error('API Error:', err);
+        this.loadingFs = false;
+      },
+    });
+  }
+  getTotalFileSystemAccessSummary() {
+    this.loadingFs = true;
+
+    this.api.getaccessdataprocessorsummary().subscribe({
+      next: (res: any) => {
+        // ✅ correct handling (array response)
+        this.totalFileSystemData = res?.data ?? res;
 
         this.loadingFs = false;
       },
@@ -738,6 +758,10 @@ export class DashboardComponent {
   // ✅ clean getter (best practice)
   get fileSystemSummary(): FileSystemAccessSummaryInterface | null {
     return this.fileSystemData.length ? this.fileSystemData[0] : null;
+  }
+
+  get totalFileSystemSummary(): TotalFileSystemAccessSummaryInterface | null {
+    return this.totalFileSystemData;
   }
 
   openDialog(card: any, ruleCategory: string) {

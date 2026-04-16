@@ -20,6 +20,27 @@ export interface FileSystemAccessSummaryInterface {
   sensitiveFilesWithOpenAccess: number;
 }
 
+export interface TotalFileSystemAccessSummaryInterface {
+  totalRecords: number;
+  totalUniqueItems: number;
+  totalFolders: number;
+  totalFiles: number;
+  sensitiveFoldersWithOpenAccess: number;
+  sensitiveFilesWithOpenAccess: number;
+  foldersThatContainsSensitiveFiles: number;
+  sensitiveFoldersWithFullControlOpenAccess: number;
+  foldersWithOpenAccess: number;
+  staleSensitiveFiles: number;
+  sensitiveFoldersWithReadandExecuteOpenAccess: number;
+  externalSources: number;
+  cloudResources: number;
+  fileShareFiles: number;
+  fileShareFolders: number;
+  fileShareTotal: number;
+  sharePointFiles: number;
+  sharePointFolders: number;
+  sharePointTotal: number;
+}
 export interface FileSystemResponseInterface {
   content: {
     cloudResource: boolean;
@@ -203,3 +224,13 @@ export type ApplicationAccountsResponseInterface = {
   lastAccess: string;
   status: string;
 };
+
+export interface RuleResponseInterface {
+  id: number;
+  ruleName: string;
+  ruleDesc: string;
+  active: boolean;
+  ruleCategory: string;
+  createDatetime: string | null;
+  lastModifiedDatetime: string;
+}

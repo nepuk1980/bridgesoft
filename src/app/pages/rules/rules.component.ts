@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { InnerheaderComponent } from '../../shared/components/innerheader/innerheader.component';
 import { Router, RouterModule } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -7,6 +7,19 @@ import { MatSelectModule } from '@angular/material/select';
 import { NgFor, NgIf } from '@angular/common';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
+import { HttpClientModule } from '@angular/common/http';
+import { ApiService } from '../../services/api.service';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+
+export interface RuleResponseInterface {
+  id: number;
+  ruleName: string;
+  ruleDesc: string;
+  active: boolean;
+  ruleCategory: string;
+  createDatetime: string | null;
+  lastModifiedDatetime: string;
+}
 
 @Component({
   selector: 'app-rules',
@@ -21,101 +34,109 @@ import { FormsModule } from '@angular/forms';
     FormsModule,
     NgFor,
     NgIf,
+    HttpClientModule,
+    MatSnackBarModule,
   ],
   templateUrl: './rules.component.html',
   styleUrl: './rules.component.css',
 })
-export class RulesComponent {
-  // ✅ FULL JSON DATA
-  originalData = [
-    {
-      id: '1',
-      rule_name: 'Preview: US',
-      rule_category: 'PII',
-      rule_desc:
-        'Predefined (Preview) (Policy Pack) This policy detects U.S. personally identifiable information (PII) such as social security numbers, diver’s license numbers, passport numbers and other sensitive date',
-      active: false,
-      requestedDate: '2026-02-28',
-    },
-    {
-      id: '2',
-      rule_name: 'Preview: BR',
-      rule_category: 'LGPD',
-      rule_desc:
-        'Predefined 1 [Preview] [Policy Pack] Brazilian General Data Protection Axt & GPD - Lar Geral de Dedução de Deduio is a data protection law which requires compliance in regarda to processing of personal data. This policy detects Brazilian Fill such as passport numbers, drivers bilenos biumons, election f12 numbers, personal phone numbers, etc.',
-      active: false,
-      requestedDate: '2026-02-01',
-    },
-    {
-      id: '3',
-      rule_name: 'Preview: Sensitive Forms',
-      rule_category: 'HIPAA',
-      rule_desc:
-        'Predefined 1 [Preview] [Policy Pack] Brazilian General Data Protection Axt & GPD - Lar Geral de Dedução de Deduio is a data protection law which requires compliance in regarda to processing of personal data. This policy detects Brazilian Fill such as passport numbers, drivers bilenos biumons, election f12 numbers, personal phone numbers, etc.',
-      active: false,
-      requestedDate: '2026-02-14',
-    },
-    {
-      id: '4',
-      rule_name: 'Preview: Sensitive Forms',
-      rule_category: 'PHI',
-      rule_desc:
-        'Predefined 1 [Preview] [Policy Pack] Brazilian General Data Protection Axt & GPD - Lar Geral de Dedução de Deduio is a data protection law which requires compliance in regarda to processing of personal data. This policy detects Brazilian Fill such as passport numbers, drivers bilenos biumons, election f12 numbers, personal phone numbers, etc.',
-      active: false,
-      requestedDate: '2026-02-12',
-    },
-  ];
+export class RulesComponent implements OnInit {
+  isLoading = false;
 
-  // ✅ Working Data
-  dataSource = [...this.originalData];
+  filters: { value: string; viewValue: string }[] = [];
+
+  originalData: any[] = [];
+  dataSource: any[] = [];
 
   searchText = '';
   selectedFilter = '';
-  selectedSort = '';
+  selectedSort: 'latest' | 'oldest' = 'latest';
 
-  constructor(private router: Router) {}
+  constructor(
+    private api: ApiService,
+    private router: Router,
+    private snackBar: MatSnackBar,
+  ) {}
+
+  ngOnInit(): void {
+    this.getRules();
+  }
+
+  // ✅ API CALL
+  getRules() {
+    this.isLoading = true;
+
+    const sortParam = this.selectedSort === 'oldest' ? 'Asc' : 'Desc';
+
+    this.api.getrules(sortParam, undefined).subscribe({
+      next: (res) => {
+        const content = res || [];
+
+        const mappedData = content.map((item: RuleResponseInterface) => ({
+          id: String(item.id),
+          rule_name: item.ruleName || '',
+          rule_category: item.ruleCategory || '',
+          rule_desc: item.ruleDesc || '',
+          active: item.active ?? false,
+          requestedDate: item.lastModifiedDatetime || item.createDatetime || '',
+        }));
+
+        this.originalData = mappedData;
+        this.dataSource = [...mappedData];
+
+        // ✅ Dynamic Filters
+        const uniqueCategories = [
+          ...new Set(mappedData.map((item) => item.rule_category)),
+        ];
+
+        this.filters = uniqueCategories.map((cat) => ({
+          value: cat,
+          viewValue: cat,
+        }));
+
+        this.filterData();
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('API Error:', err);
+        this.isLoading = false;
+      },
+    });
+  }
 
   // 🔍 Search
   applyFilter(value: string) {
-    this.searchText = value.toLowerCase();
+    this.searchText = (value || '').toLowerCase();
     this.filterData();
   }
 
-  // 🔄 Filter + Sort
+  // 🔄 Filter (sorting removed from here — handled by API)
   filterData() {
     let data = [...this.originalData];
 
-    // Search
+    // ✅ Search
     if (this.searchText) {
       data = data.filter(
         (item) =>
-          item.rule_name.toLowerCase().includes(this.searchText) ||
-          item.rule_desc.toLowerCase().includes(this.searchText) ||
-          item.id.toLowerCase().includes(this.searchText),
+          (item.rule_name || '').toLowerCase().includes(this.searchText) ||
+          (item.rule_desc || '').toLowerCase().includes(this.searchText) ||
+          (item.rule_category || '').toLowerCase().includes(this.searchText) ||
+          (item.id || '').toLowerCase().includes(this.searchText),
       );
     }
 
-    // Category Filter
+    // ✅ Category Filter
     if (this.selectedFilter) {
       data = data.filter((item) => item.rule_category === this.selectedFilter);
     }
 
-    // Date Sort
-    if (this.selectedSort === 'latest') {
-      data.sort(
-        (a, b) =>
-          new Date(b.requestedDate).getTime() -
-          new Date(a.requestedDate).getTime(),
-      );
-    } else if (this.selectedSort === 'oldest') {
-      data.sort(
-        (a, b) =>
-          new Date(a.requestedDate).getTime() -
-          new Date(b.requestedDate).getTime(),
-      );
-    }
-
     this.dataSource = data;
+  }
+
+  // 🔁 Sort change → API call
+  onSortChange(value: 'latest' | 'oldest') {
+    this.selectedSort = value;
+    this.getRules();
   }
 
   // 🔢 Count
@@ -127,14 +148,57 @@ export class RulesComponent {
     return this.originalData.length;
   }
 
+  // 🔗 Slug helper
   createSlug(userName: string): string {
-    const fullName = `${userName}`;
-
-    return fullName
+    return (userName || '')
       .toLowerCase()
       .trim()
       .replace(/[^a-z0-9\s-]/g, '')
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-');
+  }
+  // ✅ TOGGLE UPDATE
+  onToggleChange(item: any, status: boolean) {
+    const previousStatus = item.active;
+
+    item.active = status;
+    item.loading = true;
+
+    const payload = {
+      ruleName: item.rule_name,
+      ruleDesc: item.rule_desc,
+      ruleCategory: item.rule_category,
+      active: status,
+    };
+
+    this.api.updaterule(item.id, payload).subscribe({
+      next: () => {
+        item.loading = false;
+
+        const message = status
+          ? 'Rule activated successfully'
+          : 'Rule deactivated successfully';
+
+        this.showMessage(message);
+      },
+      error: (err) => {
+        console.error(err);
+
+        item.loading = false;
+        item.active = previousStatus;
+
+        this.showMessage('Failed to update rule');
+      },
+    });
+  }
+
+  // ✅ SNACKBAR
+  showMessage(message: string) {
+    this.snackBar.open(message, '', {
+      duration: 1000,
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
+      panelClass: ['success-snackbar'],
+    });
   }
 }
