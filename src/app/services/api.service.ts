@@ -26,12 +26,48 @@ export class ApiService {
       `${environment.apiUrl}/getfilesystemaccesspermissionsummary`,
     );
   }
-  // ✅ Total Summary API
-  getaccessdataprocessorsummary(): Observable<FileSystemAccessSummaryInterface> {
-    return this.http.get<FileSystemAccessSummaryInterface>(
-      `${environment.apiUrl}/getaccessdataprocessorsummary`,
+  // windows file
+  getfilesharefiledetails(): Observable<FileSystemResponseInterface> {
+    return this.http.get<FileSystemResponseInterface>(
+      `${environment.apiUrl}/getfilesharefiledetails`,
     );
   }
+
+  // windows folder
+  getfilesharefolderdetails(): Observable<FileSystemResponseInterface> {
+    return this.http.get<FileSystemResponseInterface>(
+      `${environment.apiUrl}/getfilesharefolderdetails`,
+    );
+  }
+
+  // windows total
+  getfilesharetotaldetails(): Observable<FileSystemResponseInterface> {
+    return this.http.get<FileSystemResponseInterface>(
+      `${environment.apiUrl}/getfilesharetotaldetails`,
+    );
+  }
+
+  // share point file
+  getsharepointfiledetails(): Observable<FileSystemResponseInterface> {
+    return this.http.get<FileSystemResponseInterface>(
+      `${environment.apiUrl}/getsharepointfiledetails`,
+    );
+  }
+
+  // share point folder
+  getsharepointfolderdetails(): Observable<FileSystemResponseInterface> {
+    return this.http.get<FileSystemResponseInterface>(
+      `${environment.apiUrl}/getsharepointfolderdetails`,
+    );
+  }
+
+  // share point total
+  getsharepointtotaldetails(): Observable<FileSystemResponseInterface> {
+    return this.http.get<FileSystemResponseInterface>(
+      `${environment.apiUrl}/getsharepointtotaldetails`,
+    );
+  }
+
   // ✅ Details API
   getFilesystemAccessPermissionDetails(
     ruleCategory: string,

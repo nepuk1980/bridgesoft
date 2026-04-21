@@ -59,21 +59,70 @@
       <h6 class="card-title">{{ title }}</h6>
     </div>
     <div class="card-content">
-      <div class="card-content-data">
+      <div
+        class="card-content-data"
+        (click)="
+          openShareDialog(
+            {
+              title: 'Windows Share File',
+              reporttitle: 'windows-share-file',
+              value: filecount || '0',
+              file: true,
+              fileicon: true,
+              icon: '/svg/file.svg',
+              subtitle: 'Windows Share File',
+            },
+            filedata!
+          )
+        "
+      >
         <h6>
-          {{ filecount }}
+          {{ filecount || "-" }}
           <span>Files</span>
         </h6>
       </div>
-      <div class="card-content-data">
+      <div
+        class="card-content-data"
+        (click)="
+          openShareDialog(
+            {
+              title: 'Windows Share File',
+              reporttitle: 'windows-share-file',
+              value: foldercount || '0',
+              file: false,
+              fileicon: false,
+              icon: '/svg/folder.svg',
+              subtitle: 'Windows Share File',
+            },
+            folderdata!
+          )
+        "
+      >
         <h6>
-          {{ foldercount }}
+          {{ foldercount || "-" }}
           <span>Folders</span>
         </h6>
       </div>
-      <div class="card-content-data">
+      <div
+        class="card-content-data"
+        (click)="
+          openShareDialog(
+            {
+              title: 'Windows Share File',
+              reporttitle: 'windows-share-file',
+              value: totalcount || '0',
+              file: false,
+              fileicon: true,
+              both: true,
+              icon: '/svg/folder.svg',
+              subtitle: 'Windows Share File',
+            },
+            totaldata!
+          )
+        "
+      >
         <h6>
-          {{ totalcount }}
+          {{ totalcount || "-" }}
           <span>Total</span>
         </h6>
       </div>

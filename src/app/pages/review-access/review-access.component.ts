@@ -23,7 +23,7 @@ type Important = {
     name: string;
   };
   resourceFullPath: string;
-  identity: string;
+  // identity: string;
   warning?: {
     message: string;
     type: 'expired';
@@ -41,7 +41,7 @@ interface TableRowImportant {
   folderFileName: string;
   type: 'folder' | 'file';
   resourceFullPath: string;
-  identity: string;
+  // identity: string;
 
   warningType?: string;
   warningMsg?: string;
@@ -159,7 +159,7 @@ export class ReviewAccessComponent implements OnInit {
           },
           resourceFullPath:
             'https://bridgesoft.sharepoint.com/sites/legal/Folder/Legal',
-          identity: 'Amanda James',
+          // identity: 'Amanda James',
           decision: {
             approve: false,
             reject: true,
@@ -179,7 +179,7 @@ export class ReviewAccessComponent implements OnInit {
           },
           resourceFullPath:
             'https://bridgesoft.sharepoint.com/sites/humanresources/documents/humanresources',
-          identity: 'Jonas Jilton',
+          // identity: 'Jonas Jilton',
           warning: {
             message: 'Allow expired on 11/12/2024',
             type: 'expired',
@@ -406,7 +406,7 @@ export class ReviewAccessComponent implements OnInit {
     { key: 'rule', label: 'Rule', visible: true },
     { key: 'folderFileName', label: 'Folder / File Name', visible: true },
     { key: 'resourceFullPath', label: 'Resource Full Path', visible: true },
-    { key: 'identity', label: 'Identity', visible: true },
+    // { key: 'identity', label: 'Identity', visible: true },
     { key: 'decision', label: 'Decision', visible: true },
   ];
 
@@ -431,7 +431,7 @@ export class ReviewAccessComponent implements OnInit {
     'rule',
     'folderFileName',
     'resourceFullPath',
-    'identity',
+    // 'identity',
     'decision',
   ];
 
@@ -490,8 +490,8 @@ export class ReviewAccessComponent implements OnInit {
         (row) =>
           row.policyName.toLowerCase().includes(this.searchText) ||
           row.rule.toLowerCase().includes(this.searchText) ||
-          row.folderFileName.toLowerCase().includes(this.searchText) ||
-          row.identity.toLowerCase().includes(this.searchText),
+          row.folderFileName.toLowerCase().includes(this.searchText),
+        // row.identity.toLowerCase().includes(this.searchText)
       );
     }
 
@@ -641,7 +641,7 @@ export class ReviewAccessComponent implements OnInit {
         folderFileName: item.folderOrFileNames.name,
         type: item.folderOrFileNames.type,
         resourceFullPath: item.resourceFullPath,
-        identity: item.identity,
+        // identity: item.identity,
 
         warningType: item.warning?.type,
         warningMsg: item.warning?.message,

@@ -1,5 +1,6 @@
 // File System Interfaces
 export interface FileSystemAccessSummaryInterface {
+  fileShareFolders: number;
   sensitiveFoldersWithReadandExecuteOpenAccessPercentage: string;
   sensitivefoldersWithFullcontrolOpenAccess: number;
   sensitivefoldersWithFullcontrolOpenAccessPercentage: string;
@@ -8,61 +9,47 @@ export interface FileSystemAccessSummaryInterface {
   sensitiveFoldersWithOpenAccessPercentage: string;
   externalSources: number;
   foldersThatContainsSensitiveFilesPercentage: string;
+  sharePointFiles: number;
+  fileShareTotal: number;
   foldersWithOpenAccess: number;
+  sharePointTotal: number;
   cloudResourcesPercentage: string;
+  sharePointFolders: number;
   sensitiveFoldersWithOpenAccess: number;
   staleSensitiveFiles: number;
   foldersThatContainsSensitiveFiles: number;
   staleSensitiveFilesPercentage: string;
+  fileShareFiles: number;
   sensitiveFilesWithOpenAccessPercentage: string;
   cloudResources: number;
   sensitiveFoldersWithReadandExecuteOpenAccess: number;
   sensitiveFilesWithOpenAccess: number;
 }
 
-export interface TotalFileSystemAccessSummaryInterface {
-  totalRecords: number;
-  totalUniqueItems: number;
-  totalFolders: number;
-  totalFiles: number;
-  sensitiveFoldersWithOpenAccess: number;
-  sensitiveFilesWithOpenAccess: number;
-  foldersThatContainsSensitiveFiles: number;
-  sensitiveFoldersWithFullControlOpenAccess: number;
-  foldersWithOpenAccess: number;
-  staleSensitiveFiles: number;
-  sensitiveFoldersWithReadandExecuteOpenAccess: number;
-  externalSources: number;
-  cloudResources: number;
-  fileShareFiles: number;
-  fileShareFolders: number;
-  fileShareTotal: number;
-  sharePointFiles: number;
-  sharePointFolders: number;
-  sharePointTotal: number;
-}
 export interface FileSystemResponseInterface {
   content: {
-    cloudResource: boolean;
-    createDatetime: string;
-    external: boolean;
-    folderContainsSensitiveFiles: boolean;
-    fullControlOpenAccess: boolean;
     id: number;
+    sourceType: string;
+    sourceName: string;
+    libraryName: string;
     itemName: string;
+    pathValue: string;
     itemType: string;
     itemUrl: string;
+    groupsList: string;
+    createDatetime: string; // ISO datetime string
+    lastModifiedDatetime: string; // ISO datetime string
     lastAccessedDatetime: string | null;
-    lastModifiedDatetime: string;
-    libraryName: string;
-    openAccess: boolean;
-    pathValue: string;
-    readExecuteOpenAccess: boolean;
-    ruleCategory: string;
     sensitive: boolean;
-    sourceName: string;
-    sourceType: string;
+    openAccess: boolean;
+    fullControlOpenAccess: boolean;
+    readExecuteOpenAccess: boolean;
+    external: boolean;
+    cloudResource: boolean;
     stale: boolean;
+    folderContainsSensitiveFiles: boolean;
+    ruleCategory: string;
+    category: string;
   }[];
 
   empty: boolean;

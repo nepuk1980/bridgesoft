@@ -130,7 +130,7 @@ export class ReportService {
     return `${date} ${time}`;
   }
   downloadPDF(data: any[], fileName: string, title?: string) {
-    const doc = new jsPDF('l', 'mm', 'a3'); // landscape for wide table
+    const doc = new jsPDF('l', 'pt', 'a4'); // landscape for wide table
 
     const columns = Object.keys(data[0]);
 
@@ -142,7 +142,8 @@ export class ReportService {
       head: [columns],
       body: rows,
 
-      startY: 20,
+      startY: 55,
+      tableWidth: 'auto',
 
       theme: 'plain', // ❗ remove grid lines
 
@@ -166,6 +167,16 @@ export class ReportService {
         lineWidth: 0,
         fontSize: 8,
         cellWidth: 'wrap',
+        overflow: 'linebreak',
+      },
+
+      columnStyles: {
+        0: { cellWidth: 120 }, // File/Folder Names
+        1: { cellWidth: 70 }, // Categories
+        2: { cellWidth: 300 }, // AD Group (important)
+        3: { cellWidth: 90 }, // User
+        4: { cellWidth: 60 }, // Duration
+        5: { cellWidth: 100 }, // Created On
       },
 
       // ✅ Alternate row shading (like UI blocks)
@@ -203,7 +214,7 @@ export class ReportService {
         doc.setFontSize(18);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(17, 118, 189);
-        doc.text(title || 'Reports', 14, 15);
+        doc.text(title || 'Reports', 40, 40);
 
         // ✅ Footer (bottom-right)
         const footerText = `Generated on: ${this.getFormattedDateTime()}`;
