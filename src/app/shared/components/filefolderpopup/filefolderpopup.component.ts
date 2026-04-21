@@ -38,7 +38,7 @@ export interface Folder {
     MatSelectModule,
     FormsModule,
     MatProgressSpinnerModule,
-    NgIf,
+
     MatTooltipModule,
   ],
   templateUrl: './filefolderpopup.component.html',
@@ -68,7 +68,7 @@ export class FilefolderpopupComponent implements AfterViewInit, OnInit {
 
   ngOnInit() {
     const isFile = this.data?.fileicon; // true = File, false = Folder
-    console.log('dad', this.data.reporttitle);
+    console.log('dad', this.data);
 
     // ✅ Dynamic columns
     this.displayedColumns = isFile
@@ -80,7 +80,7 @@ export class FilefolderpopupComponent implements AfterViewInit, OnInit {
       name: isFile
         ? (item.fileName ?? item.itemName ?? '-')
         : (item.itemName ?? '-'),
-
+      itemType: item.itemType,
       url: isFile
         ? (item.fileUrl ?? item.itemUrl ?? null)
         : (item.itemUrl ?? null),
@@ -88,6 +88,7 @@ export class FilefolderpopupComponent implements AfterViewInit, OnInit {
       category: isFile
         ? (item.fileType ?? item.itemType ?? '-')
         : (item.itemType ?? '-'),
+      adgroup: item.groupsList,
       user: item.userName ?? item.owner ?? '-',
       duration: item.duration ?? '-',
       created: item.createDatetime
@@ -128,26 +129,48 @@ export class FilefolderpopupComponent implements AfterViewInit, OnInit {
   private getExportData() {
     const isFile = this.data?.fileicon;
 
-    return (this.data?.folders || []).map((item: any) => ({
-      'Folder Names': isFile
-        ? (item.fileName ?? item.itemName ?? '-')
-        : (item.itemName ?? '-'),
+    return (this.data?.folders || []).map((item: any) => {
+      const nameValue = item.fileName ?? item.itemName ?? '-';
 
-      Categories: isFile
+      let row: any = {};
+
+      if (this.data?.both) {
+        row['File/Folder Names'] = nameValue;
+      } else if (this.data?.file) {
+        row['File Names'] = nameValue;
+      } else {
+        row['Folder Names'] = item.itemName ?? '-';
+      }
+
+      row['Categories'] = isFile
         ? (item.fileType ?? item.itemType ?? '-')
-        : (item.itemType ?? '-'),
+        : (item.itemType ?? '-');
 
-      'Created On': item.createDatetime
+      row['AD Group'] = isFile
+        ? (item.groupsList ?? item.groupsList ?? '-')
+        : (item.groupsList ?? '-');
+
+      row['User'] = isFile
+        ? (item.user ?? item.user ?? 'User Name')
+        : (item.user ?? 'User Name');
+
+      row['Duration'] = isFile
+        ? (item.duration ?? item.duration ?? '00:00')
+        : (item.duration ?? '00:00');
+
+      row['Created On'] = item.createDatetime
         ? new Date(item.createDatetime).toLocaleDateString()
-        : '-',
-    }));
+        : '-';
+
+      return row;
+    });
   }
   downloadExcel() {
     const data = this.getExportData();
     const timestamp = this.getFormattedDateTime();
     this.reportService.downloadExcel(
       data,
-      `ashboard-${this.data.reporttitle}_${timestamp}`,
+      `dashboard-${this.data.reporttitle}_${timestamp}`,
       `Dashboard-${this.data.title}`,
     );
   }
@@ -157,7 +180,7 @@ export class FilefolderpopupComponent implements AfterViewInit, OnInit {
     const timestamp = this.getFormattedDateTime();
     this.reportService.downloadCSV(
       data,
-      `ashboard-${this.data.reporttitle}_${timestamp}`,
+      `dashboard-${this.data.reporttitle}_${timestamp}`,
       `Dashboard-${this.data.title}`,
     );
   }
@@ -167,7 +190,7 @@ export class FilefolderpopupComponent implements AfterViewInit, OnInit {
     const timestamp = this.getFormattedDateTime();
     this.reportService.downloadPDF(
       data,
-      `ashboard-${this.data.reporttitle}_${timestamp}`,
+      `dashboard-${this.data.reporttitle}_${timestamp}`,
       `Dashboard-${this.data.title}`,
     );
   }

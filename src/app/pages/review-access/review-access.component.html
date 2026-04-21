@@ -115,9 +115,9 @@
                     Resource Full Path
                   </mat-option>
 
-                  <mat-option (click)="toggleColumn('identity', $event)">
+                  <!-- <mat-option (click)="toggleColumn('identity', $event)">
                     Identity
-                  </mat-option>
+                  </mat-option> -->
 
                   <mat-option (click)="toggleColumn('decision', $event)">
                     Decision
@@ -145,7 +145,7 @@
                   [indeterminate]="isIndeterminate()"
                 ></mat-checkbox>
 
-                <span>Policy Name</span>
+                <span>Folder / File Name</span>
               </div>
             </th>
 
@@ -169,7 +169,7 @@
           </ng-container>
 
           <ng-container matColumnDef="rule">
-            <th mat-header-cell *matHeaderCellDef>Rule</th>
+            <th mat-header-cell *matHeaderCellDef>Resource Full Path</th>
 
             <td mat-cell *matCellDef="let row">
               {{ row.rule }}
@@ -177,7 +177,7 @@
           </ng-container>
 
           <ng-container matColumnDef="folderFileName">
-            <th mat-header-cell *matHeaderCellDef>Folder / File Names</th>
+            <th mat-header-cell *matHeaderCellDef>Category</th>
 
             <td mat-cell *matCellDef="let row">
               <div class="icontexttd">
@@ -190,25 +190,25 @@
           </ng-container>
 
           <ng-container matColumnDef="resourceFullPath">
-            <th mat-header-cell *matHeaderCellDef>Resource Full Path</th>
+            <th mat-header-cell *matHeaderCellDef>Employee Name</th>
 
             <td mat-cell *matCellDef="let row">
               {{ row.resourceFullPath }}
             </td>
           </ng-container>
 
-          <ng-container matColumnDef="identity">
+          <!-- <ng-container matColumnDef="identity">
             <th mat-header-cell *matHeaderCellDef>Identity</th>
 
             <td mat-cell *matCellDef="let row">
               {{ row.identity }}
             </td>
-          </ng-container>
+          </ng-container> -->
 
           <ng-container matColumnDef="decision">
-            <th mat-header-cell *matHeaderCellDef>Decision</th>
+            <th mat-header-cell *matHeaderCellDef class="lastcol">Decision</th>
 
-            <td mat-cell *matCellDef="let row" class="liketd">
+            <td mat-cell *matCellDef="let row" class="lastcol liketd">
               <div class="likediv">
                 <!-- LIKE -->
                 <span class="like" [ngClass]="{ active: row.approve }">
