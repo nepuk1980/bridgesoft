@@ -64,13 +64,13 @@
         (click)="
           openShareDialog(
             {
-              title: 'Windows Share File',
+              title: title + ' Files',
               reporttitle: 'windows-share-file',
               value: filecount || '0',
               file: true,
               fileicon: true,
               icon: '/svg/file.svg',
-              subtitle: 'Windows Share File',
+              subtitle: title,
             },
             filedata!
           )
@@ -86,13 +86,13 @@
         (click)="
           openShareDialog(
             {
-              title: 'Windows Share File',
+              title: title + ' Folders',
               reporttitle: 'windows-share-file',
               value: foldercount || '0',
               file: false,
               fileicon: false,
               icon: '/svg/folder.svg',
-              subtitle: 'Windows Share File',
+              subtitle: title,
             },
             folderdata!
           )
@@ -108,14 +108,14 @@
         (click)="
           openShareDialog(
             {
-              title: 'Windows Share File',
+              title: title + ' Files/Folders Total',
               reporttitle: 'windows-share-file',
               value: totalcount || '0',
               file: false,
               fileicon: true,
               both: true,
               icon: '/svg/folder.svg',
-              subtitle: 'Windows Share File',
+              subtitle: title,
             },
             totaldata!
           )
