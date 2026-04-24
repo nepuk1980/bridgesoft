@@ -26,6 +26,9 @@ import { AlertConfigurationComponent } from './pages/alert-configuration/alert-c
 import { RulesLayoutComponent } from './layout/rules-layout/rules-layout.component';
 import { RulesComponent } from './pages/rules/rules.component';
 import { RequestWorkflowComponent } from './pages/request-workflow/request-workflow.component';
+import { ReportsLayoutComponent } from './layout/reports-layout/reports-layout.component';
+import { ReportComponent } from './pages/report/report.component';
+import { ExecutiveAuditReportComponent } from './pages/executive-audit-report/executive-audit-report.component';
 
 export const routes: Routes = [
   {
@@ -200,6 +203,25 @@ export const routes: Routes = [
       {
         path: '',
         component: RulesComponent,
+      },
+    ],
+  },
+  {
+    path: 'reports',
+    component: ReportsLayoutComponent,
+    data: { breadcrumb: 'Reports', animation: 'ReportPage' },
+    children: [
+      {
+        path: '',
+        component: ReportComponent,
+      },
+      {
+        path: 'executive-audit-report',
+        component: ExecutiveAuditReportComponent,
+        data: {
+          breadcrumb: 'Executive Audit Report',
+          animation: 'ExecutiveAuditReportPage',
+        },
       },
     ],
   },

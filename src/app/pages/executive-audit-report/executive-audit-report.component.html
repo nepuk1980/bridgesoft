@@ -1,0 +1,137 @@
+<app-innerheader
+  title="Executive Audit Report"
+  [btn]="false"
+  btntitle=" Back To Applications"
+></app-innerheader>
+@defer {
+  <div class="application-content-div">
+    <!-- Top Bar -->
+    <div class="application-tab-div">
+      <!-- Search -->
+      <div class="search-box">
+        <input
+          type="text"
+          placeholder="Search"
+          [(ngModel)]="searchText"
+          (input)="applyFilters()"
+        />
+        <img src="/svg/search.svg" class="search-icon" />
+      </div>
+      <p>
+        Showing results {{ dataSource.data.length }} of
+        {{ originalData.length }}
+      </p>
+      <!-- Filters -->
+      <div class="filter-grp-div">
+        <div class="custom-filter no-icon">
+          <mat-form-field>
+            <mat-label>Download</mat-label>
+            <mat-select
+              [(ngModel)]="selectedDownload"
+              panelClass="custom-filter-panel"
+            >
+              <mat-option value="download">Download</mat-option>
+              <mat-option value="pdf" (click)="downloadPDF()"
+                ><div class="icontexttd">
+                  <img src="/svg/pdf.svg" class="icons" alt="pdf" /> PDF
+                </div></mat-option
+              >
+              <mat-option value="excel" (click)="downloadExcel()"
+                ><div class="icontexttd">
+                  <img src="/svg/excel.svg" class="icons" alt="excel" /> Excel
+                </div></mat-option
+              >
+              <mat-option value="csv" (click)="downloadCSV()"
+                ><div class="icontexttd">
+                  <img src="/svg/csv.svg" class="icons" alt="csv" /> CSV
+                </div></mat-option
+              >
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <!-- Event Filter -->
+        <div class="custom-filter">
+          <mat-form-field>
+            <mat-label>Filter</mat-label>
+            <mat-select
+              [(ngModel)]="selectedFilter"
+              (selectionChange)="applyFilters()"
+              panelClass="custom-filter-panel"
+            >
+              <mat-option value="">All</mat-option>
+              @for (item of filters; track item.value) {
+                <mat-option [value]="item.value">
+                  {{ item.viewValue }}
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+    <!-- Table -->
+    <div class="solid-table table-wrapper">
+      <table mat-table [dataSource]="dataSource" matSort class="custom-table">
+        <ng-container matColumnDef="employeeName">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            Employee Name
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <a [routerLink]="element.link" class="table-link">
+              {{ element.employeeName }}
+            </a>
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="eventType">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Event Type</th>
+          <td mat-cell *matCellDef="let element">{{ element.eventType }}</td>
+        </ng-container>
+        <ng-container matColumnDef="dataSource">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Data Source</th>
+          <td mat-cell *matCellDef="let element">{{ element.dataSource }}</td>
+        </ng-container>
+        <ng-container matColumnDef="objectName">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Object Name</th>
+          <td mat-cell *matCellDef="let element">{{ element.objectName }}</td>
+        </ng-container>
+        <ng-container matColumnDef="resourceFullPath">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            Resource Full Path
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.resourceFullPath }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="resourceOwner">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            Resource Owner
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.resourceOwner }}
+          </td>
+        </ng-container>
+        <ng-container matColumnDef="eventTime">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Event Time</th>
+          <td mat-cell *matCellDef="let element">{{ element.eventTime }}</td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+            No data found
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+} @placeholder (minimum 1000ms) {
+  <div class="application-content-div">
+    <div class="application-tab-div">
+      <ngx-skeleton-loader animation="progress" count="3" />
+    </div>
+    <div class="solid-table table-wrapper">
+      <ngx-skeleton-loader animation="progress" count="6" appearance="line" />
+    </div>
+  </div>
+}
+<router-outlet></router-outlet>
