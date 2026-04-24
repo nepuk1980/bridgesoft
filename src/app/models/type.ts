@@ -221,3 +221,47 @@ export interface RuleResponseInterface {
   createDatetime: string | null;
   lastModifiedDatetime: string;
 }
+
+export interface RequestAccessWorkflowInterface {
+  id: number;
+  sourceType: string;
+  sourceName: string;
+  libraryName: string;
+  itemName: string;
+  pathValue: string;
+  itemType: 'File' | 'Folder';
+  itemUrl: string;
+  groupsList: string;
+
+  createDatetime: string;
+  lastModifiedDatetime: string;
+  lastAccessedDatetime: string | null;
+
+  sensitive: boolean;
+  openAccess: boolean;
+  fullControlOpenAccess: boolean;
+  readExecuteOpenAccess: boolean;
+  external: boolean;
+  cloudResource: boolean;
+  stale: boolean;
+  folderContainsSensitiveFiles: boolean;
+
+  ruleCategory: string;
+  category: string;
+}
+
+export type ReviewAccessInterface = {
+  id: number;
+  employeeName: string;
+  employeeEmail: string;
+  folderFileName: string;
+  resourceFullPath: string;
+  category: string;
+  criticality: string;
+  review: boolean;
+  sourceType: string;
+  decision: string;
+  decisionDateTime: string;
+  decisionBy: string | null;
+  requestedBy: string | null;
+};

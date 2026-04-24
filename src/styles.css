@@ -1063,13 +1063,22 @@ hr {
 .customRadio .mat-mdc-radio-button .mdc-radio__background {
   width: 1.5rem;
   height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .customRadio .mat-mdc-radio-button .mdc-radio__native-control,
 .customRadio .mat-mdc-radio-button .mdc-radio__background::before {
   width: 2.75rem;
   height: 2.75rem;
 }
-
+.customRadio .mat-mdc-radio-button .mdc-radio__background::before {
+  left: 50%;
+  right: 0;
+  margin: 0 auto;
+  top: 50%;
+  transform: translateY(-50%) translateX(-50%) !important;
+}
 .customRadio .mat-mdc-radio-button .mdc-radio__outer-circle {
   border: 1px solid #9d9d9d !important;
   background: #fff;

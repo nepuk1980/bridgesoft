@@ -10,6 +10,8 @@ import {
   FileSystemResponseInterface,
   IdentityVaultDetailResponseInterface,
   IdentityVaultResponseInterface,
+  RequestAccessWorkflowInterface,
+  ReviewAccessInterface,
   RuleResponseInterface,
 } from '../models/type';
 import { AuthService } from '../core/services/auth.service';
@@ -143,6 +145,25 @@ export class ApiService {
     );
   }
 
+  // ✅ Request Access workflow
+  getAllFilesAndFoldersDetails(
+    vaultId: number,
+    searchFileOrFolderName: string = '',
+    category: string = '',
+    filter: string = '',
+  ): Observable<RequestAccessWorkflowInterface> {
+    let params = new HttpParams()
+      .set('vaultId', vaultId)
+      .set('searchFileOrFolderName', searchFileOrFolderName)
+      .set('category', category)
+      .set('filter', filter);
+
+    return this.http.get<RequestAccessWorkflowInterface>(
+      `${environment.apiUrl}/getallfilesandfoldersdetails`,
+      { params },
+    );
+  }
+
   // ✅ Identity Vault Application Details
   getidentityentitlementlist(
     id: number,
@@ -226,5 +247,50 @@ export class ApiService {
     return this.http.put(`${environment.apiUrl}/updaterule`, payload, {
       headers,
     });
+  }
+
+  // Review Access Important List
+  getlistofimportantaccessrequests(
+    category: string,
+    filter: string,
+  ): Observable<ReviewAccessInterface[]> {
+    const params = new HttpParams()
+      .set('category', category)
+      .set('filter', filter);
+
+    return this.http.get<ReviewAccessInterface[]>(
+      `${environment.apiUrl}/getlistofimportantaccessrequests`,
+      { params },
+    );
+  }
+
+  // Review Access Open List
+  getlistofopenaccessrequests(
+    category: string,
+    filter: string,
+  ): Observable<ReviewAccessInterface[]> {
+    const params = new HttpParams()
+      .set('category', category)
+      .set('filter', filter);
+
+    return this.http.get<ReviewAccessInterface[]>(
+      `${environment.apiUrl}/getlistofopenaccessrequests`,
+      { params },
+    );
+  }
+
+  // Review Access Review List
+  getlistofreviewaccessrequests(
+    category: string,
+    filter: string,
+  ): Observable<ReviewAccessInterface[]> {
+    const params = new HttpParams()
+      .set('category', category)
+      .set('filter', filter);
+
+    return this.http.get<ReviewAccessInterface[]>(
+      `${environment.apiUrl}/getlistofreviewaccessrequests`,
+      { params },
+    );
   }
 }

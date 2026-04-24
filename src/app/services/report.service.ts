@@ -137,14 +137,19 @@ export class ReportService {
     const rows = data.map((obj) =>
       Object.values(obj).map((val) => String(val ?? '-')),
     );
-
+    const pageWidth = doc.internal.pageSize.getWidth();
     autoTable(doc, {
       head: [columns],
       body: rows,
 
       startY: 55,
-      tableWidth: 'auto',
-
+      margin: {
+        top: 55,
+        left: 40,
+        right: 40,
+        bottom: 30,
+      },
+      tableWidth: pageWidth - 80,
       theme: 'plain', // ❗ remove grid lines
 
       // ✅ Header styling (like light gray UI)
@@ -163,21 +168,21 @@ export class ReportService {
 
       // ✅ Row spacing effect (fake "cards")
       styles: {
-        cellPadding: 5,
+        cellPadding: 6,
         lineWidth: 0,
-        fontSize: 8,
-        cellWidth: 'wrap',
+        cellWidth: 'auto',
         overflow: 'linebreak',
+        valign: 'top',
       },
 
-      columnStyles: {
-        0: { cellWidth: 120 }, // File/Folder Names
-        1: { cellWidth: 70 }, // Categories
-        2: { cellWidth: 300 }, // AD Group (important)
-        3: { cellWidth: 90 }, // User
-        4: { cellWidth: 60 }, // Duration
-        5: { cellWidth: 100 }, // Created On
-      },
+      // columnStyles: {
+      //   0: { cellWidth: 120 }, // File/Folder Names
+      //   1: { cellWidth: 70 }, // Categories
+      //   2: { cellWidth: 300 }, // AD Group (important)
+      //   3: { cellWidth: 90 }, // User
+      //   4: { cellWidth: 60 }, // Duration
+      //   5: { cellWidth: 100 }, // Created On
+      // },
 
       // ✅ Alternate row shading (like UI blocks)
       alternateRowStyles: {

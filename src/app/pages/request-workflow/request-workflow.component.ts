@@ -1,4 +1,4 @@
-import { NgFor, NgIf } from '@angular/common';
+import { NgFor } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,28 +10,23 @@ import { RouterModule, ActivatedRoute } from '@angular/router';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { MatDialog } from '@angular/material/dialog';
-import { InnerheaderComponent } from '../../shared/components/innerheader/innerheader.component';
+import { MatRadioModule } from '@angular/material/radio';
 
-type Important = {
-  policyName: string;
-  rule: string;
-  folderOrFileNames: {
-    type: 'folder' | 'file';
-    name: string;
-  };
-  resourceFullPath: string;
-};
+import { InnerheaderComponent } from '../../shared/components/innerheader/innerheader.component';
+import { ApiService } from '../../services/api.service';
+import { RequestAccessWorkflowInterface } from '../../models/type';
+import { ReportService } from '../../services/report.service';
 
 interface TableRowImportant {
-  policyName: string;
-  rule: string;
   folderFileName: string;
-  type: 'folder' | 'file';
   resourceFullPath: string;
+  category: string;
+  criticality: string;
 }
 
 @Component({
   selector: 'app-request-workflow',
+  standalone: true,
   imports: [
     InnerheaderComponent,
     MatSelectModule,
@@ -40,150 +35,120 @@ interface TableRowImportant {
     NgxSkeletonLoaderModule,
     MatTabsModule,
     NgFor,
-    NgIf,
     MatTableModule,
     MatButtonModule,
     RouterModule,
+    MatRadioModule,
   ],
   templateUrl: './request-workflow.component.html',
   styleUrl: './request-workflow.component.css',
 })
 export class RequestWorkflowComponent implements OnInit {
-  isLoading = true;
+  vaultId: number = 0;
 
-  // ✅ FIXED: required variables
   searchText: string = '';
   selectedCategory: string = '';
-  selectedType: string = '';
+  selectedCriticality: string = '';
+  selectedFilterIds: number[] = [];
+  selectedDownload: string = 'download';
+
   originalData: TableRowImportant[] = [];
-
-  data: Important[] = [
-    {
-      policyName: 'File share business SOD Policy',
-      rule: 'Any person having access to Legal should not have access to Human Resources',
-      folderOrFileNames: {
-        type: 'folder' as const,
-        name: 'Legal',
-      },
-      resourceFullPath:
-        'https://bridgesoft.sharepoint.com/sites/legal/Folder/Legal',
-    },
-    {
-      policyName:
-        'SOD Policy Internal Auditor Access - Windows Administrator Access',
-      rule: 'Internal Auditor Access - Windows Administrator Access Constraint',
-      folderOrFileNames: {
-        type: 'file' as const,
-        name: 'Human Resources.xls',
-      },
-      resourceFullPath:
-        'https://bridgesoft.sharepoint.com/sites/humanresources/documents/humanresources',
-    },
-  ];
-
-  allColumnsImportant: string[] = [
-    'policyName',
-    'rule',
-    'folderFileName',
-    'resourceFullPath',
-  ];
-
-  displayedColumnsImportant: string[] = [...this.allColumnsImportant];
-
   dataSourceImportant: TableRowImportant[] = [];
 
   totalCount = 0;
   showingCount = 0;
 
-  selection = new Set<TableRowImportant>();
-
   categoriesImportant: string[] = [];
-  categoriesOpen: string[] = [];
+
+  displayedColumnsImportant: string[] = [
+    'folderFileName',
+    'resourceFullPath',
+    'category',
+    'criticality',
+  ];
+
+  selection = new Set<TableRowImportant>();
 
   private dialog = inject(MatDialog);
 
   constructor(
     private route: ActivatedRoute,
     private sanitizer: DomSanitizer,
+    private api: ApiService,
+    private reportService: ReportService,
   ) {}
 
   getSafeHtml(html: string): SafeHtml {
     return this.sanitizer.bypassSecurityTrustHtml(html);
   }
 
-  // ✅ APPLY FILTERS
-  applyFilters() {
-    let filtered = [...this.originalData];
-
-    if (this.searchText) {
-      filtered = filtered.filter(
-        (row) =>
-          row.policyName?.toLowerCase().includes(this.searchText) ||
-          row.rule?.toLowerCase().includes(this.searchText) ||
-          row.folderFileName?.toLowerCase().includes(this.searchText),
-      );
-    }
-
-    if (this.selectedCategory) {
-      filtered = filtered.filter(
-        (row) => row.policyName === this.selectedCategory,
-      );
-    }
-
-    if (this.selectedType) {
-      filtered = filtered.filter((row) => row.type === this.selectedType);
-    }
-
-    this.dataSourceImportant = filtered;
-    this.showingCount = filtered.length;
-  }
-
+  // SEARCH
   onSearch(value: string) {
-    this.searchText = value.toLowerCase();
+    this.searchText = value?.trim() || '';
     this.applyFilters();
   }
 
+  // CATEGORY FILTER
   filterCategory(value: string) {
     this.selectedCategory = value || '';
     this.applyFilters();
   }
 
-  filterType(type: string) {
-    this.selectedType = type || '';
+  // CRITICALITY FILTER
+  filterCriticality(value: string) {
+    this.selectedCriticality = value || '';
     this.applyFilters();
   }
 
-  updateColumns(cols: string[]) {
-    this.displayedColumnsImportant = cols;
-  }
-
-  toggleColumn(column: string, event: any) {
-    event.stopPropagation();
-
-    const index = this.displayedColumnsImportant.indexOf(column);
-
-    if (index >= 0) {
-      this.displayedColumnsImportant.splice(index, 1);
+  // FILE/FOLDER FILTER (API SIDE)
+  filterType(id: number, checked: boolean) {
+    if (checked) {
+      if (!this.selectedFilterIds.includes(id)) {
+        this.selectedFilterIds.push(id);
+      }
     } else {
-      this.displayedColumnsImportant.push(column);
+      this.selectedFilterIds = this.selectedFilterIds.filter((x) => x !== id);
     }
 
-    this.displayedColumnsImportant = [...this.displayedColumnsImportant];
+    this.getWorkflowData();
   }
 
-  toggleAllColumns(event: any) {
-    event.stopPropagation();
+  // RADIO CHANGE
+  onCriticalityChange(row: TableRowImportant) {
+    row.criticality = row.criticality;
+  }
 
-    if (
-      this.displayedColumnsImportant.length === this.allColumnsImportant.length
-    ) {
-      this.displayedColumnsImportant = [];
-    } else {
-      this.displayedColumnsImportant = [...this.allColumnsImportant];
+  // APPLY LOCAL FILTERS
+  applyFilters() {
+    let filtered = [...this.originalData];
+
+    if (this.searchText) {
+      const search = this.searchText.toLowerCase();
+
+      filtered = filtered.filter(
+        (x) =>
+          x.folderFileName.toLowerCase().includes(search) ||
+          x.resourceFullPath.toLowerCase().includes(search),
+      );
     }
+
+    if (this.selectedCategory) {
+      filtered = filtered.filter((x) => x.category === this.selectedCategory);
+    }
+
+    if (this.selectedCriticality) {
+      filtered = filtered.filter(
+        (x) => x.criticality === this.selectedCriticality,
+      );
+    }
+
+    this.dataSourceImportant = filtered;
+
+    this.showingCount = filtered.length;
+    this.totalCount = this.originalData.length;
   }
 
-  // ✅ ROW SELECTION FIXED
+  // ROW SELECTION
   toggleRow(row: TableRowImportant) {
     if (this.selection.has(row)) {
       this.selection.delete(row);
@@ -212,24 +177,110 @@ export class RequestWorkflowComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // ✅ Using local data (since tabs not defined here)
-    this.originalData = this.data.map((item: Important) => ({
-      policyName: item.policyName,
-      rule: item.rule,
-      folderFileName: item.folderOrFileNames.name,
-      type: item.folderOrFileNames.type,
-      resourceFullPath: item.resourceFullPath,
+    this.route.queryParams.subscribe((params) => {
+      this.vaultId = Number(params['vaultId']) || 0;
+      this.getWorkflowData();
+    });
+  }
+
+  // API CALL
+  getWorkflowData() {
+    const filterString = this.selectedFilterIds.join(',');
+
+    this.api
+      .getAllFilesAndFoldersDetails(
+        this.vaultId,
+        this.searchText,
+        this.selectedCategory,
+        filterString,
+      )
+      .subscribe({
+        next: (res: any) => {
+          const data = res?.data || res;
+
+          this.originalData = data.map(
+            (item: RequestAccessWorkflowInterface) => ({
+              folderFileName: item.itemName,
+              resourceFullPath: item.itemUrl,
+              category: item.category,
+              criticality: 'Open',
+            }),
+          );
+
+          this.categoriesImportant = [
+            ...new Set(this.originalData.map((x) => x.category)),
+          ];
+
+          this.applyFilters();
+
+          this.selection.clear();
+        },
+        error: (err) => {
+          console.error('Workflow API error:', err);
+        },
+      });
+  }
+
+  // DATE FORMAT
+  private getFormattedDateTime(): string {
+    const now = new Date();
+
+    const date = now.toLocaleDateString('en-GB').replace(/\//g, '-');
+
+    const time = now
+      .toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      })
+      .replace(/:/g, '-');
+
+    return `${date}_${time}`;
+  }
+
+  // EXPORT DATA
+  private getExportData() {
+    return this.dataSourceImportant.map((item) => ({
+      'Folder / File Name': item.folderFileName,
+      ResourceFullPath: item.resourceFullPath,
+      Category: item.category,
+      Criticality: item.criticality,
     }));
+  }
 
-    this.dataSourceImportant = [...this.originalData];
+  // DOWNLOAD EXCEL
+  downloadExcel() {
+    const data = this.getExportData();
+    const timestamp = this.getFormattedDateTime();
 
-    this.totalCount = this.originalData.length;
-    this.showingCount = this.dataSourceImportant.length;
+    this.reportService.downloadExcel(
+      data,
+      `request-workflow-report_${timestamp}`,
+      'Request Workflow',
+    );
+  }
 
-    this.categoriesImportant = [
-      ...new Set(this.originalData.map((row) => row.policyName)),
-    ];
+  // DOWNLOAD CSV
+  downloadCSV() {
+    const data = this.getExportData();
+    const timestamp = this.getFormattedDateTime();
 
-    this.isLoading = false;
+    this.reportService.downloadCSV(
+      data,
+      `request-workflow-report_${timestamp}`,
+      'Request Workflow',
+    );
+  }
+
+  // DOWNLOAD PDF
+  downloadPDF() {
+    const data = this.getExportData();
+    const timestamp = this.getFormattedDateTime();
+
+    this.reportService.downloadPDF(
+      data,
+      `request-workflow-report_${timestamp}`,
+      'Request Workflow',
+    );
   }
 }
