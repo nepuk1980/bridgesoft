@@ -40,6 +40,7 @@
     <mat-checkbox
       [checked]="isSelected(user)"
       (click)="$event.stopPropagation()"
+      (change)="toggleSelection(user, $event.checked)"
     ></mat-checkbox>
 
     <button mat-icon-button>

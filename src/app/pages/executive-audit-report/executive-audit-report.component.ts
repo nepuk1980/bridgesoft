@@ -87,7 +87,19 @@ export class ExecutiveAuditReportComponent implements OnInit, AfterViewInit {
 
   // ================= VIEW =================
   @ViewChild(MatSort) sort!: MatSort;
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
+
+  // ✅ FIX: Setter-based paginator (handles *ngIf / delayed render)
+  paginator!: MatPaginator;
+  @ViewChild(MatPaginator)
+  set matPaginator(paginator: MatPaginator) {
+    if (paginator) {
+      this.paginator = paginator;
+
+      paginator.page.subscribe((event) => {
+        this.loadAuditData(event.pageIndex, event.pageSize);
+      });
+    }
+  }
 
   // ================= LIFECYCLE =================
   ngOnInit(): void {
@@ -96,10 +108,6 @@ export class ExecutiveAuditReportComponent implements OnInit, AfterViewInit {
 
   ngAfterViewInit(): void {
     this.dataSource.sort = this.sort;
-
-    this.paginator.page.subscribe((event) => {
-      this.loadAuditData(event.pageIndex, event.pageSize);
-    });
   }
 
   // ================= MAPPER =================
@@ -152,7 +160,7 @@ export class ExecutiveAuditReportComponent implements OnInit, AfterViewInit {
           this.originalData = mappedData;
           this.dataSource.data = mappedData;
 
-          // ✅ FIX: Only set filters ONCE (first load)
+          // ✅ Only set filters once
           if (this.filters.length === 0) {
             const uniqueEventTypes = Array.from(
               new Set(mappedData.map((x) => x.eventType)),
@@ -178,7 +186,6 @@ export class ExecutiveAuditReportComponent implements OnInit, AfterViewInit {
   // ================= FILTER =================
   applyFilters(filterValue?: string): void {
     this.pageIndex = 0;
-
     this.loadAuditData(this.pageIndex, this.pageSize);
   }
 
