@@ -1,17 +1,21 @@
-.application-content-div{
-    padding: 1.5625rem 1.5rem 0;
+.application-content-div {
+  padding: 1.5625rem 1.5rem 0;
 }
-.application-tab-div{
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+.application-tab-div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
-.application-content-div .search-box{
-    margin: 0;
+.application-content-div .search-box {
+  margin: 0;
 }
 
-.application-tab-div p{
-font-weight: 400;
-font-size: 1rem;
-color: #787878;
+.application-tab-div p {
+  font-weight: 400;
+  font-size: 1rem;
+  color: #787878;
+}
+
+.solid-table {
+  height: calc(100vh - 24.3rem);
 }

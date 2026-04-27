@@ -6,7 +6,7 @@
 }
 .solid-table {
   padding: 0 1.5rem;
-  height: calc(100vh - 25rem);
+  height: calc(100vh - 30rem);
 }
 .solid-table th:first-child,
 .solid-table td:first-child {

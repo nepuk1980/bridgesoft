@@ -189,4 +189,35 @@
     >
     </mat-paginator> -->
   </div>
+
+  <!-- ✅ Custom Pagination -->
+  <div class="custom-pagination">
+    <span class="count">
+      Showing {{ dataSource.data.length }} of {{ totalElements }}
+    </span>
+
+    <div class="pagination-buttons">
+      <button (click)="firstPage()" [disabled]="pageIndex === 0">«</button>
+      <button (click)="prevPage()" [disabled]="pageIndex <= 0">‹</button>
+
+      <span *ngIf="pages[0] > 1">...</span>
+
+      <button
+        *ngFor="let p of pages"
+        (click)="goToPage(p)"
+        [class.active]="p === pageIndex + 1"
+      >
+        {{ p }}
+      </button>
+
+      <span *ngIf="pages[pages.length - 1] < totalPages">...</span>
+
+      <button (click)="nextPage()" [disabled]="pageIndex >= totalPages - 1">
+        ›
+      </button>
+      <button (click)="lastPage()" [disabled]="pageIndex === totalPages - 1">
+        »
+      </button>
+    </div>
+  </div>
 }

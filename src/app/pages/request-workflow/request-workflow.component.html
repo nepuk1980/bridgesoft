@@ -1,5 +1,5 @@
 <app-innerheader
-  title="Review Access"
+  title="Request Access Workflow"
   [btn]="false"
   btntitle="Back To Request Access"
 ></app-innerheader>
@@ -53,9 +53,11 @@
           <mat-form-field>
             <mat-label>Select Category</mat-label>
             <mat-select
+              [(value)]="selectedCategory"
               panelClass="custom-filter-panel"
               (selectionChange)="filterCategory($event.value)"
             >
+              <mat-option value="">Select Category</mat-option>
               <mat-option *ngFor="let cat of categoriesImportant" [value]="cat">
                 {{ cat }}
               </mat-option>
@@ -68,9 +70,11 @@
           <mat-form-field>
             <mat-label>Filter</mat-label>
             <mat-select
+              [(value)]="selectedCriticality"
               panelClass="custom-filter-panel"
               (selectionChange)="filterCriticality($event.value)"
             >
+              <mat-option value="">Filter</mat-option>
               <mat-option value="Open">Open</mat-option>
               <mat-option value="Important">Important</mat-option>
             </mat-select>
@@ -107,6 +111,8 @@
                 [checked]="selection.has(row)"
               ></mat-checkbox>
 
+              <img src="/svg/folder.svg" *ngIf="row.sourceType === 'Folder'" />
+              <img src="/svg/file.svg" *ngIf="row.sourceType === 'File'" />
               <span>
                 <a routerLink="/review-access/sod-detail" class="table-link">
                   {{ row.folderFileName }}
@@ -128,10 +134,7 @@
         <ng-container matColumnDef="category">
           <th mat-header-cell *matHeaderCellDef>Category</th>
           <td mat-cell *matCellDef="let row">
-            <div class="icontexttd">
-              <img src="/svg/folder.svg" />
-              {{ row.category }}
-            </div>
+            {{ row.category }}
           </td>
         </ng-container>
 
@@ -177,12 +180,39 @@
   </ng-container>
 </div>
 
+<!-- ✅ Custom Pagination -->
+<div class="custom-pagination">
+  <span class="count">
+    Showing {{ dataSourceImportant.length }} of {{ totalElements }}
+  </span>
+
+  <div class="pagination-buttons">
+    <button (click)="firstPage()" [disabled]="pageIndex === 0">«</button>
+    <button (click)="prevPage()" [disabled]="pageIndex === 0">‹</button>
+
+    <span *ngIf="pages[0] > 1">...</span>
+
+    <button
+      *ngFor="let p of pages"
+      (click)="goToPage(p)"
+      [class.active]="p === pageIndex + 1"
+    >
+      {{ p }}
+    </button>
+
+    <span *ngIf="pages[pages.length - 1] < totalPages">...</span>
+
+    <button (click)="nextPage()" [disabled]="pageIndex === totalPages - 1">
+      ›
+    </button>
+    <button (click)="lastPage()" [disabled]="pageIndex === totalPages - 1">
+      »
+    </button>
+  </div>
+</div>
+
 <div class="fixed-btn">
-  <button
-    routerLink="../request-access-detail"
-    mat-flat-button
-    class="btn-blue"
-  >
+  <button mat-flat-button class="btn-blue" (click)="submitAccessRequest()">
     Submit
   </button>
 </div>

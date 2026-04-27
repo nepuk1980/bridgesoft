@@ -131,10 +131,11 @@ export class RequestAccessDetailComponent implements OnInit {
 
     // ✅ dynamic types (folder/file)
     this.types = [...new Set(this.RESOURCE_DATA.map((d) => d.type))];
+    this.applyFilter();
   }
 
   applyFilter() {
-    this.dataSource = this.RESOURCE_DATA.filter((item) => {
+    let filtered = this.RESOURCE_DATA.filter((item) => {
       const matchesSearch =
         !this.searchText ||
         item.name.toLowerCase().includes(this.searchText.toLowerCase()) ||
@@ -148,6 +149,32 @@ export class RequestAccessDetailComponent implements OnInit {
       return matchesSearch && matchesCategory && matchesType;
     });
 
+    // ✅ TOTAL CALCULATION FIRST
+    this.totalElements = filtered.length;
+    this.totalPages = Math.max(
+      1,
+      Math.ceil(this.totalElements / this.pageSize),
+    );
+
+    // ✅ SAFE PAGE INDEX
+    if (this.pageIndex > this.totalPages - 1) {
+      this.pageIndex = this.totalPages - 1;
+    }
+    if (this.pageIndex < 0) {
+      this.pageIndex = 0;
+    }
+
+    // ✅ PAGINATION SLICE
+    const start = this.pageIndex * this.pageSize;
+    const end = start + this.pageSize;
+
+    this.dataSource = filtered.slice(start, end);
+
+    // ✅ KEEP FOR UI (if used)
+    this.filteredUsers = filtered;
+    this.paginatedUsers = this.dataSource;
+
+    this.generatePages();
     this.selection.clear();
   }
 
@@ -181,5 +208,67 @@ export class RequestAccessDetailComponent implements OnInit {
 
   submit() {
     console.log('Selected Rows:', this.selection.selected);
+  }
+
+  // ✅ Pagination
+  pageSize = 10;
+  pageIndex = 0;
+  totalPages = 0;
+  totalElements = 0;
+  pages: number[] = [];
+
+  paginatedUsers: any[] = [];
+  filteredUsers: any[] = [];
+
+  // ✅ PAGINATION UI CALCULATION
+  generatePages() {
+    const visible = 3;
+
+    if (this.totalPages <= 0) {
+      this.pages = [];
+      return;
+    }
+
+    let start = Math.max(1, this.pageIndex + 1 - 1);
+    let end = Math.min(this.totalPages, start + visible - 1);
+
+    if (end - start < visible - 1) {
+      start = Math.max(1, end - visible + 1);
+    }
+
+    this.pages = [];
+    for (let i = start; i <= end; i++) {
+      this.pages.push(i);
+    }
+  }
+
+  // ✅ PAGINATION ACTIONS
+  goToPage(p: number) {
+    this.pageIndex = p - 1;
+    this.applyFilter();
+  }
+
+  nextPage() {
+    if (this.pageIndex < this.totalPages - 1) {
+      this.pageIndex++;
+      this.applyFilter();
+    }
+  }
+
+  prevPage() {
+    if (this.pageIndex > 0) {
+      this.pageIndex--;
+      this.applyFilter();
+    }
+  }
+
+  firstPage() {
+    this.pageIndex = 0;
+    this.applyFilter();
+  }
+
+  lastPage() {
+    this.pageIndex = this.totalPages - 1;
+    this.applyFilter();
   }
 }

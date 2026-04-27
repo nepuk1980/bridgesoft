@@ -12,6 +12,7 @@ import { InnerheaderComponent } from '../../shared/components/innerheader/innerh
 import { ApiService } from '../../services/api.service';
 import { ReportService } from '../../services/report.service';
 import { MatIconModule } from '@angular/material/icon';
+import { NgFor, NgIf } from '@angular/common';
 
 interface Filter {
   value: string;
@@ -41,6 +42,8 @@ interface Application {
     RouterModule,
     NgxSkeletonLoaderModule,
     MatIconModule,
+    NgFor,
+    NgIf,
   ],
   templateUrl: './applications.component.html',
   styleUrl: './applications.component.css',
@@ -65,9 +68,8 @@ export class ApplicationsComponent implements OnInit, AfterViewInit {
 
   isLoading = false; // ✅ loader
 
-  // ✅ Pagination
   page = 0;
-  size = 100000;
+  size = 10;
   totalElements = 0;
 
   @ViewChild(MatSort) sort!: MatSort;
@@ -104,6 +106,7 @@ export class ApplicationsComponent implements OnInit, AfterViewInit {
         this.dataSource.data = mappedData;
 
         this.totalElements = res.totalElements;
+        this.generatePages();
 
         // ✅ 🔥 Dynamic filter generation
         const uniqueTypes = [...new Set(mappedData.map((item) => item.type))];
@@ -206,5 +209,76 @@ export class ApplicationsComponent implements OnInit, AfterViewInit {
       `application-report_${timestamp}`,
       'Applications',
     );
+  }
+
+  // ✅ Pagination
+  pageSize = 10;
+  pageIndex = 0;
+
+  totalPages = 0;
+  pages: number[] = [];
+
+  // -------------------------------
+  // CALCULATE PAGINATION
+  // -------------------------------
+  generatePages() {
+    this.totalPages = Math.ceil(this.totalElements / this.size);
+
+    const visible = 3;
+
+    if (this.totalPages <= 0) {
+      this.pages = [];
+      return;
+    }
+
+    let start = Math.max(1, this.pageIndex + 1 - 1);
+    let end = Math.min(this.totalPages, start + visible - 1);
+
+    if (end - start < visible - 1) {
+      start = Math.max(1, end - visible + 1);
+    }
+
+    this.pages = [];
+
+    for (let i = start; i <= end; i++) {
+      this.pages.push(i);
+    }
+  }
+
+  // -------------------------------
+  // PAGINATION ACTIONS (SERVER SIDE)
+  // -------------------------------
+  goToPage(p: number) {
+    this.pageIndex = p - 1;
+    this.page = this.pageIndex;
+    this.getApplications();
+  }
+
+  nextPage() {
+    if (this.pageIndex < this.totalPages - 1) {
+      this.pageIndex++;
+      this.page = this.pageIndex;
+      this.getApplications();
+    }
+  }
+
+  prevPage() {
+    if (this.pageIndex > 0) {
+      this.pageIndex--;
+      this.page = this.pageIndex;
+      this.getApplications();
+    }
+  }
+
+  firstPage() {
+    this.pageIndex = 0;
+    this.page = 0;
+    this.getApplications();
+  }
+
+  lastPage() {
+    this.pageIndex = this.totalPages - 1;
+    this.page = this.pageIndex;
+    this.getApplications();
   }
 }

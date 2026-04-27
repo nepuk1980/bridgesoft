@@ -1,4 +1,4 @@
-import { NgFor } from '@angular/common';
+import { NgFor, NgIf } from '@angular/common';
 import { Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -6,7 +6,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
-import { RouterModule, ActivatedRoute } from '@angular/router';
+import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { MatDialog } from '@angular/material/dialog';
@@ -16,12 +16,13 @@ import { InnerheaderComponent } from '../../shared/components/innerheader/innerh
 import { ApiService } from '../../services/api.service';
 import { RequestAccessWorkflowInterface } from '../../models/type';
 import { ReportService } from '../../services/report.service';
-
+import { forkJoin } from 'rxjs';
 interface TableRowImportant {
   folderFileName: string;
   resourceFullPath: string;
   category: string;
   criticality: string;
+  itemtype: string;
 }
 
 @Component({
@@ -39,6 +40,7 @@ interface TableRowImportant {
     MatButtonModule,
     RouterModule,
     MatRadioModule,
+    NgIf,
   ],
   templateUrl: './request-workflow.component.html',
   styleUrl: './request-workflow.component.css',
@@ -54,6 +56,8 @@ export class RequestWorkflowComponent implements OnInit {
 
   originalData: TableRowImportant[] = [];
   dataSourceImportant: TableRowImportant[] = [];
+
+  selectedUsers: any[] = [];
 
   totalCount = 0;
   showingCount = 0;
@@ -76,7 +80,17 @@ export class RequestWorkflowComponent implements OnInit {
     private sanitizer: DomSanitizer,
     private api: ApiService,
     private reportService: ReportService,
-  ) {}
+    private router: Router,
+  ) {
+    const nav = this.router.getCurrentNavigation();
+
+    this.selectedUsers =
+      nav?.extras?.state?.['selectedUsers'] ??
+      history.state?.selectedUsers ??
+      [];
+
+    console.log('Selected Users:', this.selectedUsers);
+  }
 
   getSafeHtml(html: string): SafeHtml {
     return this.sanitizer.bypassSecurityTrustHtml(html);
@@ -142,10 +156,35 @@ export class RequestWorkflowComponent implements OnInit {
       );
     }
 
-    this.dataSourceImportant = filtered;
+    // ✅ ALWAYS update total first
+    this.totalElements = filtered.length;
+    this.totalPages = Math.max(
+      1,
+      Math.ceil(this.totalElements / this.pageSize),
+    );
 
-    this.showingCount = filtered.length;
+    // ✅ clamp pageIndex safely
+    if (this.pageIndex > this.totalPages - 1) {
+      this.pageIndex = this.totalPages - 1;
+    }
+    if (this.pageIndex < 0) {
+      this.pageIndex = 0;
+    }
+
+    // ✅ pagination slice
+    const start = this.pageIndex * this.pageSize;
+    const end = start + this.pageSize;
+
+    this.dataSourceImportant = filtered.slice(start, end);
+
+    // ✅ UI counters (correct binding)
+    this.filteredUsers = filtered;
+    this.paginatedUsers = this.dataSourceImportant;
+
+    this.showingCount = this.dataSourceImportant.length;
     this.totalCount = this.originalData.length;
+
+    this.generatePages();
   }
 
   // ROW SELECTION
@@ -155,6 +194,7 @@ export class RequestWorkflowComponent implements OnInit {
     } else {
       this.selection.add(row);
     }
+    console.log('✅ selection now:', Array.from(this.selection));
   }
 
   toggleAllRows() {
@@ -204,6 +244,7 @@ export class RequestWorkflowComponent implements OnInit {
               resourceFullPath: item.itemUrl,
               category: item.category,
               criticality: 'Open',
+              sourceType: item.itemType,
             }),
           );
 
@@ -211,6 +252,7 @@ export class RequestWorkflowComponent implements OnInit {
             ...new Set(this.originalData.map((x) => x.category)),
           ];
 
+          this.pageIndex = 0;
           this.applyFilters();
 
           this.selection.clear();
@@ -282,5 +324,123 @@ export class RequestWorkflowComponent implements OnInit {
       `request-workflow-report_${timestamp}`,
       'Request Workflow',
     );
+  }
+
+  // ✅ Pagination
+  pageSize = 10;
+  pageIndex = 0;
+  totalPages = 0;
+  totalElements = 0;
+  pages: number[] = [];
+
+  paginatedUsers: any[] = [];
+  filteredUsers: any[] = [];
+
+  // ✅ PAGINATION UI CALCULATION
+  generatePages() {
+    const visible = 3;
+
+    if (this.totalPages <= 0) {
+      this.pages = [];
+      return;
+    }
+
+    let start = Math.max(1, this.pageIndex + 1 - 1);
+    let end = Math.min(this.totalPages, start + visible - 1);
+
+    if (end - start < visible - 1) {
+      start = Math.max(1, end - visible + 1);
+    }
+
+    this.pages = [];
+    for (let i = start; i <= end; i++) {
+      this.pages.push(i);
+    }
+  }
+
+  // ✅ PAGINATION ACTIONS
+  goToPage(p: number) {
+    this.pageIndex = p - 1;
+    this.applyFilters();
+  }
+
+  nextPage() {
+    if (this.pageIndex < this.totalPages - 1) {
+      this.pageIndex++;
+      this.applyFilters();
+    }
+  }
+
+  prevPage() {
+    if (this.pageIndex > 0) {
+      this.pageIndex--;
+      this.applyFilters();
+    }
+  }
+
+  firstPage() {
+    this.pageIndex = 0;
+    this.applyFilters();
+  }
+
+  lastPage() {
+    this.pageIndex = this.totalPages - 1;
+    this.applyFilters();
+  }
+  buildAccessRequestPayload() {
+    const payloads: any[] = [];
+
+    const users = this.selectedUsers;
+    const rows =
+      this.filteredUsers?.length > 0 ? this.filteredUsers : this.originalData;
+
+    console.log('👤 users:', users);
+    console.log('📁 rows:', rows);
+
+    if (!users?.length || !rows.length) {
+      console.warn('⚠️ selectedUsers or data is empty');
+      return payloads;
+    }
+
+    for (const user of users) {
+      for (const row of rows) {
+        payloads.push({
+          employeeName: user?.namepass ?? '',
+          employeeEmail: user?.emailpass ?? '',
+          folderFileName: row?.folderFileName,
+          resourceFullPath: row?.resourceFullPath,
+          category: row?.category,
+          criticality: row?.criticality ?? 'Open',
+          sourceType: row?.itemType ?? 'File',
+        });
+      }
+    }
+
+    console.log('✅ build payloads', payloads);
+
+    return payloads;
+  }
+  submitAccessRequest() {
+    const payloads = this.buildAccessRequestPayload();
+    console.log('submit payloads', payloads);
+
+    if (!payloads.length) {
+      console.error('❌ No payload generated.');
+      return;
+    }
+
+    this.api.saveaccessrequestdetails(payloads).subscribe({
+      next: (res) => {
+        console.log('✅ Bulk request successful:', res);
+
+        // 👉 redirect after success
+        this.router.navigate(['../request-access-detail'], {
+          relativeTo: this.route,
+        });
+      },
+      error: (err) => {
+        console.error('❌ Bulk request failed:', err);
+      },
+    });
   }
 }

@@ -169,6 +169,8 @@ export class IdentityVaultDetailComponent implements OnInit {
           status: item?.status || 'Inactive',
           lastAccess: item?.lastAccess || '-',
         }));
+        this.applicationPagination.pageIndex = 0;
+        this.applyPagination('application');
       },
       error: (err) => {
         console.error('Application Accounts Error:', err);
@@ -205,6 +207,8 @@ export class IdentityVaultDetailComponent implements OnInit {
             accountName: item?.accountName || '-',
           };
         });
+        this.entitlementPagination.pageIndex = 0;
+        this.applyPagination('entitlement');
 
         console.log('Entitlements:', this.tabs[1].data);
       },
@@ -322,5 +326,137 @@ export class IdentityVaultDetailComponent implements OnInit {
       `application-accounts-entitlements-report_${timestamp}`,
       'Application Accounts - Entitlements',
     );
+  }
+
+  // ✅ PAGINATION STATE (SEPARATE)
+  entitlementPagination = {
+    pageSize: 10,
+    pageIndex: 0,
+    totalPages: 0,
+    totalElements: 0,
+    pages: [] as number[],
+    dataSource: [] as any[],
+  };
+
+  applicationPagination = {
+    pageSize: 10,
+    pageIndex: 0,
+    totalPages: 0,
+    totalElements: 0,
+    pages: [] as number[],
+    dataSource: [] as any[],
+  };
+
+  // ✅ APPLY PAGINATION
+  applyPagination(type: 'entitlement' | 'application') {
+    const source =
+      type === 'entitlement'
+        ? (this.tabs[1].data as any[])
+        : (this.tabs[2].data as any[]);
+
+    const pagination =
+      type === 'entitlement'
+        ? this.entitlementPagination
+        : this.applicationPagination;
+
+    pagination.totalElements = source.length;
+    pagination.totalPages = Math.ceil(
+      pagination.totalElements / pagination.pageSize,
+    );
+
+    // ✅ FIX: prevent invalid pageIndex
+    if (pagination.pageIndex >= pagination.totalPages) {
+      pagination.pageIndex =
+        pagination.totalPages > 0 ? pagination.totalPages - 1 : 0;
+    }
+
+    const start = pagination.pageIndex * pagination.pageSize;
+    const end = start + pagination.pageSize;
+
+    pagination.dataSource = source.slice(start, end);
+
+    this.generatePages(type);
+  }
+
+  // ✅ GENERATE PAGES
+  generatePages(type: 'entitlement' | 'application') {
+    const pagination =
+      type === 'entitlement'
+        ? this.entitlementPagination
+        : this.applicationPagination;
+
+    const visible = 3;
+
+    if (pagination.totalPages <= 0) {
+      pagination.pages = [];
+      return;
+    }
+
+    let start = Math.max(1, pagination.pageIndex + 1);
+    let end = Math.min(pagination.totalPages, start + visible - 1);
+
+    if (end - start < visible - 1) {
+      start = Math.max(1, end - visible + 1);
+    }
+
+    pagination.pages = [];
+    for (let i = start; i <= end; i++) {
+      pagination.pages.push(i);
+    }
+  }
+
+  // ✅ ACTIONS
+  goToPage(p: number, type: 'entitlement' | 'application') {
+    const pagination =
+      type === 'entitlement'
+        ? this.entitlementPagination
+        : this.applicationPagination;
+
+    pagination.pageIndex = p - 1;
+    this.applyPagination(type);
+  }
+
+  nextPage(type: 'entitlement' | 'application') {
+    const pagination =
+      type === 'entitlement'
+        ? this.entitlementPagination
+        : this.applicationPagination;
+
+    if (pagination.pageIndex < pagination.totalPages - 1) {
+      pagination.pageIndex++;
+      this.applyPagination(type);
+    }
+  }
+
+  prevPage(type: 'entitlement' | 'application') {
+    const pagination =
+      type === 'entitlement'
+        ? this.entitlementPagination
+        : this.applicationPagination;
+
+    if (pagination.pageIndex > 0) {
+      pagination.pageIndex--;
+      this.applyPagination(type);
+    }
+  }
+
+  firstPage(type: 'entitlement' | 'application') {
+    const pagination =
+      type === 'entitlement'
+        ? this.entitlementPagination
+        : this.applicationPagination;
+
+    pagination.pageIndex = 0;
+    this.applyPagination(type);
+  }
+
+  lastPage(type: 'entitlement' | 'application') {
+    const pagination =
+      type === 'entitlement'
+        ? this.entitlementPagination
+        : this.applicationPagination;
+
+    pagination.pageIndex = pagination.totalPages - 1;
+    this.applyPagination(type);
   }
 }

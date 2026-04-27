@@ -6,7 +6,7 @@
   justify-content: flex-end;
 }
 .solid-table {
-  height: calc(100vh - 23rem);
+  height: calc(100vh - 28.8rem);
 }
 .solid-table th:nth-child(1),
 .solid-table td:nth-child(1) {

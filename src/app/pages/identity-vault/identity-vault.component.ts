@@ -7,12 +7,10 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { CommonModule } from '@angular/common';
-import { MatPaginator } from '@angular/material/paginator';
 
 import { InnerheaderComponent } from '../../shared/components/innerheader/innerheader.component';
 import { ApiService } from '../../services/api.service';
 import { ReportService } from '../../services/report.service';
-import { timestamp } from 'rxjs';
 
 interface Filter {
   value: string;
@@ -20,6 +18,7 @@ interface Filter {
 }
 
 interface Application {
+  id: number;
   firstName: string;
   lastName: string;
   email: string;
@@ -48,7 +47,6 @@ interface Application {
   styleUrl: './identity-vault.component.css',
 })
 export class IdentityVaultComponent implements AfterViewInit, OnInit {
-  // ✅ dynamic category list
   categories: Filter[] = [];
 
   filters: Filter[] = [
@@ -68,8 +66,6 @@ export class IdentityVaultComponent implements AfterViewInit, OnInit {
   ];
 
   dataSource = new MatTableDataSource<Application>([]);
-
-  // ✅ master data (important)
   originalData: Application[] = [];
 
   searchText: string = '';
@@ -77,13 +73,14 @@ export class IdentityVaultComponent implements AfterViewInit, OnInit {
   selectedFilter: string = '';
   selectedDownload: string = 'Download';
 
-  // pagination
-  page = 0;
-  size = 100000;
+  // ✅ Custom Pagination
+  pageSize = 10;
+  pageIndex = 0;
+  totalPages = 0;
   totalElements = 0;
+  pages: number[] = [];
 
   @ViewChild(MatSort) sort!: MatSort;
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   constructor(
     private router: Router,
@@ -101,7 +98,7 @@ export class IdentityVaultComponent implements AfterViewInit, OnInit {
 
   // ✅ API CALL
   getIdentityVaultData() {
-    this.api.getlistofidentityvaults(this.page, this.size).subscribe({
+    this.api.getlistofidentityvaults(0, 100000).subscribe({
       next: (res: any) => {
         const mappedData: Application[] = res.content.map((item: any) => ({
           id: item.id,
@@ -115,11 +112,10 @@ export class IdentityVaultComponent implements AfterViewInit, OnInit {
           link: '',
         }));
 
-        // ✅ store original + display
         this.originalData = mappedData;
-        this.dataSource.data = mappedData;
+        this.totalElements = mappedData.length;
 
-        // ✅ dynamic categories (managers)
+        // categories
         this.categories = [
           ...new Map(
             mappedData.map((item) => [
@@ -132,12 +128,11 @@ export class IdentityVaultComponent implements AfterViewInit, OnInit {
           ).values(),
         ];
 
-        // pagination
-        this.totalElements = res.totalElements;
-        this.page = res.number;
-        this.size = res.size;
+        // ✅ init pagination
+        this.pageIndex = 0;
+        this.totalPages = Math.ceil(mappedData.length / this.pageSize) || 1;
 
-        this.dataSource.paginator = this.paginator;
+        this.updatePaginatedData(mappedData);
       },
       error: (err) => {
         console.error('API Error:', err);
@@ -149,7 +144,6 @@ export class IdentityVaultComponent implements AfterViewInit, OnInit {
   applyFilters() {
     let filteredData = [...this.originalData];
 
-    // category
     if (this.selectedCategory) {
       filteredData = filteredData.filter((item) =>
         item.manager
@@ -158,7 +152,6 @@ export class IdentityVaultComponent implements AfterViewInit, OnInit {
       );
     }
 
-    // risk filter
     if (this.selectedFilter) {
       filteredData = filteredData.filter((item) => {
         if (this.selectedFilter === 'low') return item.riskScore < 30;
@@ -169,7 +162,6 @@ export class IdentityVaultComponent implements AfterViewInit, OnInit {
       });
     }
 
-    // search
     if (this.searchText) {
       const search = this.searchText.toLowerCase();
       filteredData = filteredData.filter((item) =>
@@ -178,28 +170,89 @@ export class IdentityVaultComponent implements AfterViewInit, OnInit {
           .includes(search),
       );
     }
+    if (filteredData.length === 0) {
+      this.pageIndex = 0;
+    }
 
-    this.dataSource.data = filteredData;
+    this.totalPages = Math.ceil(filteredData.length / this.pageSize) || 1;
 
-    // reset paginator
-    if (this.paginator) {
-      this.paginator.firstPage();
+    if (this.pageIndex >= this.totalPages) {
+      this.pageIndex = 0;
+    }
+
+    this.updatePaginatedData(filteredData);
+  }
+
+  // ✅ Pagination Slice
+  updatePaginatedData(data: Application[]) {
+    const start = this.pageIndex * this.pageSize;
+    const end = start + this.pageSize;
+
+    this.dataSource.data = data.slice(start, end);
+    this.generatePages();
+  }
+
+  // ✅ Page Numbers
+  generatePages() {
+    const visible = 3;
+
+    if (this.totalPages <= 0) {
+      this.pages = [1]; // ✅ fallback
+      return;
+    }
+
+    let start = Math.max(1, this.pageIndex + 1 - 1);
+    let end = Math.min(this.totalPages, start + visible - 1);
+
+    if (end - start < visible - 1) {
+      start = Math.max(1, end - visible + 1);
+    }
+
+    this.pages = [];
+    for (let i = start; i <= end; i++) {
+      this.pages.push(i);
     }
   }
 
-  // pagination
-  onPageChange(event: any) {
-    this.page = event.pageIndex;
-    this.size = event.pageSize;
-    this.getIdentityVaultData();
+  // ✅ Pagination Actions
+  goToPage(p: number) {
+    this.pageIndex = p - 1;
+    this.applyFilters();
   }
 
-  // reset filters
+  nextPage() {
+    if (this.pageIndex < this.totalPages - 1) {
+      this.pageIndex++;
+      this.applyFilters();
+    }
+  }
+
+  prevPage() {
+    if (this.pageIndex > 0) {
+      this.pageIndex--;
+      this.applyFilters();
+    }
+  }
+
+  firstPage() {
+    this.pageIndex = 0;
+    this.applyFilters();
+  }
+
+  lastPage() {
+    this.pageIndex = this.totalPages - 1;
+    this.applyFilters();
+  }
+
   resetFilters() {
     this.searchText = '';
     this.selectedCategory = '';
     this.selectedFilter = '';
-    this.dataSource.data = this.originalData;
+
+    this.pageIndex = 0;
+    this.totalPages = Math.ceil(this.originalData.length / this.pageSize);
+
+    this.updatePaginatedData(this.originalData);
   }
 
   // navigation
@@ -211,20 +264,21 @@ export class IdentityVaultComponent implements AfterViewInit, OnInit {
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-');
   }
+
   private getFormattedDateTime(): string {
     const now = new Date();
-
-    const date = now.toLocaleDateString('en-GB').replace(/\//g, '-'); // DD-MM-YYYY
+    const date = now.toLocaleDateString('en-GB').replace(/\//g, '-');
     const time = now
       .toLocaleTimeString('en-GB', {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
       })
-      .replace(/:/g, '-'); // HH-MM-SS
+      .replace(/:/g, '-');
 
     return `${date}_${time}`;
   }
+
   private getExportData() {
     return this.originalData.map((item) => ({
       'First Name': item.firstName || '-',
@@ -236,6 +290,7 @@ export class IdentityVaultComponent implements AfterViewInit, OnInit {
       'Risk Score': item.riskScore ?? 0,
     }));
   }
+
   downloadExcel() {
     const data = this.getExportData();
     const timestamp = this.getFormattedDateTime();

@@ -175,19 +175,14 @@
       }
 
       @defer {
-        <a mat-list-item class="noClick">
-          <img src="/svg/report.svg" />
-          <span>Report</span>
-        </a>
         <a
-          class="innermenuItem"
           mat-list-item
-          routerLink="/reports/executive-audit-report"
+          routerLink="/reports"
           routerLinkActive="mat-active"
           [routerLinkActiveOptions]="{ exact: true }"
         >
-          <!-- <img src="/svg/rules.svg" /> -->
-          <span>Executive Audit Report</span>
+          <img src="/svg/report.svg" />
+          <span>Report</span>
         </a>
       } @placeholder (minimum 1000ms) {
         <ngx-skeleton-loader animation="progress" />

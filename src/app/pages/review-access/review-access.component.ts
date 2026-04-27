@@ -14,107 +14,48 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatDialog } from '@angular/material/dialog';
 import { EmployeedetailspopupComponent } from '../../shared/components/employeedetailspopup/employeedetailspopup.component';
 import { ForwardpopupComponent } from '../../shared/components/forwardpopup/forwardpopup.component';
+import { ReviewAccessInterface } from '../../models/type';
+import { MatSnackBar } from '@angular/material/snack-bar';
+
+import { MatTabChangeEvent } from '@angular/material/tabs';
+import { ReportService } from '../../services/report.service';
+
 // TYPES
-type Important = {
-  policyName: string;
-  rule: string;
-  folderOrFileNames: {
-    type: 'folder' | 'file';
-    name: string;
-  };
-  resourceFullPath: string;
-  // identity: string;
-  warning?: {
-    message: string;
-    type: 'expired';
-  };
-  decision: {
-    approve: boolean;
-    reject: boolean;
-    menuAvailable: boolean;
-  };
-};
 
 interface TableRowImportant {
-  policyName: string;
-  rule: string;
+  id: number;
   folderFileName: string;
-  type: 'folder' | 'file';
-  resourceFullPath: string;
-  // identity: string;
-
-  warningType?: string;
-  warningMsg?: string;
-
-  approve: boolean;
-  reject: boolean;
-  menuAvailable: boolean;
-}
-
-type Open = {
-  employeeName: string;
-  folderOrFileNames: {
-    type: 'folder' | 'file';
-    name: string;
-  };
   resourceFullPath: string;
   category: string;
-  decision: {
-    approve: boolean;
-    reject: boolean;
-    menuAvailable: boolean;
-    message: {
-      title: string;
-      desc: string;
-    };
-  };
-};
+  identityEmployeeName: string;
+  decision: boolean;
+  sourceType: string;
+  approve?: boolean;
+  reject?: boolean;
+}
 
 interface TableRowOpen {
-  employeename: string;
-  folderOrFileNames: {
-    type: 'folder' | 'file';
-    name: string;
-  };
-  resourceFullPath: string;
-  categories: string;
-  decision: {
-    approve: boolean;
-    reject: boolean;
-    message: {
-      title: string;
-      desc: string;
-    };
-  };
-}
-
-type Review = {
-  employeeName: string;
-  folderOrFileNames: {
-    type: 'folder' | 'file';
-    name: string;
-  };
+  id: number;
+  folderFileName: string;
   resourceFullPath: string;
   category: string;
-  decision: {
-    approve: boolean;
-    reject: boolean;
-    menuAvailable: boolean;
-  };
-};
+  identityEmployeeName: string;
+  decision: boolean;
+  sourceType: string;
+  approve?: boolean;
+  reject?: boolean;
+}
 
 interface TableRowReview {
-  employeename: string;
-  folderOrFileNames: {
-    type: 'folder' | 'file';
-    name: string;
-  };
+  id: number;
+  folderFileName: string;
   resourceFullPath: string;
-  categories: string;
-  decision: {
-    approve: boolean;
-    reject: boolean;
-  };
+  category: string;
+  identityEmployeeName: string;
+  decision: boolean;
+  sourceType: string;
+  approve?: boolean;
+  reject?: boolean;
 }
 
 @Component({
@@ -144,6 +85,10 @@ export class ReviewAccessComponent implements OnInit {
   searchText = '';
   selectedCategory = '';
   selectedType = '';
+  bulkdecisions = '';
+  selectedDownloadImportant = 'download';
+  selectedDownloadOpen = 'download';
+  selectedDownloadReview = 'download';
 
   tabs: any[] = [
     {
@@ -402,51 +347,63 @@ export class ReviewAccessComponent implements OnInit {
   ];
 
   columnConfigImportant = [
-    { key: 'policyName', label: 'Policy Name', visible: true },
-    { key: 'rule', label: 'Rule', visible: true },
     { key: 'folderFileName', label: 'Folder / File Name', visible: true },
     { key: 'resourceFullPath', label: 'Resource Full Path', visible: true },
-    // { key: 'identity', label: 'Identity', visible: true },
+    { key: 'category', label: 'Categories', visible: true },
+    {
+      key: 'identityEmployeeName',
+      label: 'Identity Employee Name',
+      visible: true,
+    },
     { key: 'decision', label: 'Decision', visible: true },
   ];
 
   columnConfigOpen = [
-    { key: 'policyName', label: 'Policy Name', visible: true },
+    {
+      key: 'identityEmployeeName',
+      label: 'Identity Employee Name',
+      visible: true,
+    },
     { key: 'folderFileName', label: 'Folder / File Name', visible: true },
     { key: 'resourceFullPath', label: 'Resource Full Path', visible: true },
-    { key: 'categories', label: 'Categories', visible: true },
+    { key: 'category', label: 'Categories', visible: true },
+
     { key: 'decision', label: 'Decision', visible: true },
   ];
 
   columnConfigReview = [
-    { key: 'policyName', label: 'Policy Name', visible: true },
+    {
+      key: 'identityEmployeeName',
+      label: 'Identity Employee Name',
+      visible: true,
+    },
     { key: 'folderFileName', label: 'Folder / File Name', visible: true },
     { key: 'resourceFullPath', label: 'Resource Full Path', visible: true },
-    { key: 'categories', label: 'Categories', visible: true },
+    { key: 'category', label: 'Categories', visible: true },
+
     { key: 'decision', label: 'Decision', visible: true },
   ];
 
   allColumnsImportant: string[] = [
-    'policyName',
-    'rule',
     'folderFileName',
     'resourceFullPath',
-    // 'identity',
+    'category',
+    'identityEmployeeName',
     'decision',
   ];
 
   allColumnsOpen: string[] = [
-    'employeename',
+    'identityEmployeeName',
     'folderFileName',
     'resourceFullPath',
-    'categories',
+    'category',
     'decision',
   ];
   allColumnsReview: string[] = [
-    'employeename',
+    'identityEmployeeName',
     'folderFileName',
     'resourceFullPath',
-    'categories',
+    'category',
     'decision',
   ];
 
@@ -464,8 +421,14 @@ export class ReviewAccessComponent implements OnInit {
   dataSourceReview: TableRowReview[] = [];
   originalDataReview: TableRowReview[] = [];
 
-  totalCount = 0;
-  showingCount = 0;
+  totalCountImportant = 0;
+  showingCountImportant = 0;
+
+  totalCountOpen = 0;
+  showingCountOpen = 0;
+
+  totalCountReview = 0;
+  showingCountReview = 0;
 
   selection = new Set<TableRowImportant>();
 
@@ -476,77 +439,276 @@ export class ReviewAccessComponent implements OnInit {
     private route: ActivatedRoute,
     private api: ApiService,
     private sanitizer: DomSanitizer,
+    private snackBar: MatSnackBar,
+    private reportService: ReportService,
   ) {}
   getSafeHtml(html: string): SafeHtml {
     return this.sanitizer.bypassSecurityTrustHtml(html);
   }
   // APPLY ALL FILTERS
-  applyFilters() {
+  applyFiltersImportant(resetPage: boolean = false) {
     let filtered = [...this.originalData];
 
-    // SEARCH
     if (this.searchText) {
       filtered = filtered.filter(
         (row) =>
-          row.policyName.toLowerCase().includes(this.searchText) ||
-          row.rule.toLowerCase().includes(this.searchText) ||
-          row.folderFileName.toLowerCase().includes(this.searchText),
-        // row.identity.toLowerCase().includes(this.searchText)
+          row.folderFileName.toLowerCase().includes(this.searchText) ||
+          row.resourceFullPath.toLowerCase().includes(this.searchText) ||
+          row.category.toLowerCase().includes(this.searchText) ||
+          row.identityEmployeeName.toLowerCase().includes(this.searchText),
       );
     }
 
-    // CATEGORY
     if (this.selectedCategory) {
       filtered = filtered.filter(
-        (row) => row.policyName === this.selectedCategory,
+        (row) => row.category === this.selectedCategory,
       );
     }
 
-    // TYPE
     if (this.selectedType) {
-      filtered = filtered.filter((row) => row.type === this.selectedType);
+      filtered = filtered.filter((row) => row.sourceType === this.selectedType);
     }
 
-    this.dataSourceImportant = filtered;
-    this.showingCount = filtered.length;
+    this.showingCountImportant = filtered.length;
+
+    // ✅ FIX
+    if (resetPage) {
+      this.pagination.important.pageIndex = 0;
+    }
+
+    this.paginate('important', filtered);
   }
 
   // SEARCH
-  onSearch(value: string) {
+  onSearchImportant(value: string) {
     this.searchText = value.toLowerCase();
-    this.applyFilters();
+    this.applyFiltersImportant();
   }
 
   // CATEGORY FILTER
-  filterCategory(value: string) {
+  filterCategoryImportant(value: string = '') {
     this.selectedCategory = value;
-    this.applyFilters();
+    this.applyFiltersImportant();
   }
 
   // TYPE FILTER
-  filterType(type: string) {
+  filterTypeImportant(type: string) {
     this.selectedType = type;
-    this.applyFilters();
+    this.applyFiltersImportant();
+  }
+
+  // APPLY ALL FILTERS
+  applyFiltersOpen(resetPage: boolean = false) {
+    let filtered = [...this.originalDataOpen];
+
+    if (this.searchText) {
+      filtered = filtered.filter(
+        (row) =>
+          row.folderFileName.toLowerCase().includes(this.searchText) ||
+          row.resourceFullPath.toLowerCase().includes(this.searchText) ||
+          row.category.toLowerCase().includes(this.searchText) ||
+          row.identityEmployeeName.toLowerCase().includes(this.searchText),
+      );
+    }
+
+    if (this.selectedCategory) {
+      filtered = filtered.filter(
+        (row) => row.category === this.selectedCategory,
+      );
+    }
+
+    if (this.selectedType) {
+      filtered = filtered.filter((row) => row.sourceType === this.selectedType);
+    }
+
+    this.showingCountOpen = filtered.length;
+
+    // ✅ FIX
+    if (resetPage) {
+      this.pagination.open.pageIndex = 0;
+    }
+
+    this.paginate('open', filtered);
+  }
+  // SEARCH
+  onSearchOpen(value: string) {
+    this.searchText = value.toLowerCase();
+    this.applyFiltersOpen();
+  }
+
+  // CATEGORY FILTER
+  filterCategoryOpen(value: string = '') {
+    this.selectedCategory = value;
+    this.applyFiltersOpen();
+  }
+
+  // TYPE FILTER
+  filterTypeOpen(type: string) {
+    this.selectedType = type;
+    this.applyFiltersOpen();
+  }
+
+  // APPLY ALL FILTERS
+  applyFiltersReview(resetPage: boolean = false) {
+    let filtered = [...this.originalDataReview];
+
+    if (this.searchText) {
+      filtered = filtered.filter(
+        (row) =>
+          row.folderFileName.toLowerCase().includes(this.searchText) ||
+          row.resourceFullPath.toLowerCase().includes(this.searchText) ||
+          row.category.toLowerCase().includes(this.searchText) ||
+          row.identityEmployeeName.toLowerCase().includes(this.searchText),
+      );
+    }
+
+    if (this.selectedType) {
+      filtered = filtered.filter((row) => row.sourceType === this.selectedType);
+    }
+
+    this.showingCountReview = filtered.length;
+
+    // ✅ FIX
+    if (resetPage) {
+      this.pagination.review.pageIndex = 0;
+    }
+
+    this.paginate('review', filtered);
+  }
+
+  // SEARCH
+  onSearchReview(value: string) {
+    this.searchText = value.toLowerCase();
+    this.applyFiltersReview();
+  }
+
+  // TYPE FILTER
+  filterTypeReview(type: string) {
+    this.selectedType = type;
+    this.applyFiltersReview();
+  }
+
+  showMessage(message: string) {
+    this.snackBar.open(message, '', {
+      duration: 1000,
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
+      panelClass: ['success-snackbar'],
+    });
   }
 
   // BULK DECISION
-  applyBulkDecision(action: string) {
-    this.selection.forEach((row) => {
-      if (action === 'approve') {
-        row.approve = true;
-        row.reject = false;
-      }
+  applyBulkDecisionImportantToAll(action: 'approve' | 'reject') {
+    if (this.dataSourceImportant.length === 0) {
+      console.warn('⚠️ No data available');
+      return;
+    }
 
-      if (action === 'reject') {
-        row.approve = false;
-        row.reject = true;
-      }
+    // ✅ collect ALL ids (not just selected)
+    const ids = this.dataSourceImportant.map((row) => row.id);
+
+    const status: 'Approved' | 'Rejected' =
+      action === 'approve' ? 'Approved' : 'Rejected';
+
+    console.log('🚀 BULK ALL API:', { ids, status });
+
+    this.api.updateAccessRequestDetails(ids, status).subscribe({
+      next: () => {
+        console.log('✅ All rows updated');
+
+        this.dataSourceImportant.forEach((row) => {
+          const isApproved = status === 'Approved';
+
+          row.decision = isApproved;
+          row.approve = isApproved;
+          row.reject = !isApproved;
+        });
+
+        this.selection.clear();
+        this.dataSourceImportant = [...this.dataSourceImportant];
+
+        // ✅ snackbar
+        this.showMessage(`All access ${status}`);
+      },
+      error: (err) => {
+        console.error('❌ Bulk ALL failed:', err);
+
+        // ❌ snackbar
+        this.showMessage('Bulk update failed');
+      },
     });
+  }
 
-    this.selection.clear();
+  applyBulkDecisionOpenToAll(action: 'approve' | 'reject') {
+    if (this.dataSourceOpen.length === 0) {
+      console.warn('⚠️ No data available');
+      return;
+    }
 
-    // refresh table
-    this.dataSourceImportant = [...this.dataSourceImportant];
+    // ✅ collect ALL ids (not just selected)
+    const ids = this.dataSourceOpen.map((row) => row.id);
+
+    const status: 'Approved' | 'Rejected' =
+      action === 'approve' ? 'Approved' : 'Rejected';
+
+    console.log('🚀 BULK ALL API:', { ids, status });
+
+    this.api.updateAccessRequestDetails(ids, status).subscribe({
+      next: () => {
+        console.log('✅ All rows updated');
+
+        this.dataSourceOpen.forEach((row) => {
+          const isApproved = status === 'Approved';
+
+          row.decision = isApproved;
+          row.approve = isApproved;
+          row.reject = !isApproved;
+        });
+
+        this.selection.clear();
+        this.dataSourceOpen = [...this.dataSourceOpen];
+
+        // ✅ snackbar
+        this.showMessage(`All access ${status}`);
+      },
+      error: (err) => {
+        console.error('❌ Bulk ALL failed:', err);
+
+        // ❌ snackbar
+        this.showMessage('Bulk update failed');
+      },
+    });
+  }
+
+  onDecisionClick(row: TableRowImportant, action: 'approve' | 'reject') {
+    const isApprove = action === 'approve';
+
+    // ✅ update UI state immediately (optimistic UI)
+    row.approve = isApprove;
+    row.reject = !isApprove;
+    row.decision = isApprove;
+
+    const status: 'Approved' | 'Rejected' = isApprove ? 'Approved' : 'Rejected';
+
+    this.api.updateAccessRequestDetails([row.id], status).subscribe({
+      next: () => {
+        console.log('✅ Row updated');
+
+        // ✅ snackbar success
+        this.showMessage(`Access ${status}`);
+      },
+      error: (err) => {
+        console.error('❌ Update failed', err);
+
+        // ❗ revert UI (important for consistency)
+        row.approve = !isApprove;
+        row.reject = isApprove;
+        row.decision = !isApprove;
+
+        // ❌ snackbar error
+        this.showMessage('Update failed');
+      },
+    });
   }
   updateColumns(cols: string[]) {
     this.displayedColumnsImportant = cols;
@@ -579,12 +741,14 @@ export class ReviewAccessComponent implements OnInit {
       this.selection.add(row);
     }
   }
+  onColumnChange(cols: string[]) {
+    // 🔥 prevent 'ALL' pollution (safety)
+    this.displayedColumnsImportant = cols.filter((c) => c !== 'ALL');
+  }
   toggleAllColumns(event: any) {
     event.stopPropagation();
 
-    if (
-      this.displayedColumnsImportant.length === this.allColumnsImportant.length
-    ) {
+    if (this.isAllColumnsSelected()) {
       this.displayedColumnsImportant = [];
     } else {
       this.displayedColumnsImportant = [...this.allColumnsImportant];
@@ -597,15 +761,13 @@ export class ReviewAccessComponent implements OnInit {
       this.dataSourceImportant.forEach((row) => this.selection.add(row));
     }
   }
-  isallColumnsSelected(): boolean {
+  isAllColumnsSelected(): boolean {
     return (
       this.displayedColumnsImportant.length === this.allColumnsImportant.length
     );
   }
   isAllSelected(): boolean {
-    return (
-      this.displayedColumnsImportant.length === this.allColumnsImportant.length
-    );
+    return this.selection.size === this.dataSourceImportant.length;
   }
 
   isIndeterminate(): boolean {
@@ -629,88 +791,366 @@ export class ReviewAccessComponent implements OnInit {
       maxWidth: '100%',
     });
   }
+
+  onTabChange(event: MatTabChangeEvent) {
+    const tabKey = this.tabs[event.index]?.key;
+
+    console.log('Switched to:', tabKey);
+
+    if (tabKey === 'important') this.loadImportant();
+    else if (tabKey === 'open') this.loadOpen();
+    else if (tabKey === 'review') this.loadReview();
+  }
+
   ngOnInit(): void {
-    const importantTab = this.tabs.find((t) => t.key === 'important');
-    const openTab = this.tabs.find((t) => t.key === 'open');
-    const reviewTab = this.tabs.find((t) => t.key === 'review');
+    this.loadImportant(); // load first tab only
+  }
 
-    if (importantTab) {
-      this.originalData = importantTab.data.map((item: Important) => ({
-        policyName: item.policyName,
-        rule: item.rule,
-        folderFileName: item.folderOrFileNames.name,
-        type: item.folderOrFileNames.type,
-        resourceFullPath: item.resourceFullPath,
-        // identity: item.identity,
+  loadImportant() {
+    this.isLoading = true;
 
-        warningType: item.warning?.type,
-        warningMsg: item.warning?.message,
+    this.api.getlistofimportantaccessrequests('', '').subscribe({
+      next: (res: ReviewAccessInterface[]) => {
+        this.originalData = res.map((item) => {
+          const isApproved = item.decision === 'Approved';
+          const isRejected = item.decision === 'Rejected';
 
-        approve: item.decision.approve,
-        reject: item.decision.reject,
-        menuAvailable: item.decision.menuAvailable,
-      }));
+          return {
+            id: item.id,
+            folderFileName: item.folderFileName,
+            resourceFullPath: item.resourceFullPath,
+            category: item.category,
+            identityEmployeeName: item.employeeName,
+            decision: isApproved,
+            sourceType: item.sourceType,
+            approve: isApproved,
+            reject: isRejected,
+          };
+        });
 
-      this.dataSourceImportant = [...this.originalData];
+        this.dataSourceImportant = [...this.originalData];
+        this.totalCountImportant = this.originalData.length;
+        this.showingCountImportant = this.dataSourceImportant.length;
 
-      this.totalCount = this.originalData.length;
-      this.showingCount = this.dataSourceImportant.length;
+        this.categoriesImportant = [
+          ...new Set(this.originalData.map((row) => row.category)),
+        ];
 
-      // AUTO CATEGORY LIST
-      this.categoriesImportant = [
-        ...new Set(this.originalData.map((row) => row.policyName)),
-      ];
+        this.pagination.important.pageIndex = 0;
+        this.paginate('important', this.originalData);
+        this.isLoading = false;
+      },
+      error: () => (this.isLoading = false),
+    });
+  }
 
-      this.isLoading = false;
+  loadOpen() {
+    this.isLoading = true;
+
+    this.api.getlistofopenaccessrequests('', '').subscribe({
+      next: (res: ReviewAccessInterface[]) => {
+        this.originalDataOpen = res.map((item) => {
+          const isApproved = item.decision === 'Approved';
+          const isRejected = item.decision === 'Rejected';
+
+          return {
+            id: item.id,
+            folderFileName: item.folderFileName,
+            resourceFullPath: item.resourceFullPath,
+            category: item.category,
+            identityEmployeeName: item.employeeName,
+            decision: isApproved,
+            sourceType: item.sourceType,
+            approve: isApproved,
+            reject: isRejected,
+          };
+        });
+
+        this.dataSourceOpen = [...this.originalDataOpen];
+        this.totalCountOpen = this.originalDataOpen.length;
+        this.showingCountOpen = this.dataSourceOpen.length;
+
+        this.categoriesOpen = [
+          ...new Set(this.originalDataOpen.map((row) => row.category)),
+        ];
+        this.pagination.open.pageIndex = 0;
+        this.paginate('open', this.originalDataOpen);
+        this.isLoading = false;
+      },
+      error: () => (this.isLoading = false),
+    });
+  }
+
+  loadReview() {
+    this.isLoading = true;
+
+    this.api.getlistofreviewaccessrequests('', '').subscribe({
+      next: (res: ReviewAccessInterface[]) => {
+        this.originalDataReview = res.map((item) => {
+          const isApproved = item.decision === 'Approved';
+          const isRejected = item.decision === 'Rejected';
+
+          return {
+            id: item.id,
+            folderFileName: item.folderFileName,
+            resourceFullPath: item.resourceFullPath,
+            category: item.category,
+            identityEmployeeName: item.employeeName,
+            decision: isApproved,
+            sourceType: item.sourceType,
+            approve: isApproved,
+            reject: isRejected,
+          };
+        });
+
+        this.dataSourceReview = [...this.originalDataReview];
+        this.totalCountReview = this.originalDataReview.length;
+        this.showingCountReview = this.dataSourceReview.length;
+
+        this.pagination.review.pageIndex = 0;
+        this.paginate('review', this.originalDataReview);
+
+        this.isLoading = false;
+      },
+      error: () => (this.isLoading = false),
+    });
+  }
+
+  private getFormattedDateTime(): string {
+    const now = new Date();
+
+    const date = now.toLocaleDateString('en-GB').replace(/\//g, '-'); // DD-MM-YYYY
+    const time = now
+      .toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      })
+      .replace(/:/g, '-'); // HH-MM-SS
+
+    return `${date}_${time}`;
+  }
+
+  private getExportDataImportant() {
+    return this.originalData.map((item) => ({
+      'Folder File Name': item.folderFileName,
+      'Resource Full Path': item.resourceFullPath,
+      Category: item.category,
+      'Employee Name': item.identityEmployeeName,
+      Decision: item.decision ? 'Approved' : 'Rejected',
+    }));
+  }
+  downloadExcelImportant() {
+    const data = this.getExportDataImportant();
+    const timestamp = this.getFormattedDateTime();
+    this.reportService.downloadExcel(
+      data,
+      `review-access-important-report_${timestamp}`,
+      'Review Access Important',
+    );
+  }
+
+  downloadCSVImportant() {
+    const data = this.getExportDataImportant();
+    const timestamp = this.getFormattedDateTime();
+    this.reportService.downloadCSV(
+      data,
+      `review-access-important-report_${timestamp}`,
+      'Review Access Important',
+    );
+  }
+
+  downloadPDFImportant() {
+    const data = this.getExportDataImportant();
+    const timestamp = this.getFormattedDateTime();
+    this.reportService.downloadPDF(
+      data,
+      `review-access-important-report_${timestamp}`,
+      'Review Access Important',
+    );
+  }
+
+  private getExportDataOpen() {
+    return this.originalDataOpen.map((item) => ({
+      'Employee Name': item.identityEmployeeName,
+      'Folder File Name': item.folderFileName,
+      'Resource Full Path': item.resourceFullPath,
+      Category: item.category,
+      Decision: item.decision ? 'Approved' : 'Rejected',
+    }));
+  }
+  downloadExcelOpen() {
+    const data = this.getExportDataOpen();
+    const timestamp = this.getFormattedDateTime();
+    this.reportService.downloadExcel(
+      data,
+      `review-access-open-report_${timestamp}`,
+      'Review Access Open',
+    );
+  }
+
+  downloadCSVOpen() {
+    const data = this.getExportDataOpen();
+    const timestamp = this.getFormattedDateTime();
+    this.reportService.downloadCSV(
+      data,
+      `review-access-open-report_${timestamp}`,
+      'Review Access Open',
+    );
+  }
+
+  downloadPDFOpen() {
+    const data = this.getExportDataOpen();
+    const timestamp = this.getFormattedDateTime();
+    this.reportService.downloadPDF(
+      data,
+      `review-access-open-report_${timestamp}`,
+      'Review Access Open',
+    );
+  }
+
+  private getExportDataReview() {
+    return this.originalDataReview.map((item) => ({
+      'Employee Name': item.identityEmployeeName,
+      'Folder File Name': item.folderFileName,
+      'Resource Full Path': item.resourceFullPath,
+      Category: item.category,
+      Decision: item.decision ? 'Approved' : 'Rejected',
+    }));
+  }
+  downloadExcelReview() {
+    const data = this.getExportDataReview();
+    const timestamp = this.getFormattedDateTime();
+    this.reportService.downloadExcel(
+      data,
+      `review-access-review-report_${timestamp}`,
+      'Review Access Review',
+    );
+  }
+
+  downloadCSVReview() {
+    const data = this.getExportDataReview();
+    const timestamp = this.getFormattedDateTime();
+    this.reportService.downloadCSV(
+      data,
+      `review-access-review-report_${timestamp}`,
+      'Review Access Review',
+    );
+  }
+
+  downloadPDFReview() {
+    const data = this.getExportDataReview();
+    const timestamp = this.getFormattedDateTime();
+    this.reportService.downloadPDF(
+      data,
+      `review-access-review-report_${timestamp}`,
+      'Review Access Review',
+    );
+  }
+
+  // ✅ PAGINATION PER TAB
+  pagination = {
+    important: {
+      pageSize: 10,
+      pageIndex: 0,
+      totalPages: 0,
+      totalElements: 0,
+      pages: [] as number[],
+      paginatedData: [] as TableRowImportant[],
+    },
+    open: {
+      pageSize: 10,
+      pageIndex: 0,
+      totalPages: 0,
+      totalElements: 0,
+      pages: [] as number[],
+      paginatedData: [] as TableRowOpen[],
+    },
+    review: {
+      pageSize: 10,
+      pageIndex: 0,
+      totalPages: 0,
+      totalElements: 0,
+      pages: [] as number[],
+      paginatedData: [] as TableRowReview[],
+    },
+  };
+
+  private paginate(tab: 'important' | 'open' | 'review', data: any[]) {
+    const p = this.pagination[tab];
+
+    p.totalElements = data.length;
+    p.totalPages = Math.ceil(p.totalElements / p.pageSize) || 1;
+
+    // ✅ FIX: reset page if overflow after filter
+    if (p.pageIndex >= p.totalPages) {
+      p.pageIndex = 0;
     }
 
-    if (openTab) {
-      this.originalDataOpen = openTab.data.map((item: Open) => ({
-        employeename: item.employeeName,
-        folderFileName: item.folderOrFileNames.name,
-        type: item.folderOrFileNames.type,
-        resourceFullPath: item.resourceFullPath,
-        categories: item.category,
+    const start = p.pageIndex * p.pageSize;
+    const end = start + p.pageSize;
 
-        approve: item.decision.approve,
-        reject: item.decision.reject,
-        messagetitle: item.decision.message.title,
-        messagedesc: item.decision.message.desc,
-      }));
+    p.paginatedData = data.slice(start, end);
 
-      this.dataSourceOpen = [...this.originalDataOpen];
+    this.generatePages(tab);
+  }
 
-      // this.totalCount = this.originalData.length;
-      // this.showingCount = this.dataSourceImportant.length;
+  generatePages(tab: 'important' | 'open' | 'review') {
+    const p = this.pagination[tab];
+    const visible = 3;
 
-      // AUTO CATEGORY LIST
-      this.categoriesOpen = [
-        ...new Set(this.originalDataOpen.map((row) => row.categories)),
-      ];
-
-      this.isLoading = false;
+    if (p.totalPages <= 0) {
+      p.pages = [];
+      return;
     }
 
-    if (reviewTab) {
-      this.originalDataReview = reviewTab.data.map((item: Review) => ({
-        employeename: item.employeeName,
-        folderFileName: item.folderOrFileNames.name,
-        type: item.folderOrFileNames.type,
-        resourceFullPath: item.resourceFullPath,
-        categories: item.category,
+    let start = Math.max(1, p.pageIndex + 1);
+    let end = Math.min(p.totalPages, start + visible - 1);
 
-        approve: item.decision.approve,
-        reject: item.decision.reject,
-      }));
-
-      this.dataSourceReview = [...this.originalDataReview];
-
-      // this.totalCount = this.originalData.length;
-      // this.showingCount = this.dataSourceImportant.length;
-
-      // AUTO CATEGORY LIST
-
-      this.isLoading = false;
+    if (end - start < visible - 1) {
+      start = Math.max(1, end - visible + 1);
     }
+
+    p.pages = [];
+    for (let i = start; i <= end; i++) {
+      p.pages.push(i);
+    }
+  }
+  goToPage(tab: 'important' | 'open' | 'review', page: number) {
+    this.pagination[tab].pageIndex = page - 1;
+    this.applyTabFilters(tab);
+  }
+
+  nextPage(tab: 'important' | 'open' | 'review') {
+    const p = this.pagination[tab];
+    if (p.pageIndex < p.totalPages - 1) {
+      p.pageIndex++;
+      this.applyTabFilters(tab);
+    }
+  }
+
+  prevPage(tab: 'important' | 'open' | 'review') {
+    const p = this.pagination[tab];
+    if (p.pageIndex > 0) {
+      p.pageIndex--;
+      this.applyTabFilters(tab);
+    }
+  }
+
+  firstPage(tab: 'important' | 'open' | 'review') {
+    this.pagination[tab].pageIndex = 0;
+    this.applyTabFilters(tab);
+  }
+
+  lastPage(tab: 'important' | 'open' | 'review') {
+    const p = this.pagination[tab];
+    p.pageIndex = p.totalPages - 1;
+    this.applyTabFilters(tab);
+  }
+
+  applyTabFilters(tab: 'important' | 'open' | 'review') {
+    if (tab === 'important') this.applyFiltersImportant();
+    if (tab === 'open') this.applyFiltersOpen();
+    if (tab === 'review') this.applyFiltersReview();
   }
 }

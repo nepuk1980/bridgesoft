@@ -15,7 +15,9 @@
   font-size: 1rem;
   color: #787878;
 }
-
+.solid-table {
+  height: calc(100vh - 26.8rem);
+}
 .solid-table th,
 .solid-table td {
   width: auto !important;

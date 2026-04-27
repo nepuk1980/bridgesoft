@@ -12,12 +12,10 @@ import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InnerheaderComponent } from '../../shared/components/innerheader/innerheader.component';
 import { ReportService } from '../../services/report.service';
+import { ApiService } from '../../services/api.service';
+import { ExecutiveAuditReportsInterface } from '../../models/type';
 
-interface Filter {
-  value: string;
-  viewValue: string;
-}
-
+// ================= UI MODEL =================
 interface AuditEvent {
   employeeName: string;
   eventType: string;
@@ -28,6 +26,14 @@ interface AuditEvent {
   eventTime: string;
 }
 
+interface Filter {
+  value: string;
+  viewValue: string;
+}
+
+type ExecutiveAuditItem = ExecutiveAuditReportsInterface['content'][number];
+
+// ================= COMPONENT =================
 @Component({
   selector: 'app-executive-audit-report',
   standalone: true,
@@ -47,30 +53,12 @@ interface AuditEvent {
   styleUrls: ['./executive-audit-report.component.css'],
 })
 export class ExecutiveAuditReportComponent implements OnInit, AfterViewInit {
-  constructor(private reportService: ReportService) {}
+  constructor(
+    private reportService: ReportService,
+    private api: ApiService,
+  ) {}
 
-  // ================= DATA =================
-  private staticAuditData: AuditEvent[] = [
-    {
-      employeeName: 'Robert Neal',
-      eventType: 'FileAccessed',
-      dataSource: 'OneDrive',
-      objectName: 'Finance',
-      resourceFullPath: '/temp/Finance',
-      resourceOwner: 'xyz@allegiantair.com',
-      eventTime: '2026-04-23 00:29:00',
-    },
-    {
-      employeeName: 'Robert Neal',
-      eventType: 'FileAccessed11',
-      dataSource: 'OneDrive',
-      objectName: 'Finance',
-      resourceFullPath: '/temp/Finance',
-      resourceOwner: 'xyz@allegiantair.com',
-      eventTime: '2026-04-23 00:29:00',
-    },
-  ];
-
+  // ================= TABLE =================
   displayedColumns: string[] = [
     'employeeName',
     'eventType',
@@ -88,72 +76,129 @@ export class ExecutiveAuditReportComponent implements OnInit, AfterViewInit {
   searchText = '';
   selectedFilter = '';
   selectedDownload: '' | 'pdf' | 'excel' | 'csv' = '';
-
   filters: Filter[] = [];
 
-  // ================= VIEW CHILDREN =================
+  // ================= PAGINATION =================
+  pageSize = 10;
+  pageIndex = 0;
+  totalPages = 0;
+  totalElements = 0;
+  pages: number[] = [];
+
+  // ================= VIEW =================
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
+  // ================= LIFECYCLE =================
   ngOnInit(): void {
-    this.loadStaticData();
+    this.loadAuditData();
   }
 
   ngAfterViewInit(): void {
     this.dataSource.sort = this.sort;
-    this.dataSource.paginator = this.paginator;
+
+    this.paginator.page.subscribe((event) => {
+      this.loadAuditData(event.pageIndex, event.pageSize);
+    });
   }
 
-  // ================= DATA LOAD =================
-  loadStaticData(): void {
-    const data = this.staticAuditData;
+  // ================= MAPPER =================
+  private mapToAuditEvent(item: ExecutiveAuditItem): AuditEvent {
+    return {
+      employeeName: item.userDisplayname,
+      eventType: item.eventType,
+      dataSource: item.datasourceType,
+      objectName: item.objectName,
+      resourceFullPath: item.eventPath,
+      resourceOwner: item.resourceOwner,
+      eventTime: item.eventTime,
+    };
+  }
 
-    this.originalData = data;
-    this.dataSource.data = data;
+  // ================= PAGINATION HELPER =================
+  private updatePagination(): void {
+    this.totalPages = Math.ceil(this.totalElements / this.pageSize);
 
-    const uniqueEventTypes = Array.from(
-      new Set(data.map((x) => x.eventType)),
-    ) as string[];
+    // ✅ FORCE minimum 1 page
+    if (this.totalPages === 0) {
+      this.totalPages = 1;
+    }
 
-    this.filters = uniqueEventTypes.map((v) => ({
-      value: v,
-      viewValue: v,
-    }));
+    const visible = 3;
+
+    let start = Math.max(1, this.pageIndex + 1);
+    let end = Math.min(this.totalPages, start + visible - 1);
+
+    if (end - start < visible - 1) {
+      start = Math.max(1, end - visible + 1);
+    }
+
+    this.pages = [];
+    for (let i = start; i <= end; i++) {
+      this.pages.push(i);
+    }
+  }
+
+  // ================= API LOAD =================
+  loadAuditData(page: number = 0, size: number = this.pageSize): void {
+    this.api
+      .getexecutiveauditreport(this.searchText, this.selectedFilter, page, size)
+      .subscribe({
+        next: (res: ExecutiveAuditReportsInterface) => {
+          const mappedData = res.content.map((item) =>
+            this.mapToAuditEvent(item),
+          );
+
+          this.originalData = mappedData;
+          this.dataSource.data = mappedData;
+
+          // ✅ FIX: Only set filters ONCE (first load)
+          if (this.filters.length === 0) {
+            const uniqueEventTypes = Array.from(
+              new Set(mappedData.map((x) => x.eventType)),
+            );
+
+            this.filters = uniqueEventTypes.map((v) => ({
+              value: v,
+              viewValue: v,
+            }));
+          }
+
+          // Pagination
+          this.totalElements = res.totalElements;
+          this.pageSize = size;
+          this.pageIndex = page;
+
+          this.updatePagination();
+        },
+        error: (err) => console.error('API Error:', err),
+      });
   }
 
   // ================= FILTER =================
-  applyFilters(): void {
-    const search = this.searchText?.toLowerCase().trim() || '';
+  applyFilters(filterValue?: string): void {
+    this.pageIndex = 0;
 
-    const filtered = this.originalData.filter((x) => {
-      const matchesFilter =
-        !this.selectedFilter || x.eventType === this.selectedFilter;
-
-      const matchesSearch =
-        !search ||
-        `${x.employeeName} ${x.objectName} ${x.dataSource} ${x.resourceOwner}`
-          .toLowerCase()
-          .includes(search);
-
-      return matchesFilter && matchesSearch;
-    });
-
-    this.dataSource.data = filtered;
+    this.loadAuditData(this.pageIndex, this.pageSize);
   }
+
+  // ================= EXPORT =================
   private getFormattedDateTime(): string {
     const now = new Date();
 
-    const date = now.toLocaleDateString('en-GB').replace(/\//g, '-'); // DD-MM-YYYY
+    const date = now.toLocaleDateString('en-GB').replace(/\//g, '-');
+
     const time = now
       .toLocaleTimeString('en-GB', {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
       })
-      .replace(/:/g, '-'); // HH-MM-SS
+      .replace(/:/g, '-');
 
     return `${date}_${time}`;
   }
+
   private getExportData() {
     return this.originalData.map((item) => ({
       'Employee Name': item.employeeName,
@@ -165,9 +210,11 @@ export class ExecutiveAuditReportComponent implements OnInit, AfterViewInit {
       'Event Time': item.eventTime,
     }));
   }
+
   downloadExcel() {
     const data = this.getExportData();
     const timestamp = this.getFormattedDateTime();
+
     this.reportService.downloadExcel(
       data,
       `executive-audit-report_${timestamp}`,
@@ -178,6 +225,7 @@ export class ExecutiveAuditReportComponent implements OnInit, AfterViewInit {
   downloadCSV() {
     const data = this.getExportData();
     const timestamp = this.getFormattedDateTime();
+
     this.reportService.downloadCSV(
       data,
       `executive-audit-report_${timestamp}`,
@@ -188,10 +236,41 @@ export class ExecutiveAuditReportComponent implements OnInit, AfterViewInit {
   downloadPDF() {
     const data = this.getExportData();
     const timestamp = this.getFormattedDateTime();
+
     this.reportService.downloadPDF(
       data,
       `executive-audit-report_${timestamp}`,
       'Executive Audit Report',
     );
+  }
+
+  // ================= PAGINATION ACTIONS =================
+  goToPage(p: number) {
+    this.pageIndex = p - 1;
+    this.loadAuditData(this.pageIndex, this.pageSize);
+  }
+
+  nextPage() {
+    if (this.pageIndex < this.totalPages - 1) {
+      this.pageIndex++;
+      this.loadAuditData(this.pageIndex, this.pageSize);
+    }
+  }
+
+  prevPage() {
+    if (this.pageIndex > 0) {
+      this.pageIndex--;
+      this.loadAuditData(this.pageIndex, this.pageSize);
+    }
+  }
+
+  firstPage() {
+    this.pageIndex = 0;
+    this.loadAuditData(this.pageIndex, this.pageSize);
+  }
+
+  lastPage() {
+    this.pageIndex = this.totalPages - 1;
+    this.loadAuditData(this.pageIndex, this.pageSize);
   }
 }

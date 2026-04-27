@@ -6,6 +6,7 @@ import { environment } from '../../environments/environment';
 import {
   ApplicationAccountsResponseInterface,
   ApplicationResponseInterface,
+  ExecutiveAuditReportsInterface,
   FileSystemAccessSummaryInterface,
   FileSystemResponseInterface,
   IdentityVaultDetailResponseInterface,
@@ -21,6 +22,7 @@ import { AuthService } from '../core/services/auth.service';
 })
 export class ApiService {
   constructor(private http: HttpClient) {}
+  private authService = inject(AuthService);
 
   // ✅ Summary API
   getfilesystemaccesspermissionsummary(): Observable<FileSystemAccessSummaryInterface> {
@@ -164,6 +166,39 @@ export class ApiService {
     );
   }
 
+  // Request Access Workflow Update data
+  saveaccessrequestdetails(data: any): Observable<any> {
+    const token = this.authService.getToken();
+    // ❌ Stop if no token
+    if (!token) {
+      console.error('❌ No token found');
+      throw new Error('User not authenticated');
+    }
+
+    console.log('token', token);
+
+    console.log('environment.apiUrl', environment.apiUrl);
+
+    // if (!token) throw new Error('User not authenticated');
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    });
+
+    const payload = {
+      ...data,
+    };
+
+    console.log('🚀 FINAL PAYLOAD:', payload);
+
+    return this.http.post(
+      `${environment.apiUrl}/saveaccessrequestdetails`,
+      payload,
+      { headers },
+    );
+  }
+
   // ✅ Identity Vault Application Details
   getidentityentitlementlist(
     id: number,
@@ -175,8 +210,6 @@ export class ApiService {
       { params },
     );
   }
-
-  private authService = inject(AuthService);
 
   updateApplicationDetails(id: number, data: any): Observable<any> {
     const token = this.authService.getToken();
@@ -290,6 +323,56 @@ export class ApiService {
 
     return this.http.get<ReviewAccessInterface[]>(
       `${environment.apiUrl}/getlistofreviewaccessrequests`,
+      { params },
+    );
+  }
+
+  // Review Access Important List Update
+  updateAccessRequestDetails(
+    ids: number[],
+    status: 'Approved' | 'Rejected',
+  ): Observable<any> {
+    const token = this.authService.getToken();
+
+    if (!token) {
+      console.error('❌ No token found');
+      throw new Error('User not authenticated');
+    }
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    });
+
+    const payload = {
+      ids,
+      status,
+    };
+
+    console.log('🚀 BULK PAYLOAD:', payload);
+
+    return this.http.put(
+      `${environment.apiUrl}/updateaccessrequestdetails`,
+      payload,
+      { headers },
+    );
+  }
+
+  // Reports
+  getexecutiveauditreport(
+    searchEmployeeName: string,
+    filter: string,
+    page: number,
+    size: number,
+  ): Observable<ExecutiveAuditReportsInterface> {
+    let params = new HttpParams()
+      .set('searchEmployeeName', searchEmployeeName || '')
+      .set('filter', filter || '')
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    return this.http.get<ExecutiveAuditReportsInterface>(
+      `${environment.apiUrl}/getexecutiveauditreport`,
       { params },
     );
   }
