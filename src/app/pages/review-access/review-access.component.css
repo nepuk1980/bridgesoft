@@ -6,3 +6,12 @@
   display: flex;
   justify-content: flex-end;
 }
+.solid-table {
+  height: calc(100vh - 31.2rem);
+}
+.open-table {
+  height: calc(100vh - 26.3rem);
+}
+.review-table {
+  height: calc(100vh - 30.8rem);
+}

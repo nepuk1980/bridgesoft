@@ -64,7 +64,11 @@
         </div>
       </div>
       <div class="solid-table table-wrapper">
-        <table mat-table [dataSource]="tab.data" class="custom-table">
+        <table
+          mat-table
+          [dataSource]="entitlementPagination.dataSource"
+          class="custom-table"
+        >
           <!-- Folder / File Names -->
           <ng-container matColumnDef="name">
             <th mat-header-cell *matHeaderCellDef>Folder / File Names</th>
@@ -146,6 +150,67 @@
           <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
         </table>
       </div>
+
+      <!-- ✅ Custom Pagination -->
+      <div class="custom-pagination">
+        <span class="count">
+          Showing {{ entitlementPagination.dataSource.length }} of
+          {{ entitlementPagination.totalElements }}
+        </span>
+
+        <div class="pagination-buttons">
+          <button
+            (click)="firstPage('entitlement')"
+            [disabled]="entitlementPagination.pageIndex === 0"
+          >
+            «
+          </button>
+          <button
+            (click)="prevPage('entitlement')"
+            [disabled]="entitlementPagination.pageIndex === 0"
+          >
+            ‹
+          </button>
+
+          <span *ngIf="entitlementPagination.pages[0] > 1">...</span>
+
+          <button
+            *ngFor="let p of entitlementPagination.pages"
+            (click)="goToPage(p, 'entitlement')"
+            [class.active]="p === entitlementPagination.pageIndex + 1"
+          >
+            {{ p }}
+          </button>
+
+          <span
+            *ngIf="
+              entitlementPagination.pages[
+                entitlementPagination.pages.length - 1
+              ] < entitlementPagination.totalPages
+            "
+            >...</span
+          >
+
+          <button
+            (click)="nextPage('entitlement')"
+            [disabled]="
+              entitlementPagination.pageIndex ===
+              entitlementPagination.totalPages - 1
+            "
+          >
+            ›
+          </button>
+          <button
+            (click)="lastPage('entitlement')"
+            [disabled]="
+              entitlementPagination.pageIndex ===
+              entitlementPagination.totalPages - 1
+            "
+          >
+            »
+          </button>
+        </div>
+      </div>
     </ng-container>
 
     <!-- ✅ APPLICATION ACCOUNTS TAB -->
@@ -179,7 +244,11 @@
         </div>
       </div>
       <div class="solid-table table-wrapper">
-        <table mat-table [dataSource]="tab.data" class="custom-table">
+        <table
+          mat-table
+          [dataSource]="applicationPagination.dataSource"
+          class="custom-table"
+        >
           <!-- Application -->
           <ng-container matColumnDef="application">
             <th mat-header-cell *matHeaderCellDef>Application</th>
@@ -223,6 +292,66 @@
           <tr mat-header-row *matHeaderRowDef="displayedAppColumns"></tr>
           <tr mat-row *matRowDef="let row; columns: displayedAppColumns"></tr>
         </table>
+      </div>
+      <!-- ✅ Custom Pagination -->
+      <div class="custom-pagination">
+        <span class="count">
+          Showing {{ applicationPagination.dataSource.length }} of
+          {{ applicationPagination.totalElements }}
+        </span>
+
+        <div class="pagination-buttons">
+          <button
+            (click)="firstPage('application')"
+            [disabled]="applicationPagination.pageIndex === 0"
+          >
+            «
+          </button>
+          <button
+            (click)="prevPage('application')"
+            [disabled]="applicationPagination.pageIndex === 0"
+          >
+            ‹
+          </button>
+
+          <span *ngIf="applicationPagination.pages[0] > 1">...</span>
+
+          <button
+            *ngFor="let p of applicationPagination.pages"
+            (click)="goToPage(p, 'application')"
+            [class.active]="p === applicationPagination.pageIndex + 1"
+          >
+            {{ p }}
+          </button>
+
+          <span
+            *ngIf="
+              applicationPagination.pages[
+                applicationPagination.pages.length - 1
+              ] < applicationPagination.totalPages
+            "
+            >...</span
+          >
+
+          <button
+            (click)="nextPage('application')"
+            [disabled]="
+              applicationPagination.pageIndex ===
+              applicationPagination.totalPages - 1
+            "
+          >
+            ›
+          </button>
+          <button
+            (click)="lastPage('application')"
+            [disabled]="
+              applicationPagination.pageIndex ===
+              applicationPagination.totalPages - 1
+            "
+          >
+            »
+          </button>
+        </div>
       </div>
     </ng-container>
   </mat-tab>

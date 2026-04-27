@@ -21,8 +21,10 @@
           panelClass="custom-filter-panel"
         >
           <mat-option value="">Filter</mat-option>
-          <mat-option value="SalePoint">SalePoint</mat-option>
-          <mat-option value="NCS">NCS</mat-option>
+
+          <mat-option *ngFor="let role of roles" [value]="role">
+            {{ role }}
+          </mat-option>
         </mat-select>
       </mat-form-field>
     </div>
@@ -33,9 +35,12 @@
   <div
     class="request-profile-card-wrapper"
     *ngFor="let user of paginatedUsers"
-    (click)="chk.toggle()"
+    (click)="toggleSelection(user, !isSelected(user))"
   >
-    <mat-checkbox #chk></mat-checkbox>
+    <mat-checkbox
+      [checked]="isSelected(user)"
+      (click)="$event.stopPropagation()"
+    ></mat-checkbox>
 
     <button mat-icon-button>
       <mat-icon>more_vert</mat-icon>
@@ -44,12 +49,23 @@
     <img [src]="user.profileImage" class="profileImg" />
 
     <div class="innerContent">
-      <h6>{{ user.name }}</h6>
-      <p><strong>Company :</strong> {{ user.company }}</p>
+      <h6>
+        <span>
+          <img
+            src="/svg/profileicon.svg"
+            width="15"
+            height="15"
+            class="profileImg" /></span
+        >{{ user.name }}
+      </h6>
+      <p><strong>Company :</strong> {{ user.company || "-" }}</p>
       <p><strong>Role :</strong> {{ user.role }}</p>
       <p><strong>Manager :</strong> {{ user.manager }}</p>
       <p><strong>Employee Type :</strong> {{ user.employeeType }}</p>
-      <p><strong>Status :</strong> {{ user.status }}</p>
+      <p>
+        <strong>Status :</strong>
+        <strong style="color: green"> {{ user.status }}</strong>
+      </p>
     </div>
   </div>
 </div>
@@ -86,7 +102,13 @@
 </div>
 
 <div class="fixed-btn">
-  <button routerLink="request-access-workflow" mat-flat-button class="btn-blue">
+  <button
+    mat-flat-button
+    class="btn-blue"
+    [routerLink]="['request-access-workflow']"
+    [state]="{ selectedUsers: selectedUsers }"
+    [disabled]="selectedUsers.length === 0"
+  >
     Next
   </button>
 </div>

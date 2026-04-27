@@ -1,7 +1,7 @@
 <app-innerheader
   title="Executive Audit Report"
-  [btn]="false"
-  btntitle=" Back To Applications"
+  [btn]="true"
+  btntitle=" Back To Reports"
 ></app-innerheader>
 @defer {
   <div class="application-content-div">
@@ -50,7 +50,8 @@
           </mat-form-field>
         </div>
         <!-- Event Filter -->
-        <div class="custom-filter">
+
+        <div class="custom-filter no-icon">
           <mat-form-field>
             <mat-label>Filter</mat-label>
             <mat-select
@@ -58,12 +59,11 @@
               (selectionChange)="applyFilters()"
               panelClass="custom-filter-panel"
             >
-              <mat-option value="">All</mat-option>
-              @for (item of filters; track item.value) {
-                <mat-option [value]="item.value">
-                  {{ item.viewValue }}
-                </mat-option>
-              }
+              <mat-option value="">Filter</mat-option>
+
+              <mat-option *ngFor="let item of filters" [value]="item.value">
+                {{ item.viewValue }}
+              </mat-option>
             </mat-select>
           </mat-form-field>
         </div>
@@ -122,6 +122,37 @@
           </td>
         </tr>
       </table>
+    </div>
+    <!-- ✅ Custom Pagination -->
+    <div class="custom-pagination">
+      <span class="count">
+        Showing {{ dataSource.data.length }} of {{ totalElements }}
+      </span>
+
+      <div class="pagination-buttons">
+        <button (click)="firstPage()" [disabled]="pageIndex === 0">«</button>
+        <button (click)="prevPage()" [disabled]="pageIndex === 0">‹</button>
+
+        <span *ngIf="pages[0] > 1">...</span>
+
+        <button
+          *ngFor="let p of pages"
+          (click)="goToPage(p)"
+          [disabled]="totalElements === 0"
+          [class.active]="p === pageIndex + 1"
+        >
+          {{ p }}
+        </button>
+
+        <span *ngIf="pages[pages.length - 1] < totalPages">...</span>
+
+        <button (click)="nextPage()" [disabled]="pageIndex === totalPages - 1">
+          ›
+        </button>
+        <button (click)="lastPage()" [disabled]="pageIndex === totalPages - 1">
+          »
+        </button>
+      </div>
     </div>
   </div>
 } @placeholder (minimum 1000ms) {

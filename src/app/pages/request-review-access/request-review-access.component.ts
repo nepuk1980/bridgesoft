@@ -79,12 +79,22 @@ export class RequestReviewAccessComponent {
   applyFilter(value: string) {
     this.searchText = value.toLowerCase();
 
-    this.dataSource = this.originalData.filter(
+    this.allFilteredData = this.originalData.filter(
       (item) =>
         item.resourcePath.toLowerCase().includes(this.searchText) ||
         item.name.toLowerCase().includes(this.searchText) ||
         item.category.toLowerCase().includes(this.searchText),
     );
+
+    this.pageIndex = 0;
+
+    this.totalElements = this.allFilteredData.length;
+    this.totalPages = Math.max(
+      1,
+      Math.ceil(this.totalElements / this.pageSize),
+    );
+
+    this.applyPagination();
   }
 
   get filteredCount() {
@@ -100,7 +110,6 @@ export class RequestReviewAccessComponent {
   }
 
   delete(row: any) {
-    // Remove from original data
     this.originalData = this.originalData.filter(
       (item) =>
         !(
@@ -110,8 +119,18 @@ export class RequestReviewAccessComponent {
         ),
     );
 
-    // Reapply filter to update table properly
-    this.applyFilter(this.searchText);
+    // 🔥 IMPORTANT
+    this.allFilteredData = [...this.originalData];
+
+    this.totalElements = this.allFilteredData.length;
+    this.totalPages = Math.max(
+      1,
+      Math.ceil(this.totalElements / this.pageSize),
+    );
+
+    this.pageIndex = 0;
+
+    this.applyPagination();
   }
   constructor(
     private router: Router,
@@ -130,6 +149,17 @@ export class RequestReviewAccessComponent {
       });
     });
   }
+  ngOnInit() {
+    this.allFilteredData = [...this.originalData];
+
+    this.totalElements = this.allFilteredData.length;
+    this.totalPages = Math.max(
+      1,
+      Math.ceil(this.totalElements / this.pageSize),
+    );
+
+    this.applyPagination();
+  }
   // ngOnInit() {
   //   // if (history.state?.showSnack) {
   //   this.snackBar.open('Request Submitted Successfully', '', {
@@ -143,4 +173,81 @@ export class RequestReviewAccessComponent {
   //   // history.replaceState({}, '');
   //   // }
   // }
+
+  // ✅ Pagination
+  pageSize = 10;
+  pageIndex = 0;
+  totalPages = 0;
+  totalElements = 0;
+  pages: number[] = [];
+
+  paginatedUsers: any[] = [];
+  filteredUsers: any[] = [];
+  allFilteredData: any[] = [];
+
+  // ✅ PAGINATION UI CALCULATION
+  generatePages() {
+    const visible = 3;
+
+    if (this.totalPages <= 0) {
+      this.pages = [];
+      return;
+    }
+
+    let start = Math.max(1, this.pageIndex + 1 - 1);
+    let end = Math.min(this.totalPages, start + visible - 1);
+
+    if (end - start < visible - 1) {
+      start = Math.max(1, end - visible + 1);
+    }
+
+    this.pages = [];
+    for (let i = start; i <= end; i++) {
+      this.pages.push(i);
+    }
+  }
+
+  // ✅ PAGINATION ACTIONS
+  goToPage(p: number) {
+    this.pageIndex = p - 1;
+    this.applyPagination();
+  }
+
+  nextPage() {
+    if (this.pageIndex < this.totalPages - 1) {
+      this.pageIndex++;
+      this.applyPagination();
+    }
+  }
+
+  prevPage() {
+    if (this.pageIndex > 0) {
+      this.pageIndex--;
+      this.applyPagination();
+    }
+  }
+
+  firstPage() {
+    this.pageIndex = 0;
+    this.applyPagination();
+  }
+
+  lastPage() {
+    this.pageIndex = this.totalPages - 1;
+    this.applyPagination();
+  }
+
+  applyPagination() {
+    const start = this.pageIndex * this.pageSize;
+    const end = start + this.pageSize;
+
+    const paginated = this.allFilteredData.slice(start, end);
+
+    this.dataSource = paginated;
+
+    this.filteredUsers = this.allFilteredData;
+    this.paginatedUsers = paginated;
+
+    this.generatePages();
+  }
 }

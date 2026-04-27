@@ -1,1 +1,23 @@
-<p>report works!</p>
+<app-innerheader
+  title="Reports"
+  [btn]="false"
+  btntitle=" Back To Reports"
+></app-innerheader>
+
+<div class="dashboard-card-list">
+  <div class="dashboard-card" routerLink="/reports/executive-audit-report">
+    <mat-card class="card-wrapper">
+      <div class="card-header">
+        <h6 class="card-title">Executive Audit Report</h6>
+      </div>
+      <div class="card-content">
+        <div class="card-content-data">
+          <h6>
+            {{ totalElements }}
+            <span>Record{{ totalElements > 0 ? "s" : "" }}</span>
+          </h6>
+        </div>
+      </div>
+    </mat-card>
+  </div>
+</div>

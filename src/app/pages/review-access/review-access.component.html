@@ -7,7 +7,7 @@
   mat-stretch-tabs="false"
   mat-align-tabs="start"
   class="custom-tab"
-  [(selectedIndex)]="selectedIndex"
+  (selectedTabChange)="onTabChange($event)"
 >
   <mat-tab *ngFor="let tab of tabs" [label]="tab.name">
     <!-- ✅ Important TAB -->
@@ -16,27 +16,58 @@
         <!-- 🔍 Search -->
         <div class="search-box">
           <input
-            #searchInput
+            #searchInputImportant
             type="text"
             placeholder="Search"
-            (input)="onSearch(searchInput.value)"
+            (input)="onSearchImportant(searchInputImportant.value)"
           />
           <img src="/svg/search.svg" class="search-icon" />
         </div>
 
         <!-- 🔢 Count -->
-        <p>Showing {{ showingCount }} of {{ totalCount }}</p>
+        <p>Showing {{ showingCountImportant }} of {{ totalCountImportant }}</p>
 
         <div class="filter-grp-div">
+          <div class="custom-filter no-icon">
+            <mat-form-field>
+              <mat-label>Download</mat-label>
+              <mat-select
+                [(ngModel)]="selectedDownloadImportant"
+                panelClass="custom-filter-panel"
+              >
+                <mat-option value="download">Download</mat-option>
+                <mat-option value="pdf" (click)="downloadPDFImportant()"
+                  ><div class="icontexttd">
+                    <img src="/svg/pdf.svg" class="icons" alt="pdf" /> PDF
+                  </div></mat-option
+                >
+                <mat-option value="excel" (click)="downloadExcelImportant()"
+                  ><div class="icontexttd">
+                    <img src="/svg/excel.svg" class="icons" alt="excel" /> Excel
+                  </div></mat-option
+                >
+                <mat-option value="csv" (click)="downloadCSVImportant()"
+                  ><div class="icontexttd">
+                    <img src="/svg/csv.svg" class="icons" alt="csv" /> CSV
+                  </div></mat-option
+                >
+              </mat-select>
+            </mat-form-field>
+          </div>
           <!-- Bulk Decisions -->
           <div class="custom-filter no-icon">
             <mat-form-field>
               <mat-label>Bulk Decisions</mat-label>
               <mat-select
+                [value]="bulkdecisions"
                 panelClass="custom-filter-panel"
-                (selectionChange)="applyBulkDecision($event.value)"
+                (selectionChange)="
+                  applyBulkDecisionImportantToAll($event.value)
+                "
               >
-                <mat-option value="">Bulk Decisions</mat-option>
+                <mat-option value="" disabled selected
+                  >Bulk Decisions</mat-option
+                >
                 <mat-option value="approve">Approve</mat-option>
                 <mat-option value="reject">Reject</mat-option>
               </mat-select>
@@ -48,8 +79,9 @@
             <mat-form-field>
               <mat-label>Select Category</mat-label>
               <mat-select
+                [value]="selectedCategory"
                 panelClass="custom-filter-panel"
-                (selectionChange)="filterCategory($event.value)"
+                (selectionChange)="filterCategoryImportant($event.value)"
               >
                 <mat-option value="">Select Category</mat-option>
 
@@ -69,11 +101,11 @@
               <mat-label>Filter</mat-label>
               <mat-select
                 panelClass="custom-filter-panel"
-                (selectionChange)="filterType($event.value)"
+                (selectionChange)="filterTypeImportant($event.value)"
               >
                 <mat-option value="">Filter</mat-option>
-                <mat-option value="folder">Folder</mat-option>
-                <mat-option value="file">File</mat-option>
+                <mat-option value="Folder">Folder</mat-option>
+                <mat-option value="File">File</mat-option>
               </mat-select>
             </mat-form-field>
           </div>
@@ -89,39 +121,33 @@
               <mat-form-field>
                 <mat-label>Columns</mat-label>
 
-                <mat-select panelClass="custom-filter-panel" multiple>
+                <mat-select
+                  panelClass="custom-filter-panel"
+                  multiple
+                  [value]="displayedColumnsImportant"
+                  (selectionChange)="onColumnChange($event.value)"
+                >
                   <!-- SELECT ALL -->
-                  <mat-option (click)="toggleAllColumns($event)">
+                  <!-- <mat-option (click)="toggleAllColumns($event)">
                     Select All
-                  </mat-option>
+                  </mat-option> -->
 
                   <!-- COLUMN OPTIONS -->
-
-                  <mat-option (click)="toggleColumn('policyName', $event)">
-                    Policy Name
-                  </mat-option>
-
-                  <mat-option (click)="toggleColumn('rule', $event)">
-                    Rule
-                  </mat-option>
-
-                  <mat-option (click)="toggleColumn('folderFileName', $event)">
+                  <mat-option value="folderFileName">
                     Folder / File Names
                   </mat-option>
 
-                  <mat-option
-                    (click)="toggleColumn('resourceFullPath', $event)"
-                  >
+                  <mat-option value="resourceFullPath">
                     Resource Full Path
                   </mat-option>
 
-                  <!-- <mat-option (click)="toggleColumn('identity', $event)">
-                    Identity
-                  </mat-option> -->
+                  <mat-option value="category"> Category </mat-option>
 
-                  <mat-option (click)="toggleColumn('decision', $event)">
-                    Decision
+                  <mat-option value="identityEmployeeName">
+                    Identity Employee Name
                   </mat-option>
+
+                  <mat-option value="decision"> Decision </mat-option>
                 </mat-select>
               </mat-form-field>
             </div>
@@ -129,28 +155,38 @@
         </div>
       </div>
 
-      <div class="solid-table table-wrapper">
+      <div class="solid-table inportant-table table-wrapper">
         <table
           mat-table
-          [dataSource]="dataSourceImportant"
+          [dataSource]="pagination.important.paginatedData"
           class="mat-elevation-z2"
         >
           <!-- PATH -->
-          <ng-container matColumnDef="policyName">
+          <ng-container matColumnDef="folderFileName">
             <th mat-header-cell *matHeaderCellDef>
               <div class="checktddiv">
-                <mat-checkbox
+                <!-- <mat-checkbox
                   (change)="toggleAllRows()"
                   [checked]="isAllSelected()"
                   [indeterminate]="isIndeterminate()"
-                ></mat-checkbox>
+                ></mat-checkbox> -->
 
                 <span>Folder / File Name</span>
               </div>
             </th>
 
             <td mat-cell *matCellDef="let row">
-              <div class="checktddiv">
+              <div class="icontexttd">
+                <img
+                  src="/svg/folder.svg"
+                  *ngIf="row.sourceType === 'Folder'"
+                />
+                <img src="/svg/file.svg" *ngIf="row.sourceType === 'File'" />
+                <a routerLink="/review-access/sod-detail" class="table-link">
+                  {{ row.folderFileName }}
+                </a>
+              </div>
+              <!-- <div class="checktddiv">
                 <mat-checkbox
                   (click)="$event.stopPropagation()"
                   (change)="toggleRow(row)"
@@ -161,49 +197,45 @@
                   <a
                     routerLink="/review-access/sod-detail"
                     class="table-link"
-                    >{{ row.policyName }}</a
+                    >{{ row.folderFileName }}</a
                   ></span
                 >
-              </div>
-            </td>
-          </ng-container>
-
-          <ng-container matColumnDef="rule">
-            <th mat-header-cell *matHeaderCellDef>Resource Full Path</th>
-
-            <td mat-cell *matCellDef="let row">
-              {{ row.rule }}
-            </td>
-          </ng-container>
-
-          <ng-container matColumnDef="folderFileName">
-            <th mat-header-cell *matHeaderCellDef>Category</th>
-
-            <td mat-cell *matCellDef="let row">
-              <div class="icontexttd">
-                <img src="/svg/folder.svg" *ngIf="row.type === 'folder'" />
-                <img src="/svg/file.svg" *ngIf="row.type === 'file'" />
-
-                {{ row.folderFileName }}
-              </div>
+              </div> -->
             </td>
           </ng-container>
 
           <ng-container matColumnDef="resourceFullPath">
-            <th mat-header-cell *matHeaderCellDef>Employee Name</th>
+            <th mat-header-cell *matHeaderCellDef>Resource Full Path</th>
 
             <td mat-cell *matCellDef="let row">
               {{ row.resourceFullPath }}
             </td>
           </ng-container>
 
-          <!-- <ng-container matColumnDef="identity">
-            <th mat-header-cell *matHeaderCellDef>Identity</th>
+          <ng-container matColumnDef="category">
+            <th mat-header-cell *matHeaderCellDef>Category</th>
 
             <td mat-cell *matCellDef="let row">
-              {{ row.identity }}
+              {{ row.category }}
             </td>
-          </ng-container> -->
+
+            <!-- <td mat-cell *matCellDef="let row">
+              <div class="icontexttd">
+                <img src="/svg/folder.svg" *ngIf="row.type === 'folder'" />
+                <img src="/svg/file.svg" *ngIf="row.type === 'file'" />
+
+                {{ row.folderFileName }}
+              </div>
+            </td> -->
+          </ng-container>
+
+          <ng-container matColumnDef="identityEmployeeName">
+            <th mat-header-cell *matHeaderCellDef>Identity / Employee Name</th>
+
+            <td mat-cell *matCellDef="let row">
+              {{ row.identityEmployeeName }}
+            </td>
+          </ng-container>
 
           <ng-container matColumnDef="decision">
             <th mat-header-cell *matHeaderCellDef class="lastcol">Decision</th>
@@ -211,7 +243,13 @@
             <td mat-cell *matCellDef="let row" class="lastcol liketd">
               <div class="likediv">
                 <!-- LIKE -->
-                <span class="like" [ngClass]="{ active: row.approve }">
+                <span
+                  class="like"
+                  [ngClass]="{ active: row.approve }"
+                  (click)="
+                    onDecisionClick(row, 'approve'); $event.stopPropagation()
+                  "
+                >
                   <img
                     src="/svg/like.svg"
                     width="17"
@@ -221,7 +259,13 @@
                 </span>
 
                 <!-- DISLIKE -->
-                <span class="dislike" [ngClass]="{ active: row.reject }">
+                <span
+                  class="dislike"
+                  [ngClass]="{ active: row.reject }"
+                  (click)="
+                    onDecisionClick(row, 'reject'); $event.stopPropagation()
+                  "
+                >
                   <img
                     src="/svg/unlike.svg"
                     width="17"
@@ -269,8 +313,70 @@
             </td>
           </tr>
         </table>
-        <div class="fixed-btn">
+        <!-- <div class="fixed-btn">
           <button mat-flat-button class="btn-blue">Save</button>
+        </div> -->
+      </div>
+
+      <!-- ✅ Custom Pagination -->
+      <div class="custom-pagination">
+        <span class="count">
+          Showing {{ pagination.important.paginatedData.length }} of
+          {{ pagination.important.totalElements }}
+        </span>
+
+        <div class="pagination-buttons">
+          <button
+            (click)="firstPage('important')"
+            [disabled]="pagination.important.pageIndex === 0"
+          >
+            «
+          </button>
+          <button
+            (click)="prevPage('important')"
+            [disabled]="pagination.important.pageIndex === 0"
+          >
+            ‹
+          </button>
+
+          <span *ngIf="pagination.important.pages[0] > 1">...</span>
+
+          <button
+            *ngFor="let p of pagination.important.pages"
+            (click)="goToPage('important', p)"
+            [class.active]="p === pagination.important.pageIndex + 1"
+          >
+            {{ p }}
+          </button>
+
+          <span
+            *ngIf="
+              pagination.important.pages[
+                pagination.important.pages.length - 1
+              ] < pagination.important.totalPages
+            "
+          >
+            ...
+          </span>
+
+          <button
+            (click)="nextPage('important')"
+            [disabled]="
+              pagination.important.pageIndex ===
+              pagination.important.totalPages - 1
+            "
+          >
+            ›
+          </button>
+          <button
+            (click)="lastPage('important')"
+            [disabled]="
+              pagination.important.pageIndex ===
+              pagination.important.totalPages - 1
+            "
+          >
+            »
+          </button>
         </div>
       </div>
     </ng-container>
@@ -281,27 +387,57 @@
         <!-- 🔍 Search -->
         <div class="search-box">
           <input
-            #searchInput
+            #searchInputOpen
             type="text"
             placeholder="Search"
-            (input)="onSearch(searchInput.value)"
+            (input)="onSearchOpen(searchInputOpen.value)"
           />
           <img src="/svg/search.svg" class="search-icon" />
         </div>
 
         <!-- 🔢 Count -->
-        <p>Showing {{ showingCount }} of {{ totalCount }}</p>
+        <p>Showing {{ showingCountOpen }} of {{ totalCountOpen }}</p>
 
         <div class="filter-grp-div">
+          <div class="custom-filter no-icon">
+            <mat-form-field>
+              <mat-label>Download</mat-label>
+              <mat-select
+                [(ngModel)]="selectedDownloadOpen"
+                panelClass="custom-filter-panel"
+              >
+                <mat-option value="download">Download</mat-option>
+                <mat-option value="pdf" (click)="downloadPDFOpen()"
+                  ><div class="icontexttd">
+                    <img src="/svg/pdf.svg" class="icons" alt="pdf" /> PDF
+                  </div></mat-option
+                >
+                <mat-option value="excel" (click)="downloadExcelOpen()"
+                  ><div class="icontexttd">
+                    <img src="/svg/excel.svg" class="icons" alt="excel" /> Excel
+                  </div></mat-option
+                >
+                <mat-option value="csv" (click)="downloadCSVOpen()"
+                  ><div class="icontexttd">
+                    <img src="/svg/csv.svg" class="icons" alt="csv" /> CSV
+                  </div></mat-option
+                >
+              </mat-select>
+            </mat-form-field>
+          </div>
+
           <!-- Bulk Decisions -->
           <div class="custom-filter no-icon">
             <mat-form-field>
               <mat-label>Bulk Decisions</mat-label>
               <mat-select
+                [value]="bulkdecisions"
                 panelClass="custom-filter-panel"
-                (selectionChange)="applyBulkDecision($event.value)"
+                (selectionChange)="applyBulkDecisionOpenToAll($event.value)"
               >
-                <mat-option value="">Bulk Decisions</mat-option>
+                <mat-option value="" disabled selected
+                  >Bulk Decisions</mat-option
+                >
                 <mat-option value="approve">Approve</mat-option>
                 <mat-option value="reject">Reject</mat-option>
               </mat-select>
@@ -313,8 +449,9 @@
             <mat-form-field>
               <mat-label>Select Category</mat-label>
               <mat-select
+                [value]="selectedCategory"
                 panelClass="custom-filter-panel"
-                (selectionChange)="filterCategory($event.value)"
+                (selectionChange)="filterCategoryOpen($event.value)"
               >
                 <mat-option value="">Select Category</mat-option>
 
@@ -331,35 +468,47 @@
               <mat-label>Filter</mat-label>
               <mat-select
                 panelClass="custom-filter-panel"
-                (selectionChange)="filterType($event.value)"
+                (selectionChange)="filterTypeOpen($event.value)"
               >
                 <mat-option value="">Filter</mat-option>
-                <mat-option value="folder">Folder</mat-option>
-                <mat-option value="file">File</mat-option>
+                <mat-option value="Folder">Folder</mat-option>
+                <mat-option value="File">File</mat-option>
               </mat-select>
             </mat-form-field>
           </div>
         </div>
       </div>
 
-      <div class="solid-table table-wrapper">
-        <table mat-table [dataSource]="dataSourceOpen" class="mat-elevation-z2">
+      <div class="solid-table open-table table-wrapper">
+        <table
+          mat-table
+          [dataSource]="pagination.open.paginatedData"
+          class="mat-elevation-z2"
+        >
           <!-- PATH -->
-          <ng-container matColumnDef="employeename">
+          <ng-container matColumnDef="identityEmployeeName">
             <th mat-header-cell *matHeaderCellDef>
               <div class="checktddiv">
-                <mat-checkbox
+                <!-- <mat-checkbox
                   (change)="toggleAllRows()"
                   [checked]="isAllSelected()"
                   [indeterminate]="isIndeterminate()"
-                ></mat-checkbox>
+                ></mat-checkbox> -->
 
                 <span>Employee Name</span>
               </div>
             </th>
 
             <td mat-cell *matCellDef="let row">
-              <div class="checktddiv">
+              <div class="icontexttd">
+                <img
+                  src="/svg/folder.svg"
+                  *ngIf="row.sourceType === 'Folder'"
+                />
+                <img src="/svg/file.svg" *ngIf="row.sourceType === 'File'" />
+                {{ row.identityEmployeeName }}
+              </div>
+              <!-- <div class="checktddiv">
                 <mat-checkbox
                   (click)="$event.stopPropagation()"
                   (change)="toggleRow(row)"
@@ -367,7 +516,7 @@
                 ></mat-checkbox>
 
                 <span>{{ row.employeename }}</span>
-              </div>
+              </div> -->
             </td>
           </ng-container>
 
@@ -392,11 +541,11 @@
             </td>
           </ng-container>
 
-          <ng-container matColumnDef="categories">
+          <ng-container matColumnDef="category">
             <th mat-header-cell *matHeaderCellDef>Categories</th>
 
             <td mat-cell *matCellDef="let row">
-              {{ row.categories }}
+              {{ row.category }}
             </td>
           </ng-container>
 
@@ -421,7 +570,13 @@
                 </span>
 
                 <!-- LIKE -->
-                <span class="like" [ngClass]="{ active: row.approve }">
+                <span
+                  class="like"
+                  [ngClass]="{ active: row.approve }"
+                  (click)="
+                    onDecisionClick(row, 'approve'); $event.stopPropagation()
+                  "
+                >
                   <img
                     src="/svg/like.svg"
                     width="17"
@@ -431,7 +586,13 @@
                 </span>
 
                 <!-- DISLIKE -->
-                <span class="dislike" [ngClass]="{ active: row.reject }">
+                <span
+                  class="dislike"
+                  [ngClass]="{ active: row.reject }"
+                  (click)="
+                    onDecisionClick(row, 'reject'); $event.stopPropagation()
+                  "
+                >
                   <img
                     src="/svg/unlike.svg"
                     width="17"
@@ -479,8 +640,67 @@
             </td>
           </tr>
         </table>
-        <div class="fixed-btn">
+        <!-- <div class="fixed-btn">
           <button mat-flat-button class="btn-blue">Save</button>
+        </div> -->
+      </div>
+
+      <!-- ✅ Custom Pagination -->
+      <div class="custom-pagination">
+        <span class="count">
+          Showing {{ pagination.open.paginatedData.length }} of
+          {{ pagination.open.totalElements }}
+        </span>
+
+        <div class="pagination-buttons">
+          <button
+            (click)="firstPage('open')"
+            [disabled]="pagination.open.pageIndex === 0"
+          >
+            «
+          </button>
+          <button
+            (click)="prevPage('open')"
+            [disabled]="pagination.open.pageIndex === 0"
+          >
+            ‹
+          </button>
+
+          <span *ngIf="pagination.open.pages[0] > 1">...</span>
+
+          <button
+            *ngFor="let p of pagination.open.pages"
+            (click)="goToPage('open', p)"
+            [class.active]="p === pagination.open.pageIndex + 1"
+          >
+            {{ p }}
+          </button>
+
+          <span
+            *ngIf="
+              pagination.open.pages[pagination.open.pages.length - 1] <
+              pagination.open.totalPages
+            "
+          >
+            ...
+          </span>
+
+          <button
+            (click)="nextPage('open')"
+            [disabled]="
+              pagination.open.pageIndex === pagination.open.totalPages - 1
+            "
+          >
+            ›
+          </button>
+          <button
+            (click)="lastPage('open')"
+            [disabled]="
+              pagination.open.pageIndex === pagination.open.totalPages - 1
+            "
+          >
+            »
+          </button>
         </div>
       </div>
     </ng-container>
@@ -491,63 +711,99 @@
         <!-- 🔍 Search -->
         <div class="search-box">
           <input
-            #searchInput
+            #searchInputReview
             type="text"
             placeholder="Search"
-            (input)="onSearch(searchInput.value)"
+            (input)="onSearchReview(searchInputReview.value)"
           />
           <img src="/svg/search.svg" class="search-icon" />
         </div>
 
         <!-- 🔢 Count -->
-        <p>Showing {{ showingCount }} of {{ totalCount }}</p>
+        <p>Showing {{ showingCountReview }} of {{ totalCountReview }}</p>
 
         <div class="filter-grp-div">
+          <div class="custom-filter no-icon">
+            <mat-form-field>
+              <mat-label>Download</mat-label>
+              <mat-select
+                [(ngModel)]="selectedDownloadReview"
+                panelClass="custom-filter-panel"
+              >
+                <mat-option value="download">Download</mat-option>
+                <mat-option value="pdf" (click)="downloadPDFReview()"
+                  ><div class="icontexttd">
+                    <img src="/svg/pdf.svg" class="icons" alt="pdf" /> PDF
+                  </div></mat-option
+                >
+                <mat-option value="excel" (click)="downloadExcelReview()"
+                  ><div class="icontexttd">
+                    <img src="/svg/excel.svg" class="icons" alt="excel" /> Excel
+                  </div></mat-option
+                >
+                <mat-option value="csv" (click)="downloadCSVReview()"
+                  ><div class="icontexttd">
+                    <img src="/svg/csv.svg" class="icons" alt="csv" /> CSV
+                  </div></mat-option
+                >
+              </mat-select>
+            </mat-form-field>
+          </div>
           <!-- Type Filter -->
           <div class="custom-filter">
             <mat-form-field>
               <mat-label>Filter</mat-label>
               <mat-select
                 panelClass="custom-filter-panel"
-                (selectionChange)="filterType($event.value)"
+                (selectionChange)="filterTypeReview($event.value)"
               >
                 <mat-option value="">Filter</mat-option>
-                <mat-option value="folder">Folder</mat-option>
-                <mat-option value="file">File</mat-option>
+                <mat-option value="Folder">Folder</mat-option>
+                <mat-option value="File">File</mat-option>
               </mat-select>
             </mat-form-field>
           </div>
         </div>
       </div>
 
-      <div class="solid-table table-wrapper">
+      <div class="solid-table review-table table-wrapper">
         <table
           mat-table
-          [dataSource]="dataSourceReview"
+          [dataSource]="pagination.review.paginatedData"
           class="mat-elevation-z2"
         >
           <!-- PATH -->
-          <ng-container matColumnDef="employeename">
+          <ng-container matColumnDef="identityEmployeeName">
             <th mat-header-cell *matHeaderCellDef>
               <div class="checktddiv">
-                <mat-checkbox
+                <!-- <mat-checkbox
                   (change)="toggleAllRows()"
+                  [checked]="isAllSelected()"
                   [indeterminate]="isIndeterminate()"
-                ></mat-checkbox>
+                ></mat-checkbox> -->
 
                 <span>Employee Name</span>
               </div>
             </th>
 
             <td mat-cell *matCellDef="let row">
-              <div class="checktddiv">
+              <div class="icontexttd">
+                <img
+                  src="/svg/folder.svg"
+                  *ngIf="row.sourceType === 'Folder'"
+                />
+                <img src="/svg/file.svg" *ngIf="row.sourceType === 'File'" />
+                {{ row.identityEmployeeName }}
+              </div>
+              <!-- <div class="checktddiv">
                 <mat-checkbox
                   (click)="$event.stopPropagation()"
                   (change)="toggleRow(row)"
+                  [checked]="selection.has(row)"
                 ></mat-checkbox>
 
                 <span>{{ row.employeename }}</span>
-              </div>
+              </div> -->
             </td>
           </ng-container>
 
@@ -572,11 +828,11 @@
             </td>
           </ng-container>
 
-          <ng-container matColumnDef="categories">
+          <ng-container matColumnDef="category">
             <th mat-header-cell *matHeaderCellDef>Categories</th>
 
             <td mat-cell *matCellDef="let row">
-              {{ row.categories }}
+              {{ row.category }}
             </td>
           </ng-container>
 
@@ -585,7 +841,7 @@
 
             <td mat-cell *matCellDef="let row" class="liketd">
               <div class="likediv">
-                <!-- LIKE -->
+                <!-- APPROVED -->
                 <span *ngIf="row.approve" class="like active">
                   <img
                     src="/svg/like.svg"
@@ -595,7 +851,7 @@
                   />
                 </span>
 
-                <!-- DISLIKE -->
+                <!-- REJECTED -->
                 <span *ngIf="row.reject" class="dislike active">
                   <img
                     src="/svg/unlike.svg"
@@ -629,15 +885,74 @@
             </td>
           </tr>
         </table>
-        <div class="fixed-btn">
+      </div>
+
+      <!-- ✅ Custom Pagination -->
+      <div class="custom-pagination">
+        <span class="count">
+          Showing {{ pagination.review.paginatedData.length }} of
+          {{ pagination.review.totalElements }}
+        </span>
+
+        <div class="pagination-buttons">
           <button
-            mat-flat-button
-            class="btn-blue"
-            routerLink="/review-access/review-access-detail"
+            (click)="firstPage('review')"
+            [disabled]="pagination.review.pageIndex === 0"
           >
-            Sign-off And Finish
+            «
+          </button>
+          <button
+            (click)="prevPage('review')"
+            [disabled]="pagination.review.pageIndex === 0"
+          >
+            ‹
+          </button>
+
+          <span *ngIf="pagination.review.pages[0] > 1">...</span>
+
+          <button
+            *ngFor="let p of pagination.review.pages"
+            (click)="goToPage('review', p)"
+            [class.active]="p === pagination.review.pageIndex + 1"
+          >
+            {{ p }}
+          </button>
+
+          <span
+            *ngIf="
+              pagination.review.pages[pagination.review.pages.length - 1] <
+              pagination.review.totalPages
+            "
+          >
+            ...
+          </span>
+
+          <button
+            (click)="nextPage('review')"
+            [disabled]="
+              pagination.review.pageIndex === pagination.review.totalPages - 1
+            "
+          >
+            ›
+          </button>
+          <button
+            (click)="lastPage('review')"
+            [disabled]="
+              pagination.review.pageIndex === pagination.review.totalPages - 1
+            "
+          >
+            »
           </button>
         </div>
+      </div>
+      <div class="fixed-btn">
+        <button
+          mat-flat-button
+          class="btn-blue"
+          routerLink="/review-access/review-access-detail"
+        >
+          Sign-off And Finish
+        </button>
       </div>
     </ng-container>
   </mat-tab>

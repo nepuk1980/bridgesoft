@@ -20,7 +20,9 @@
   align-items: center;
   gap: 1.25rem;
 }
-
+.solid-table {
+  height: calc(100vh - 24.3rem);
+}
 .solid-table .mdc-data-table__cell:nth-child(1),
 .solid-table .mat-mdc-header-cell:nth-child(1) {
   width: 10% !important;
