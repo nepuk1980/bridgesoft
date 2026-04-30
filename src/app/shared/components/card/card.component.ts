@@ -8,6 +8,7 @@ import { ApiService } from '../../../services/api.service';
 import { FilefolderpopupComponent } from '../filefolderpopup/filefolderpopup.component';
 import { Observable } from 'rxjs';
 import { NumberFormat } from 'xlsx-js-style';
+import { FilefoldersharepopupComponent } from '../filefoldersharepopup/filefoldersharepopup.component';
 
 interface ShareCard {
   title: string;
@@ -52,35 +53,64 @@ export class CardComponent implements OnInit {
 
   constructor(private api: ApiService) {}
 
+  isDialogLoading = false;
+
   openShareDialog(card: ShareCard, apiMethod: keyof ApiService) {
     if (this.dialog.openDialogs.length > 0) return;
 
-    const apiCall = this.api[apiMethod] as unknown as () => Observable<any>;
+    const fn = this.api[apiMethod];
 
-    if (!apiCall) {
+    if (typeof fn !== 'function') {
       console.error(`API method ${String(apiMethod)} not found`);
       return;
     }
 
-    apiCall.call(this.api).subscribe({
-      next: (res: any) => {
-        const folders = res?.content ?? res?.data ?? res ?? [];
+    this.isDialogLoading = true;
 
-        this.dialog.open(FilefolderpopupComponent, {
-          width: '75rem',
-          minWidth: '75rem',
-          maxWidth: '100%',
-          data: {
-            ...card,
-            folders,
-          },
-        });
-      },
-      error: (err) => {
-        console.error('API Error:', err);
-      },
-    });
+    setTimeout(() => {
+      this.isDialogLoading = false;
+
+      this.dialog.open(FilefoldersharepopupComponent, {
+        width: '75rem',
+        minWidth: '75rem',
+        maxWidth: '100%',
+        data: {
+          ...card,
+          apiMethod,
+        },
+      });
+    }, 300);
   }
+
+  // openShareDialog(card: ShareCard, apiMethod: keyof ApiService) {
+  //   if (this.dialog.openDialogs.length > 0) return;
+
+  //   const apiCall = this.api[apiMethod] as unknown as () => Observable<any>;
+
+  //   if (!apiCall) {
+  //     console.error(`API method ${String(apiMethod)} not found`);
+  //     return;
+  //   }
+
+  //   apiCall.call(this.api).subscribe({
+  //     next: (res: any) => {
+  //       const folders = res?.content ?? res?.data ?? res ?? [];
+
+  //       this.dialog.open(FilefolderpopupComponent, {
+  //         width: '75rem',
+  //         minWidth: '75rem',
+  //         maxWidth: '100%',
+  //         data: {
+  //           ...card,
+  //           folders,
+  //         },
+  //       });
+  //     },
+  //     error: (err) => {
+  //       console.error('API Error:', err);
+  //     },
+  //   });
+  // }
 
   ngOnInit(): void {
     // const cardData: ShareCard = {
