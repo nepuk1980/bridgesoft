@@ -9,20 +9,18 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { MatDialog } from '@angular/material/dialog';
 import { MatRadioModule } from '@angular/material/radio';
 
 import { InnerheaderComponent } from '../../shared/components/innerheader/innerheader.component';
 import { ApiService } from '../../services/api.service';
-import { RequestAccessWorkflowInterface } from '../../models/type';
 import { ReportService } from '../../services/report.service';
-import { forkJoin } from 'rxjs';
+
 interface TableRowImportant {
   folderFileName: string;
   resourceFullPath: string;
   category: string;
   criticality: string;
-  itemtype: string;
+  itemType: string;
 }
 
 @Component({
@@ -48,21 +46,25 @@ interface TableRowImportant {
 export class RequestWorkflowComponent implements OnInit {
   vaultId: number = 0;
 
+  // Filters
   searchText: string = '';
   selectedCategory: string = '';
   selectedCriticality: string = '';
   selectedFilterIds: number[] = [];
   selectedDownload: string = 'download';
 
-  originalData: TableRowImportant[] = [];
+  // Data
   dataSourceImportant: TableRowImportant[] = [];
-
   selectedUsers: any[] = [];
-
-  totalCount = 0;
-  showingCount = 0;
-
   categoriesImportant: string[] = [];
+
+  // Pagination State
+  pageSize = 10;
+  pageIndex = 0;
+  totalPages = 0;
+  totalElements = 0;
+  showingCount = 0;
+  pages: number[] = [];
 
   displayedColumnsImportant: string[] = [
     'folderFileName',
@@ -72,148 +74,18 @@ export class RequestWorkflowComponent implements OnInit {
   ];
 
   selection = new Set<TableRowImportant>();
+  private sanitizer = inject(DomSanitizer);
+  private api = inject(ApiService);
+  private reportService = inject(ReportService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
-  private dialog = inject(MatDialog);
-
-  constructor(
-    private route: ActivatedRoute,
-    private sanitizer: DomSanitizer,
-    private api: ApiService,
-    private reportService: ReportService,
-    private router: Router,
-  ) {
+  constructor() {
     const nav = this.router.getCurrentNavigation();
-
     this.selectedUsers =
       nav?.extras?.state?.['selectedUsers'] ??
       history.state?.selectedUsers ??
       [];
-
-    console.log('Selected Users:', this.selectedUsers);
-  }
-
-  getSafeHtml(html: string): SafeHtml {
-    return this.sanitizer.bypassSecurityTrustHtml(html);
-  }
-
-  // SEARCH
-  onSearch(value: string) {
-    this.searchText = value?.trim() || '';
-    this.applyFilters();
-  }
-
-  // CATEGORY FILTER
-  filterCategory(value: string) {
-    this.selectedCategory = value || '';
-    this.applyFilters();
-  }
-
-  // CRITICALITY FILTER
-  filterCriticality(value: string) {
-    this.selectedCriticality = value || '';
-    this.applyFilters();
-  }
-
-  // FILE/FOLDER FILTER (API SIDE)
-  filterType(id: number, checked: boolean) {
-    if (checked) {
-      if (!this.selectedFilterIds.includes(id)) {
-        this.selectedFilterIds.push(id);
-      }
-    } else {
-      this.selectedFilterIds = this.selectedFilterIds.filter((x) => x !== id);
-    }
-
-    this.getWorkflowData();
-  }
-
-  // RADIO CHANGE
-  onCriticalityChange(row: TableRowImportant) {
-    row.criticality = row.criticality;
-  }
-
-  // APPLY LOCAL FILTERS
-  applyFilters() {
-    let filtered = [...this.originalData];
-
-    if (this.searchText) {
-      const search = this.searchText.toLowerCase();
-
-      filtered = filtered.filter(
-        (x) =>
-          x.folderFileName.toLowerCase().includes(search) ||
-          x.resourceFullPath.toLowerCase().includes(search),
-      );
-    }
-
-    if (this.selectedCategory) {
-      filtered = filtered.filter((x) => x.category === this.selectedCategory);
-    }
-
-    if (this.selectedCriticality) {
-      filtered = filtered.filter(
-        (x) => x.criticality === this.selectedCriticality,
-      );
-    }
-
-    // ✅ ALWAYS update total first
-    this.totalElements = filtered.length;
-    this.totalPages = Math.max(
-      1,
-      Math.ceil(this.totalElements / this.pageSize),
-    );
-
-    // ✅ clamp pageIndex safely
-    if (this.pageIndex > this.totalPages - 1) {
-      this.pageIndex = this.totalPages - 1;
-    }
-    if (this.pageIndex < 0) {
-      this.pageIndex = 0;
-    }
-
-    // ✅ pagination slice
-    const start = this.pageIndex * this.pageSize;
-    const end = start + this.pageSize;
-
-    this.dataSourceImportant = filtered.slice(start, end);
-
-    // ✅ UI counters (correct binding)
-    this.filteredUsers = filtered;
-    this.paginatedUsers = this.dataSourceImportant;
-
-    this.showingCount = this.dataSourceImportant.length;
-    this.totalCount = this.originalData.length;
-
-    this.generatePages();
-  }
-
-  // ROW SELECTION
-  toggleRow(row: TableRowImportant) {
-    if (this.selection.has(row)) {
-      this.selection.delete(row);
-    } else {
-      this.selection.add(row);
-    }
-    console.log('✅ selection now:', Array.from(this.selection));
-  }
-
-  toggleAllRows() {
-    if (this.selection.size === this.dataSourceImportant.length) {
-      this.selection.clear();
-    } else {
-      this.dataSourceImportant.forEach((row) => this.selection.add(row));
-    }
-  }
-
-  isAllSelected(): boolean {
-    return this.selection.size === this.dataSourceImportant.length;
-  }
-
-  isIndeterminate(): boolean {
-    return (
-      this.selection.size > 0 &&
-      this.selection.size < this.dataSourceImportant.length
-    );
   }
 
   ngOnInit(): void {
@@ -223,224 +95,235 @@ export class RequestWorkflowComponent implements OnInit {
     });
   }
 
-  // API CALL
+  getSafeHtml(html: string): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(html);
+  }
+
+  // --- API CALL (PAGINATED) ---
   getWorkflowData() {
     const filterString = this.selectedFilterIds.join(',');
 
     this.api
       .getAllFilesAndFoldersDetails(
-        this.vaultId,
         this.searchText,
         this.selectedCategory,
         filterString,
+        this.pageIndex,
+        this.pageSize,
       )
       .subscribe({
         next: (res: any) => {
-          const data = res?.data || res;
+          const data = res?.data || res?.content || res;
 
-          this.originalData = data.map(
-            (item: RequestAccessWorkflowInterface) => ({
-              folderFileName: item.itemName,
-              resourceFullPath: item.itemUrl,
-              category: item.category,
-              criticality: 'Open',
-              sourceType: item.itemType,
-            }),
-          );
+          this.dataSourceImportant = data.map((item: any) => ({
+            folderFileName: item.itemName,
+            resourceFullPath: item.itemUrl,
+            category: item.category,
+            criticality: 'Open',
+            itemType: item.itemType,
+          }));
 
-          this.categoriesImportant = [
-            ...new Set(this.originalData.map((x) => x.category)),
-          ];
+          this.totalElements =
+            res?.totalElements || this.dataSourceImportant.length;
+          this.totalPages =
+            res?.totalPages || Math.ceil(this.totalElements / this.pageSize);
+          this.showingCount = this.dataSourceImportant.length;
 
-          this.pageIndex = 0;
-          this.applyFilters();
+          if (this.categoriesImportant.length === 0) {
+            this.categoriesImportant = [
+              ...new Set(this.dataSourceImportant.map((x) => x.category)),
+            ];
+          }
 
-          this.selection.clear();
+          this.generatePages();
         },
-        error: (err) => {
-          console.error('Workflow API error:', err);
-        },
+        error: (err) => console.error('Workflow API error:', err),
       });
   }
 
-  // DATE FORMAT
-  private getFormattedDateTime(): string {
-    const now = new Date();
+  // --- EXPORT LOGIC (FETCH ALL FILTERED DATA) ---
+  /**
+   * Helper to fetch all records matching current filters regardless of current page
+   */
+  private fetchExportData(callback: (data: TableRowImportant[]) => void) {
+    const filterString = this.selectedFilterIds.join(',');
 
-    const date = now.toLocaleDateString('en-GB').replace(/\//g, '-');
-
-    const time = now
-      .toLocaleTimeString('en-GB', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-      })
-      .replace(/:/g, '-');
-
-    return `${date}_${time}`;
+    // We request a very large page size (e.g. 99999) to ensure we get all records
+    // that match the current search/category filters.
+    this.api
+      .getAllFilesAndFoldersDetails(
+        this.searchText,
+        this.selectedCategory,
+        filterString,
+        0, // Reset to first page for full export
+        99999, // Large number to bypass pagination limit
+      )
+      .subscribe({
+        next: (res: any) => {
+          const rawData = res?.data || res?.content || res || [];
+          const allDataMpped = rawData.map((item: any) => ({
+            folderFileName: item.itemName,
+            resourceFullPath: item.itemUrl,
+            category: item.category,
+            criticality: 'Open',
+            itemType: item.itemType,
+          }));
+          callback(allDataMpped);
+        },
+        error: (err) => console.error('Export fetch failed:', err),
+      });
   }
 
-  // EXPORT DATA
-  private getExportData() {
-    return this.dataSourceImportant.map((item) => ({
-      'Folder / File Name': item.folderFileName,
-      ResourceFullPath: item.resourceFullPath,
-      Category: item.category,
-      Criticality: item.criticality,
-    }));
-  }
-
-  // DOWNLOAD EXCEL
   downloadExcel() {
-    const data = this.getExportData();
-    const timestamp = this.getFormattedDateTime();
-
-    this.reportService.downloadExcel(
-      data,
-      `request-workflow-report_${timestamp}`,
-      'Request Workflow',
-    );
+    this.fetchExportData((allData) => {
+      this.reportService.downloadExcel(allData, 'Workflow_Report', 'Workflow');
+    });
   }
 
-  // DOWNLOAD CSV
   downloadCSV() {
-    const data = this.getExportData();
-    const timestamp = this.getFormattedDateTime();
-
-    this.reportService.downloadCSV(
-      data,
-      `request-workflow-report_${timestamp}`,
-      'Request Workflow',
-    );
+    this.fetchExportData((allData) => {
+      this.reportService.downloadCSV(allData, 'Workflow_Report', 'Workflow');
+    });
   }
 
-  // DOWNLOAD PDF
   downloadPDF() {
-    const data = this.getExportData();
-    const timestamp = this.getFormattedDateTime();
-
-    this.reportService.downloadPDF(
-      data,
-      `request-workflow-report_${timestamp}`,
-      'Request Workflow',
-    );
+    this.fetchExportData((allData) => {
+      this.reportService.downloadPDF(allData, 'Workflow_Report', 'Workflow');
+    });
   }
 
-  // ✅ Pagination
-  pageSize = 10;
-  pageIndex = 0;
-  totalPages = 0;
-  totalElements = 0;
-  pages: number[] = [];
+  // --- FILTER ACTIONS ---
+  onSearch(value: string) {
+    this.searchText = value?.trim() || '';
+    this.pageIndex = 0;
+    this.getWorkflowData();
+  }
 
-  paginatedUsers: any[] = [];
-  filteredUsers: any[] = [];
+  filterCategory(value: string) {
+    this.selectedCategory = value || '';
+    this.pageIndex = 0;
+    this.getWorkflowData();
+  }
 
-  // ✅ PAGINATION UI CALCULATION
+  filterCriticality(value: string) {
+    this.selectedCriticality = value || '';
+    this.pageIndex = 0;
+    this.getWorkflowData();
+  }
+
+  filterType(id: number, checked: boolean) {
+    if (checked) {
+      if (!this.selectedFilterIds.includes(id)) this.selectedFilterIds.push(id);
+    } else {
+      this.selectedFilterIds = this.selectedFilterIds.filter((x) => x !== id);
+    }
+    this.pageIndex = 0;
+    this.getWorkflowData();
+  }
+
+  // --- PAGINATION NAVIGATION ---
   generatePages() {
     const visible = 3;
+    this.pages = [];
+    if (this.totalPages <= 0) return;
 
-    if (this.totalPages <= 0) {
-      this.pages = [];
-      return;
-    }
-
-    let start = Math.max(1, this.pageIndex + 1 - 1);
+    let start = Math.max(1, this.pageIndex + 1 - Math.floor(visible / 2));
     let end = Math.min(this.totalPages, start + visible - 1);
 
     if (end - start < visible - 1) {
       start = Math.max(1, end - visible + 1);
     }
 
-    this.pages = [];
     for (let i = start; i <= end; i++) {
-      this.pages.push(i);
+      if (i > 0) this.pages.push(i);
     }
   }
 
-  // ✅ PAGINATION ACTIONS
   goToPage(p: number) {
     this.pageIndex = p - 1;
-    this.applyFilters();
+    this.getWorkflowData();
   }
 
   nextPage() {
     if (this.pageIndex < this.totalPages - 1) {
       this.pageIndex++;
-      this.applyFilters();
+      this.getWorkflowData();
     }
   }
 
   prevPage() {
     if (this.pageIndex > 0) {
       this.pageIndex--;
-      this.applyFilters();
+      this.getWorkflowData();
     }
   }
 
   firstPage() {
     this.pageIndex = 0;
-    this.applyFilters();
+    this.getWorkflowData();
   }
 
   lastPage() {
     this.pageIndex = this.totalPages - 1;
-    this.applyFilters();
+    this.getWorkflowData();
   }
-  buildAccessRequestPayload() {
-    const payloads: any[] = [];
 
-    const users = this.selectedUsers;
-    const rows =
-      this.filteredUsers?.length > 0 ? this.filteredUsers : this.originalData;
+  // --- SELECTION ---
+  toggleRow(row: TableRowImportant) {
+    this.selection.has(row)
+      ? this.selection.delete(row)
+      : this.selection.add(row);
+  }
 
-    console.log('👤 users:', users);
-    console.log('📁 rows:', rows);
-
-    if (!users?.length || !rows.length) {
-      console.warn('⚠️ selectedUsers or data is empty');
-      return payloads;
+  toggleAllRows() {
+    if (this.isAllSelected()) {
+      this.selection.clear();
+    } else {
+      this.dataSourceImportant.forEach((row) => this.selection.add(row));
     }
+  }
 
-    for (const user of users) {
-      for (const row of rows) {
+  isAllSelected(): boolean {
+    return (
+      this.dataSourceImportant.length > 0 &&
+      this.selection.size === this.dataSourceImportant.length
+    );
+  }
+
+  isIndeterminate(): boolean {
+    return (
+      this.selection.size > 0 &&
+      this.selection.size < this.dataSourceImportant.length
+    );
+  }
+
+  // --- SUBMISSION ---
+  submitAccessRequest() {
+    const payloads: any[] = [];
+    const itemsToSubmit = Array.from(this.selection);
+
+    if (!this.selectedUsers.length || !itemsToSubmit.length) return;
+
+    for (const user of this.selectedUsers) {
+      for (const row of itemsToSubmit) {
         payloads.push({
           employeeName: user?.namepass ?? '',
           employeeEmail: user?.emailpass ?? '',
-          folderFileName: row?.folderFileName,
-          resourceFullPath: row?.resourceFullPath,
-          category: row?.category,
-          criticality: row?.criticality ?? 'Open',
-          sourceType: row?.itemType ?? 'File',
+          folderFileName: row.folderFileName,
+          resourceFullPath: row.resourceFullPath,
+          category: row.category,
+          criticality: row.criticality,
+          sourceType: row.itemType,
         });
       }
     }
 
-    console.log('✅ build payloads', payloads);
-
-    return payloads;
-  }
-  submitAccessRequest() {
-    const payloads = this.buildAccessRequestPayload();
-    console.log('submit payloads', payloads);
-
-    if (!payloads.length) {
-      console.error('❌ No payload generated.');
-      return;
-    }
-
     this.api.saveaccessrequestdetails(payloads).subscribe({
-      next: (res) => {
-        console.log('✅ Bulk request successful:', res);
-
-        // 👉 redirect after success
+      next: () =>
         this.router.navigate(['../request-access-detail'], {
           relativeTo: this.route,
-        });
-      },
-      error: (err) => {
-        console.error('❌ Bulk request failed:', err);
-      },
+        }),
+      error: (err) => console.error('Submission failed', err),
     });
   }
 }

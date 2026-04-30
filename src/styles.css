@@ -1159,3 +1159,35 @@ hr {
   opacity: 0.3;
   cursor: not-allowed;
 }
+
+.spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+.mat-mdc-progress-spinner {
+  width: 50px !important;
+  height: 50px !important;
+}
+.mdc-circular-progress__circle-clipper {
+  width: 100% !important;
+}
+.mdc-circular-progress__circle-clipper circle {
+  stroke: #cecece;
+}
+
+.loader-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 99;
+  background: rgba(0, 0, 0, 0.7);
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+}

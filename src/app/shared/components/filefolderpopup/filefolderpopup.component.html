@@ -45,7 +45,10 @@
       </div>
     </div>
     <mat-dialog-content class="dialog-content">
-      <table mat-table [dataSource]="dataSource" matSort>
+      <div class="spinner" *ngIf="isLoading">
+        <mat-spinner></mat-spinner>
+      </div>
+      <table mat-table [dataSource]="dataSource" matSort *ngIf="!isLoading">
         <!-- Name -->
         <ng-container matColumnDef="name">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>
@@ -173,5 +176,12 @@
         </button>
       </div>
     </div>
+  </div>
+</div>
+
+<div class="loader-overlay" *ngIf="isDownloading">
+  <div class="loader-content">
+    <!-- You can use an <img> svg here or a CSS spinner -->
+    <p>Generating Report, please wait...</p>
   </div>
 </div>

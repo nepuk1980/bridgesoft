@@ -289,18 +289,41 @@ export class ExecutiveAuditReportComponent implements OnInit, AfterViewInit {
           const timestamp = this.getFormattedDateTime();
           const filename = `executive-audit-report_${timestamp}`;
           const title = 'Executive Audit Report';
+          const desc =
+            'Daily scheduled search of VIP OD personal spaces for unauthorized access.';
+          const filter =
+            'Filters = Today [ And ] Id | Source System | Event Id | User Email | User Display Name | Event Type | Device Name | Event Time | Datasource Type | Event Operation | Event Description | Event Path | Account Name | Object Name | Object Type | Event Sensitive | Event Status | External Ip | Datasource | Country | Department | User Agent | Exposure Level | Permissions Before Change | Permissions After Change | Changed Permission Flag | Resource Owner | Connection Type | Client Ip | Client | Device Trust Type | Source Nat Address | Source Port | Source Zone | Destination Device Name | Device Managed Status | Source Nat Port | Logon Type | Account Type | Sam Account Name | Operating System | Malicious External Ip | Externalip Reputation | Inheritance Paths';
 
           switch (type) {
             case 'excel':
-              this.reportService.downloadExcel(exportData, filename, title);
+              this.reportService.downloadExcel(
+                exportData,
+                filename,
+                title,
+                desc,
+                filter,
+              );
               break;
             case 'csv':
-              this.reportService.downloadCSV(exportData, filename, title);
+              this.reportService.downloadCSV(
+                exportData,
+                filename,
+                title,
+                desc,
+                filter,
+              );
               break;
             case 'pdf':
-              this.reportService.downloadPDF(exportData, filename, title, {
-                mode: 'wide',
-              });
+              this.reportService.downloadPDF(
+                exportData,
+                filename,
+                title,
+                {
+                  mode: 'wide',
+                },
+                desc,
+                filter,
+              );
               break;
           }
         },
