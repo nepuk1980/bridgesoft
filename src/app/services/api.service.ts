@@ -209,16 +209,18 @@ export class ApiService {
 
   // ✅ Request Access workflow
   getAllFilesAndFoldersDetails(
-    vaultId: number,
     searchFileOrFolderName: string = '',
     category: string = '',
     filter: string = '',
+    page: number = 0,
+    size: number = 10,
   ): Observable<RequestAccessWorkflowInterface> {
     let params = new HttpParams()
-      .set('vaultId', vaultId)
       .set('searchFileOrFolderName', searchFileOrFolderName)
       .set('category', category)
-      .set('filter', filter);
+      .set('filter', filter)
+      .set('page', page)
+      .set('size', size);
 
     return this.http.get<RequestAccessWorkflowInterface>(
       `${environment.apiUrl}/getallfilesandfoldersdetails`,

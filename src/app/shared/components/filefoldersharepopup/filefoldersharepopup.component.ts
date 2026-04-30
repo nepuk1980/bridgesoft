@@ -85,6 +85,8 @@ export class FilefoldersharepopupComponent implements AfterViewInit, OnInit {
 
   isLoading = false;
 
+  isDownloading: boolean = false; // 1. Add this property
+
   get dataSourceLength() {
     return this.dataSource.data.length || 0;
   }
@@ -266,6 +268,7 @@ export class FilefoldersharepopupComponent implements AfterViewInit, OnInit {
 
   private fetchAllDataAndExport(type: 'excel' | 'csv' | 'pdf') {
     const apiFn = this.getApiMethod(this.data.apiMethod);
+    this.isDownloading = true; // 2. Start Loader
 
     if (!apiFn) {
       console.error(`Invalid API method: ${String(this.data.apiMethod)}`);
@@ -280,6 +283,7 @@ export class FilefoldersharepopupComponent implements AfterViewInit, OnInit {
     apiFn(this.data.ruleCategory, 0, FULL_FETCH_SIZE).subscribe({
       next: (res) => {
         this.isLoading = false;
+        this.isDownloading = false; // 3. Stop Loader on success
 
         const items = res?.content ?? [];
         const isFile = this.data?.fileicon;
@@ -352,6 +356,7 @@ export class FilefoldersharepopupComponent implements AfterViewInit, OnInit {
       error: (err) => {
         console.error('Export API error:', err);
         this.isLoading = false;
+        this.isDownloading = false; // 3. Stop Loader on success
       },
     });
   }

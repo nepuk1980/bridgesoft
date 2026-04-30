@@ -76,6 +76,7 @@ export class FilefolderpopupComponent implements AfterViewInit, OnInit {
   pages: number[] = [];
 
   isLoading = false;
+  isDownloading: boolean = false; // 1. Add this property
 
   get dataSourceLength() {
     return this.dataSource.data.length || 0;
@@ -258,6 +259,7 @@ export class FilefolderpopupComponent implements AfterViewInit, OnInit {
 
   private fetchAllDataAndExport(type: 'excel' | 'csv' | 'pdf') {
     this.isLoading = true;
+    this.isDownloading = true; // 2. Start Loader
 
     // ✅ ALWAYS fetch full dataset (ignore pagination + search)
     this.api
@@ -269,6 +271,7 @@ export class FilefolderpopupComponent implements AfterViewInit, OnInit {
       .subscribe({
         next: (res: any) => {
           this.isLoading = false;
+          this.isDownloading = false; // 3. Stop Loader on success
 
           const items = res?.content ?? [];
           const isFile = this.data?.fileicon;
@@ -341,6 +344,7 @@ export class FilefolderpopupComponent implements AfterViewInit, OnInit {
         error: (err) => {
           console.error('Export API error:', err);
           this.isLoading = false;
+          this.isDownloading = false; // 4. Stop Loader on error
         },
       });
   }

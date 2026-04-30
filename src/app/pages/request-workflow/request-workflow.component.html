@@ -18,8 +18,8 @@
         <img src="/svg/search.svg" class="search-icon" />
       </div>
 
-      <!-- 🔢 Count -->
-      <p>Showing {{ showingCount }} of {{ totalCount }}</p>
+      <!-- 🔢 Count: totalElements represents the total count from the server filter -->
+      <p>Showing {{ showingCount }} of {{ totalElements }}</p>
 
       <div class="filter-grp-div">
         <div class="custom-filter no-icon">
@@ -30,24 +30,25 @@
               panelClass="custom-filter-panel"
             >
               <mat-option value="download">Download</mat-option>
-              <mat-option value="pdf" (click)="downloadPDF()"
-                ><div class="icontexttd">
-                  <img src="/svg/pdf.svg" class="icons" alt="pdf" /> PDF
-                </div></mat-option
-              >
-              <mat-option value="excel" (click)="downloadExcel()"
-                ><div class="icontexttd">
-                  <img src="/svg/excel.svg" class="icons" alt="excel" /> Excel
-                </div></mat-option
-              >
-              <mat-option value="csv" (click)="downloadCSV()"
-                ><div class="icontexttd">
-                  <img src="/svg/csv.svg" class="icons" alt="csv" /> CSV
-                </div></mat-option
-              >
+              <mat-option value="pdf" (click)="downloadPDF()">
+                <div class="icontexttd">
+                  <img src="/svg/pdf.svg" class="icons" /> PDF
+                </div>
+              </mat-option>
+              <mat-option value="excel" (click)="downloadExcel()">
+                <div class="icontexttd">
+                  <img src="/svg/excel.svg" class="icons" /> Excel
+                </div>
+              </mat-option>
+              <mat-option value="csv" (click)="downloadCSV()">
+                <div class="icontexttd">
+                  <img src="/svg/csv.svg" class="icons" /> CSV
+                </div>
+              </mat-option>
             </mat-select>
           </mat-form-field>
         </div>
+
         <!-- Category Filter -->
         <div class="custom-filter no-icon">
           <mat-form-field>
@@ -65,7 +66,7 @@
           </mat-form-field>
         </div>
 
-        <!-- Type Filter -->
+        <!-- Criticality Filter (Criticality is handled locally in this specific UI) -->
         <div class="custom-filter">
           <mat-form-field>
             <mat-label>Filter</mat-label>
@@ -98,7 +99,6 @@
                 [checked]="isAllSelected()"
                 [indeterminate]="isIndeterminate()"
               ></mat-checkbox>
-
               <span>Folder / File Name</span>
             </div>
           </th>
@@ -111,8 +111,10 @@
                 [checked]="selection.has(row)"
               ></mat-checkbox>
 
-              <img src="/svg/folder.svg" *ngIf="row.sourceType === 'Folder'" />
-              <img src="/svg/file.svg" *ngIf="row.sourceType === 'File'" />
+              <!-- ✅ UPDATED: row.itemType (camelCase) to match your interface -->
+              <img src="/svg/folder.svg" *ngIf="row.itemType === 'Folder'" />
+              <img src="/svg/file.svg" *ngIf="row.itemType === 'File'" />
+
               <span>
                 <a routerLink="/review-access/sod-detail" class="table-link">
                   {{ row.folderFileName }}
@@ -142,11 +144,10 @@
         <ng-container matColumnDef="criticality">
           <th mat-header-cell *matHeaderCellDef>Criticality</th>
           <td mat-cell *matCellDef="let row">
-            <div class="form-control">
+            <div class="form-control" (click)="$event.stopPropagation()">
               <mat-radio-group
                 class="customRadio"
                 [(ngModel)]="row.criticality"
-                (change)="onCriticalityChange(row)"
               >
                 <mat-radio-button value="Open">Open</mat-radio-button>
                 <mat-radio-button value="Important">Important</mat-radio-button>
@@ -155,17 +156,13 @@
           </td>
         </ng-container>
 
-        <!-- HEADER -->
         <tr mat-header-row *matHeaderRowDef="displayedColumnsImportant"></tr>
-
-        <!-- ROW -->
         <tr
           mat-row
           *matRowDef="let row; columns: displayedColumnsImportant"
           (click)="toggleRow(row)"
         ></tr>
 
-        <!-- NO DATA -->
         <tr class="mat-row" *matNoDataRow>
           <td
             class="mat-cell"
@@ -180,17 +177,15 @@
   </ng-container>
 </div>
 
-<!-- ✅ Custom Pagination -->
+<!-- ✅ Pagination -->
 <div class="custom-pagination">
-  <span class="count">
-    Showing {{ dataSourceImportant.length }} of {{ totalElements }}
-  </span>
+  <span class="count"> Showing {{ showingCount }} of {{ totalElements }} </span>
 
   <div class="pagination-buttons">
     <button (click)="firstPage()" [disabled]="pageIndex === 0">«</button>
     <button (click)="prevPage()" [disabled]="pageIndex === 0">‹</button>
 
-    <span *ngIf="pages[0] > 1">...</span>
+    <span *ngIf="pages.length && pages[0] > 1">...</span>
 
     <button
       *ngFor="let p of pages"
@@ -200,12 +195,14 @@
       {{ p }}
     </button>
 
-    <span *ngIf="pages[pages.length - 1] < totalPages">...</span>
+    <span *ngIf="pages.length && pages[pages.length - 1] < totalPages"
+      >...</span
+    >
 
-    <button (click)="nextPage()" [disabled]="pageIndex === totalPages - 1">
+    <button (click)="nextPage()" [disabled]="pageIndex >= totalPages - 1">
       ›
     </button>
-    <button (click)="lastPage()" [disabled]="pageIndex === totalPages - 1">
+    <button (click)="lastPage()" [disabled]="pageIndex >= totalPages - 1">
       »
     </button>
   </div>
