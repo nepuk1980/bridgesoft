@@ -740,27 +740,39 @@ export class DashboardComponent {
     return this.fileSystemData.length ? this.fileSystemData[0] : null;
   }
 
-  openDialog(card: any, ruleCategory: string) {
-    this.api
-      .getFilesystemAccessPermissionDetails(ruleCategory, 0, 1000000)
-      .subscribe({
-        next: (res: any) => {
-          const folders = res?.content ?? res?.data ?? res ?? [];
+  // openDialog(card: any, ruleCategory: string) {
+  //   this.api
+  //     .getFilesystemAccessPermissionDetails(ruleCategory, 0, 2)
+  //     .subscribe({
+  //       next: (res: any) => {
+  //         const folders = res?.content ?? res?.data ?? res ?? [];
 
-          this.dialog.open(FilefolderpopupComponent, {
-            width: '75rem',
-            minWidth: '75rem',
-            maxWidth: '100%', // ✅ added
-            data: {
-              ...card,
-              folders,
-            },
-          });
-        },
-        error: (err) => {
-          console.error(err);
-        },
-      });
+  //         this.dialog.open(FilefolderpopupComponent, {
+  //           width: '75rem',
+  //           minWidth: '75rem',
+  //           maxWidth: '100%', // ✅ added
+  //           data: {
+  //             ...card,
+  //             folders,
+  //           },
+  //         });
+  //       },
+  //       error: (err) => {
+  //         console.error(err);
+  //       },
+  //     });
+  // }
+
+  openDialog(card: any, ruleCategory: string) {
+    this.dialog.open(FilefolderpopupComponent, {
+      width: '75rem',
+      minWidth: '75rem',
+      maxWidth: '100%',
+      data: {
+        ...card,
+        ruleCategory, // ✅ IMPORTANT: pass this
+      },
+    });
   }
 
   reportData = [

@@ -31,44 +31,104 @@ export class ApiService {
     );
   }
   // windows file
-  getfilesharefiledetails(): Observable<FileSystemResponseInterface> {
+  getfilesharefiledetails(
+    ruleCategory: string,
+    page: number = 0,
+    size: number = 10,
+  ): Observable<FileSystemResponseInterface> {
+    const params = new HttpParams()
+      .set('ruleCategory', ruleCategory)
+      .set('page', page)
+      .set('size', size);
+
     return this.http.get<FileSystemResponseInterface>(
       `${environment.apiUrl}/getfilesharefiledetails`,
+      { params },
     );
   }
 
   // windows folder
-  getfilesharefolderdetails(): Observable<FileSystemResponseInterface> {
+  getfilesharefolderdetails(
+    ruleCategory: string,
+    page: number = 0,
+    size: number = 10,
+  ): Observable<FileSystemResponseInterface> {
+    const params = new HttpParams()
+      .set('ruleCategory', ruleCategory)
+      .set('page', page)
+      .set('size', size);
+
     return this.http.get<FileSystemResponseInterface>(
       `${environment.apiUrl}/getfilesharefolderdetails`,
+      { params },
     );
   }
 
   // windows total
-  getfilesharetotaldetails(): Observable<FileSystemResponseInterface> {
+  getfilesharetotaldetails(
+    ruleCategory: string,
+    page: number = 0,
+    size: number = 10,
+  ): Observable<FileSystemResponseInterface> {
+    const params = new HttpParams()
+      .set('ruleCategory', ruleCategory)
+      .set('page', page)
+      .set('size', size);
+
     return this.http.get<FileSystemResponseInterface>(
       `${environment.apiUrl}/getfilesharetotaldetails`,
+      { params },
     );
   }
 
   // share point file
-  getsharepointfiledetails(): Observable<FileSystemResponseInterface> {
+  getsharepointfiledetails(
+    ruleCategory: string,
+    page: number = 0,
+    size: number = 10,
+  ): Observable<FileSystemResponseInterface> {
+    const params = new HttpParams()
+      .set('ruleCategory', ruleCategory)
+      .set('page', page)
+      .set('size', size);
+
     return this.http.get<FileSystemResponseInterface>(
       `${environment.apiUrl}/getsharepointfiledetails`,
+      { params },
     );
   }
 
   // share point folder
-  getsharepointfolderdetails(): Observable<FileSystemResponseInterface> {
+  getsharepointfolderdetails(
+    ruleCategory: string,
+    page: number = 0,
+    size: number = 10,
+  ): Observable<FileSystemResponseInterface> {
+    const params = new HttpParams()
+      .set('ruleCategory', ruleCategory)
+      .set('page', page)
+      .set('size', size);
+
     return this.http.get<FileSystemResponseInterface>(
       `${environment.apiUrl}/getsharepointfolderdetails`,
+      { params },
     );
   }
 
   // share point total
-  getsharepointtotaldetails(): Observable<FileSystemResponseInterface> {
+  getsharepointtotaldetails(
+    ruleCategory: string,
+    page: number = 0,
+    size: number = 10,
+  ): Observable<FileSystemResponseInterface> {
+    const params = new HttpParams()
+      .set('ruleCategory', ruleCategory)
+      .set('page', page)
+      .set('size', size);
+
     return this.http.get<FileSystemResponseInterface>(
       `${environment.apiUrl}/getsharepointtotaldetails`,
+      { params },
     );
   }
 

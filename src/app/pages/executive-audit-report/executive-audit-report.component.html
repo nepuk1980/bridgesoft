@@ -19,7 +19,7 @@
       </div>
       <p>
         Showing results {{ dataSource.data.length }} of
-        {{ originalData.length }}
+        {{ displayTotalElements }}
       </p>
       <!-- Filters -->
       <div class="filter-grp-div">
@@ -133,7 +133,7 @@
         <button (click)="firstPage()" [disabled]="pageIndex === 0">«</button>
         <button (click)="prevPage()" [disabled]="pageIndex === 0">‹</button>
 
-        <span *ngIf="pages[0] > 1">...</span>
+        <span *ngIf="pages.length && pages[0] > 1">...</span>
 
         <button
           *ngFor="let p of pages"
@@ -144,12 +144,14 @@
           {{ p }}
         </button>
 
-        <span *ngIf="pages[pages.length - 1] < totalPages">...</span>
+        <span *ngIf="pages.length && pages[pages.length - 1] < totalPages"
+          >...</span
+        >
 
-        <button (click)="nextPage()" [disabled]="pageIndex === totalPages - 1">
+        <button (click)="nextPage()" [disabled]="pageIndex >= totalPages - 1">
           ›
         </button>
-        <button (click)="lastPage()" [disabled]="pageIndex === totalPages - 1">
+        <button (click)="lastPage()" [disabled]="pageIndex >= totalPages - 1">
           »
         </button>
       </div>

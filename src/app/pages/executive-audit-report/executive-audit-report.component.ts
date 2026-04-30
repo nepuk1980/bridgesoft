@@ -7,7 +7,6 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule, MatTableDataSource } from '@angular/material/table';
 import { MatSort, MatSortModule } from '@angular/material/sort';
-import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 import { InnerheaderComponent } from '../../shared/components/innerheader/innerheader.component';
@@ -46,7 +45,6 @@ type ExecutiveAuditItem = ExecutiveAuditReportsInterface['content'][number];
     MatSelectModule,
     MatTableModule,
     MatSortModule,
-    MatPaginatorModule,
     NgxSkeletonLoaderModule,
   ],
   templateUrl: './executive-audit-report.component.html',
@@ -70,44 +68,36 @@ export class ExecutiveAuditReportComponent implements OnInit, AfterViewInit {
   ];
 
   dataSource = new MatTableDataSource<AuditEvent>([]);
-  originalData: AuditEvent[] = [];
 
   // ================= UI STATE =================
   searchText = '';
   selectedFilter = '';
-  selectedDownload: '' | 'pdf' | 'excel' | 'csv' = '';
   filters: Filter[] = [];
+  selectedDownload = 'download';
 
   // ================= PAGINATION =================
   pageSize = 10;
   pageIndex = 0;
-  totalPages = 0;
   totalElements = 0;
+
+  totalPages = 0;
   pages: number[] = [];
 
   // ================= VIEW =================
   @ViewChild(MatSort) sort!: MatSort;
 
-  // ✅ FIX: Setter-based paginator (handles *ngIf / delayed render)
-  paginator!: MatPaginator;
-  @ViewChild(MatPaginator)
-  set matPaginator(paginator: MatPaginator) {
-    if (paginator) {
-      this.paginator = paginator;
-
-      paginator.page.subscribe((event) => {
-        this.loadAuditData(event.pageIndex, event.pageSize);
-      });
-    }
-  }
-
   // ================= LIFECYCLE =================
   ngOnInit(): void {
     this.loadAuditData();
+    this.loadFilters();
   }
 
   ngAfterViewInit(): void {
     this.dataSource.sort = this.sort;
+  }
+
+  get displayTotalElements(): number {
+    return this.totalElements === 0 ? 1 : this.totalElements;
   }
 
   // ================= MAPPER =================
@@ -123,14 +113,53 @@ export class ExecutiveAuditReportComponent implements OnInit, AfterViewInit {
     };
   }
 
-  // ================= PAGINATION HELPER =================
-  private updatePagination(): void {
-    this.totalPages = Math.ceil(this.totalElements / this.pageSize);
+  // ================= API LOAD =================
+  loadAuditData(page: number = 0, size: number = this.pageSize): void {
+    this.api
+      .getexecutiveauditreport(this.searchText, this.selectedFilter, page, size)
+      .subscribe({
+        next: (res: ExecutiveAuditReportsInterface) => {
+          const mappedData = res.content.map((item) =>
+            this.mapToAuditEvent(item),
+          );
 
-    // ✅ FORCE minimum 1 page
-    if (this.totalPages === 0) {
-      this.totalPages = 1;
-    }
+          this.dataSource.data = mappedData;
+
+          this.totalElements = res.totalElements;
+          this.pageSize = size;
+          this.pageIndex = page;
+
+          this.updatePagination();
+        },
+        error: (err) => console.error('API Error:', err),
+      });
+  }
+
+  // ================= FILTER =================
+  private loadFilters(): void {
+    this.api.getexecutiveauditreport('', '', 0, 1000).subscribe({
+      next: (res: ExecutiveAuditReportsInterface) => {
+        const uniqueEventTypes = Array.from(
+          new Set(res.content.map((x) => x.eventType)),
+        );
+
+        this.filters = uniqueEventTypes.map((v) => ({
+          value: v,
+          viewValue: v,
+        }));
+      },
+      error: (err) => console.error('Filter API Error:', err),
+    });
+  }
+
+  applyFilters(): void {
+    this.pageIndex = 0;
+    this.loadAuditData(0, this.pageSize);
+  }
+
+  // ================= PAGINATION =================
+  private updatePagination(): void {
+    this.totalPages = Math.ceil(this.totalElements / this.pageSize) || 1;
 
     const visible = 3;
 
@@ -147,111 +176,6 @@ export class ExecutiveAuditReportComponent implements OnInit, AfterViewInit {
     }
   }
 
-  // ================= API LOAD =================
-  loadAuditData(page: number = 0, size: number = this.pageSize): void {
-    this.api
-      .getexecutiveauditreport(this.searchText, this.selectedFilter, page, size)
-      .subscribe({
-        next: (res: ExecutiveAuditReportsInterface) => {
-          const mappedData = res.content.map((item) =>
-            this.mapToAuditEvent(item),
-          );
-
-          this.originalData = mappedData;
-          this.dataSource.data = mappedData;
-
-          // ✅ Only set filters once
-          if (this.filters.length === 0) {
-            const uniqueEventTypes = Array.from(
-              new Set(mappedData.map((x) => x.eventType)),
-            );
-
-            this.filters = uniqueEventTypes.map((v) => ({
-              value: v,
-              viewValue: v,
-            }));
-          }
-
-          // Pagination
-          this.totalElements = res.totalElements;
-          this.pageSize = size;
-          this.pageIndex = page;
-
-          this.updatePagination();
-        },
-        error: (err) => console.error('API Error:', err),
-      });
-  }
-
-  // ================= FILTER =================
-  applyFilters(filterValue?: string): void {
-    this.pageIndex = 0;
-    this.loadAuditData(this.pageIndex, this.pageSize);
-  }
-
-  // ================= EXPORT =================
-  private getFormattedDateTime(): string {
-    const now = new Date();
-
-    const date = now.toLocaleDateString('en-GB').replace(/\//g, '-');
-
-    const time = now
-      .toLocaleTimeString('en-GB', {
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-      })
-      .replace(/:/g, '-');
-
-    return `${date}_${time}`;
-  }
-
-  private getExportData() {
-    return this.originalData.map((item) => ({
-      'Employee Name': item.employeeName,
-      'Event Type': item.eventType,
-      'Data Source': item.dataSource,
-      'Object Name': item.objectName,
-      'Resource Full Path': item.resourceFullPath,
-      'Resource Owner': item.resourceOwner,
-      'Event Time': item.eventTime,
-    }));
-  }
-
-  downloadExcel() {
-    const data = this.getExportData();
-    const timestamp = this.getFormattedDateTime();
-
-    this.reportService.downloadExcel(
-      data,
-      `executive-audit-report_${timestamp}`,
-      'Executive Audit Report',
-    );
-  }
-
-  downloadCSV() {
-    const data = this.getExportData();
-    const timestamp = this.getFormattedDateTime();
-
-    this.reportService.downloadCSV(
-      data,
-      `executive-audit-report_${timestamp}`,
-      'Executive Audit Report',
-    );
-  }
-
-  downloadPDF() {
-    const data = this.getExportData();
-    const timestamp = this.getFormattedDateTime();
-
-    this.reportService.downloadPDF(
-      data,
-      `executive-audit-report_${timestamp}`,
-      'Executive Audit Report',
-    );
-  }
-
-  // ================= PAGINATION ACTIONS =================
   goToPage(p: number) {
     this.pageIndex = p - 1;
     this.loadAuditData(this.pageIndex, this.pageSize);
@@ -273,11 +197,129 @@ export class ExecutiveAuditReportComponent implements OnInit, AfterViewInit {
 
   firstPage() {
     this.pageIndex = 0;
-    this.loadAuditData(this.pageIndex, this.pageSize);
+    this.loadAuditData(0, this.pageSize);
   }
 
   lastPage() {
     this.pageIndex = this.totalPages - 1;
     this.loadAuditData(this.pageIndex, this.pageSize);
+  }
+
+  // ================= EXPORT =================
+  private getFormattedDateTime(): string {
+    const now = new Date();
+
+    const date = now.toLocaleDateString('en-GB').replace(/\//g, '-');
+
+    const time = now
+      .toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      })
+      .replace(/:/g, '-');
+
+    return `${date}_${time}`;
+  }
+  isLoading = false;
+  private fetchAllDataAndExport(type: 'excel' | 'csv' | 'pdf'): void {
+    this.isLoading = true;
+
+    this.api
+      .getexecutiveauditreport(
+        this.searchText,
+        this.selectedFilter,
+        0,
+        this.totalElements || 10000,
+      )
+      .subscribe({
+        next: (res: ExecutiveAuditReportsInterface) => {
+          this.isLoading = false;
+
+          const items = res?.content ?? [];
+
+          // ✅ No trimming — export FULL dataset
+          const exportData = items.map((item) => ({
+            Id: item.id ?? '-',
+            'Source System': item.sourceSystem ?? '-',
+            'Event Id': item.eventId ?? '-',
+            'User Email': item.userEmail ?? '-',
+            'User Display Name': item.userDisplayname ?? '-',
+            'Event Type': item.eventType ?? '-',
+            'Device Name': item.deviceName ?? '-',
+            'Event Time': item.eventTime ?? '-',
+            'Datasource Type': item.datasourceType ?? '-',
+            'Event Operation': item.eventOperation ?? '-',
+            'Event Description': item.eventDescription ?? '-',
+            'Event Path': item.eventPath ?? '-',
+            'Account Name': item.accountName ?? '-',
+            'Object Name': item.objectName ?? '-',
+            'Object Type': item.objectType ?? '-',
+            'Event Sensitive': item.eventSensitive ?? false,
+            'Event Status': item.eventStatus ?? '-',
+            'External Ip': item.externalIp ?? '-',
+            Datasource: item.datasource ?? '-',
+            Country: item.country ?? '-',
+            Department: item.department ?? '-',
+            'User Agent': item.useragent ?? '-',
+            'Exposure Level': item.exposureLevel ?? '-',
+            'Permissions Before Change': item.permissionsBeforeChange ?? '-',
+            'Permissions After Change': item.permissionsAfterChange ?? '-',
+            'Changed Permission Flag': item.changedPermissionFlag ?? false,
+            'Resource Owner': item.resourceOwner ?? '-',
+            'Connection Type': item.connectionType ?? '-',
+            'Client Ip': item.clientIp ?? '-',
+            Client: item.client ?? '-',
+            'Device Trust Type': item.deviceTrustType ?? '-',
+            'Source Nat Address': item.sourceNatAddress ?? '-',
+            'Source Port': item.sourcePort ?? '-',
+            'Source Zone': item.sourceZone ?? '-',
+            'Destination Device Name': item.destinationDevicename ?? '-',
+            'Device Managed Status': item.deviceManagedStatus ?? false,
+            'Source Nat Port': item.sourceNatPort ?? '-',
+            'Logon Type': item.logonType ?? '-',
+            'Account Type': item.accountType ?? '-',
+            'Sam Account Name': item.samAccountname ?? '-',
+            'Operating System': item.operatingSystem ?? '-',
+            'Malicious External Ip': item.maliciousExternalIp ?? false,
+            'Externalip Reputation': item.externalipReputation ?? '-',
+            'Inheritance Paths': item.inheritancePaths ?? '-',
+          }));
+
+          const timestamp = this.getFormattedDateTime();
+          const filename = `executive-audit-report_${timestamp}`;
+          const title = 'Executive Audit Report';
+
+          switch (type) {
+            case 'excel':
+              this.reportService.downloadExcel(exportData, filename, title);
+              break;
+            case 'csv':
+              this.reportService.downloadCSV(exportData, filename, title);
+              break;
+            case 'pdf':
+              this.reportService.downloadPDF(exportData, filename, title, {
+                mode: 'wide',
+              });
+              break;
+          }
+        },
+        error: (err) => {
+          console.error('Export API Error:', err);
+          this.isLoading = false;
+        },
+      });
+  }
+
+  downloadExcel() {
+    this.fetchAllDataAndExport('excel');
+  }
+
+  downloadCSV() {
+    this.fetchAllDataAndExport('csv');
+  }
+
+  downloadPDF() {
+    this.fetchAllDataAndExport('pdf');
   }
 }

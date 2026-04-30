@@ -3,7 +3,7 @@ import * as XLSX from 'xlsx-js-style';
 import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-
+type PdfMode = 'default' | 'wide';
 @Injectable({
   providedIn: 'root',
 })
@@ -129,77 +129,76 @@ export class ReportService {
 
     return `${date} ${time}`;
   }
-  downloadPDF(data: any[], fileName: string, title?: string) {
-    const doc = new jsPDF('l', 'pt', 'a4'); // landscape for wide table
 
-    const columns = Object.keys(data[0]);
+  downloadPDF(
+    data: any[],
+    fileName: string,
+    title?: string,
+    options?: { mode: PdfMode },
+  ) {
+    const isWide = options?.mode === 'wide';
 
+    const doc = new jsPDF('l', 'pt', isWide ? 'a3' : 'a4');
+
+    const columns = Object.keys(data[0] || {});
     const rows = data.map((obj) =>
       Object.values(obj).map((val) => String(val ?? '-')),
     );
-    const pageWidth = doc.internal.pageSize.getWidth();
+
     autoTable(doc, {
       head: [columns],
       body: rows,
 
       startY: 55,
+
       margin: {
         top: 55,
         left: 40,
         right: 40,
         bottom: 30,
       },
-      tableWidth: pageWidth - 80,
-      theme: 'plain', // ❗ remove grid lines
 
-      // ✅ Header styling (like light gray UI)
-      headStyles: {
-        fillColor: [230, 230, 230], // light gray
-        textColor: 20,
-        fontStyle: 'bold',
-        fontSize: 10,
-      },
+      theme: 'plain',
 
-      // ✅ Body styling
-      bodyStyles: {
-        fontSize: 10,
-        textColor: 50,
-      },
+      // 🔥 IMPORTANT FIX FOR 100 COLUMNS
+      horizontalPageBreak: isWide, // only for wide reports
+      horizontalPageBreakRepeat: 0,
 
-      // ✅ Row spacing effect (fake "cards")
+      // ❌ DO NOT FORCE WIDTH (this was causing compression)
+      // tableWidth removed intentionally
+
       styles: {
-        cellPadding: 6,
-        lineWidth: 0,
-        cellWidth: 'auto',
+        cellPadding: isWide ? 2 : 6,
+        fontSize: isWide ? 5 : 10,
         overflow: 'linebreak',
         valign: 'top',
       },
 
-      // columnStyles: {
-      //   0: { cellWidth: 120 }, // File/Folder Names
-      //   1: { cellWidth: 70 }, // Categories
-      //   2: { cellWidth: 300 }, // AD Group (important)
-      //   3: { cellWidth: 90 }, // User
-      //   4: { cellWidth: 60 }, // Duration
-      //   5: { cellWidth: 100 }, // Created On
-      // },
+      headStyles: {
+        fillColor: [230, 230, 230],
+        textColor: 20,
+        fontStyle: 'bold',
+        fontSize: isWide ? 6 : 10,
+      },
 
-      // ✅ Alternate row shading (like UI blocks)
+      bodyStyles: {
+        fontSize: isWide ? 5 : 10,
+        textColor: 50,
+      },
+
       alternateRowStyles: {
         fillColor: [245, 245, 245],
       },
 
-      // ❗ Remove borders completely
       tableLineWidth: 0,
 
-      // ✅ Add spacing between rows (important!)
       didDrawCell: (dataArg) => {
         if (dataArg.section === 'body') {
           const { doc } = dataArg;
-          doc.setDrawColor(255, 255, 255);
-          doc.setLineWidth(4);
 
-          // draw white line below each row → creates gap effect
+          doc.setDrawColor(255, 255, 255);
+          doc.setLineWidth(3);
+
           doc.line(
             dataArg.cell.x,
             dataArg.cell.y + dataArg.cell.height,
@@ -209,19 +208,18 @@ export class ReportService {
         }
       },
 
-      // ✅ Title
-      didDrawPage: (dataArg) => {
+      didDrawPage: () => {
         const pageSize = doc.internal.pageSize;
         const pageWidth = pageSize.getWidth();
         const pageHeight = pageSize.getHeight();
 
-        // ✅ Title (top)
+        // Title
         doc.setFontSize(18);
         doc.setFont('helvetica', 'bold');
         doc.setTextColor(17, 118, 189);
         doc.text(title || 'Reports', 40, 40);
 
-        // ✅ Footer (bottom-right)
+        // Footer
         const footerText = `Generated on: ${this.getFormattedDateTime()}`;
 
         doc.setFontSize(9);
