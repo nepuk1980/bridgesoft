@@ -200,7 +200,7 @@ export class ReportService {
     data: any[],
     fileName: string,
     title?: string,
-    options?: { mode: PdfMode },
+    options?: { mode?: PdfMode },
     desc?: string,
     filter?: string,
   ) {
@@ -216,8 +216,13 @@ export class ReportService {
     autoTable(doc, {
       head: [columns],
       body: rows,
-      startY: 100, // Increased slightly to give the header breathing room
-      margin: { top: 10, left: 10, right: 10, bottom: 30 },
+      startY: isWide ? 80 : 50,
+      margin: {
+        top: isWide ? 80 : 50,
+        left: 10,
+        right: 10,
+        bottom: 30,
+      },
       theme: 'plain',
       horizontalPageBreakRepeat: 0,
 
@@ -246,7 +251,7 @@ export class ReportService {
         const pageSize = doc.internal.pageSize;
         const pageWidth = pageSize.getWidth();
         const left = 10;
-        let y = 25;
+        let y = 20;
 
         // --- 1. TITLE ---
         doc.setFontSize(16);
@@ -284,18 +289,24 @@ export class ReportService {
           y += lineCount * (fontSize + 4);
         };
 
-        // --- 2. DESCRIPTION ---
-        drawMetadataRow('Description:', desc || 'No description provided.', 8);
+        if (isWide) {
+          // --- 2. DESCRIPTION ---
+          drawMetadataRow(
+            'Description:',
+            desc || 'No description provided.',
+            8,
+          );
 
-        // --- 3. CREATED DATE ---
-        drawMetadataRow(
-          'File Creation Date (UTC):',
-          this.getFormattedDateTime(),
-          7,
-        );
+          // --- 3. CREATED DATE ---
+          drawMetadataRow(
+            'File Creation Date (UTC):',
+            this.getFormattedDateTime(),
+            7,
+          );
 
-        // --- 4. FILTERS ---
-        drawMetadataRow('Filters:', filter || 'None', 7);
+          // --- 4. FILTERS ---
+          drawMetadataRow('Filters:', filter || 'None', 7);
+        }
 
         // --- FOOTER ---
         if (!isWide) {

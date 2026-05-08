@@ -10,10 +10,10 @@
       <!-- 🔍 Search -->
       <div class="search-box">
         <input
-          #searchInput
           type="text"
           placeholder="Search"
-          (input)="onSearch(searchInput.value)"
+          [ngModel]="searchText"
+          (ngModelChange)="onSearch($event)"
         />
         <img src="/svg/search.svg" class="search-icon" />
       </div>
@@ -85,10 +85,14 @@
     </div>
 
     <div class="solid-table table-wrapper">
+      <div class="spinner" *ngIf="isLoading">
+        <mat-spinner></mat-spinner>
+      </div>
       <table
         mat-table
         [dataSource]="dataSourceImportant"
         class="mat-elevation-z2"
+        *ngIf="!isLoading"
       >
         <!-- Folder/File Name -->
         <ng-container matColumnDef="folderFileName">
@@ -137,6 +141,54 @@
           <th mat-header-cell *matHeaderCellDef>Category</th>
           <td mat-cell *matCellDef="let row">
             {{ row.category }}
+          </td>
+        </ng-container>
+
+        <!-- ACCESS -->
+        <ng-container matColumnDef="access">
+          <th mat-header-cell *matHeaderCellDef>Access Level</th>
+          <td mat-cell *matCellDef="let row">
+            <mat-checkbox
+              [(ngModel)]="row.access.fullControl"
+              (click)="$event.stopPropagation()"
+            >
+              Full Control
+            </mat-checkbox>
+
+            <mat-checkbox
+              [(ngModel)]="row.access.modify"
+              (click)="$event.stopPropagation()"
+            >
+              Modify
+            </mat-checkbox>
+
+            <mat-checkbox
+              [(ngModel)]="row.access.readExecute"
+              (click)="$event.stopPropagation()"
+            >
+              Read & Execute
+            </mat-checkbox>
+
+            <mat-checkbox
+              [(ngModel)]="row.access.listFolder"
+              (click)="$event.stopPropagation()"
+            >
+              List Folder Content
+            </mat-checkbox>
+
+            <mat-checkbox
+              [(ngModel)]="row.access.read"
+              (click)="$event.stopPropagation()"
+            >
+              Read
+            </mat-checkbox>
+
+            <mat-checkbox
+              [(ngModel)]="row.access.write"
+              (click)="$event.stopPropagation()"
+            >
+              Write
+            </mat-checkbox>
           </td>
         </ng-container>
 

@@ -12,7 +12,12 @@
   <div class="popup-table">
     <div class="popup-search-filter-div">
       <div class="search-box">
-        <input type="text" placeholder="Search" (keyup)="applyFilter($event)" />
+        <input
+          type="text"
+          placeholder="Search"
+          (keyup)="applyFilter()"
+          [(ngModel)]="searchFileOrFolderName"
+        />
         <img src="/svg/search.svg" class="search-icon" />
       </div>
       <div class="filter-grp-div">

@@ -343,3 +343,84 @@ export interface ExecutiveAuditReportsInterface {
   first: boolean;
   empty: boolean;
 }
+
+export interface AuditResponseInterface {
+  content: {
+    id: number;
+    sourceSystem: string;
+    eventId: string;
+    userEmail: string;
+    userDisplayname: string;
+    eventType: string;
+    deviceName: string;
+    eventTime: string;
+    datasourceType: string;
+    eventOperation: string;
+    eventDescription: string;
+    eventPath: string;
+    accountName: string;
+    objectName: string;
+    objectType: string;
+    eventSensitive: boolean;
+    eventStatus: string;
+    externalIp: string;
+    datasource: string;
+    country: string;
+    department: string;
+    useragent: string;
+    exposureLevel: string;
+    permissionsBeforeChange: string;
+    permissionsAfterChange: string;
+    changedPermissionFlag: boolean;
+    resourceOwner: string;
+    targetUserEmail: string;
+    targetUserDisplayName: string;
+    targetOneDrivePathKey: string;
+    connectionType: string;
+    clientIp: string;
+    client: string;
+    deviceTrustType: string;
+    sourceNatAddress: string;
+    sourcePort: string;
+    sourceZone: string;
+    destinationDevicename: string;
+    deviceManagedStatus: boolean;
+    sourceNatPort: string;
+    logonType: string;
+    accountType: string;
+    samAccountname: string;
+    operatingSystem: string;
+    maliciousExternalIp: boolean;
+    externalipReputation: string;
+    inheritancePaths: string;
+  }[];
+
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+
+  last: boolean;
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  number: number;
+
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+
+  first: boolean;
+  numberOfElements: number;
+  empty: boolean;
+}

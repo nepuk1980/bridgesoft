@@ -98,7 +98,7 @@ export class IdentityVaultComponent implements AfterViewInit, OnInit {
 
   // ✅ API CALL
   getIdentityVaultData() {
-    this.api.getlistofidentityvaults(0, 100000).subscribe({
+    this.api.getlistofidentityvaults(0, 1000).subscribe({
       next: (res: any) => {
         const mappedData: Application[] = res.content.map((item: any) => ({
           id: item.id,
