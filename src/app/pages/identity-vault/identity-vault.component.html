@@ -12,9 +12,9 @@
       <div class="search-box">
         <input
           type="text"
-          placeholder="Search"
           [(ngModel)]="searchText"
-          (input)="applyFilters()"
+          (input)="onSearch()"
+          placeholder="Search"
         />
         <img src="/svg/search.svg" class="search-icon" />
       </div>
@@ -59,7 +59,7 @@
             <mat-label>Select Category</mat-label>
             <mat-select
               [(ngModel)]="selectedCategory"
-              (selectionChange)="applyFilters()"
+              (selectionChange)="onFilterChange()"
               panelClass="custom-filter-panel"
             >
               <mat-option value="">Category</mat-option>
@@ -78,7 +78,7 @@
             <mat-label>Filter</mat-label>
             <mat-select
               [(ngModel)]="selectedFilter"
-              (selectionChange)="applyFilters()"
+              (selectionChange)="onFilterChange()"
               panelClass="custom-filter-panel"
             >
               <mat-option value="">Filter</mat-option>
