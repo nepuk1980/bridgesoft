@@ -73,7 +73,9 @@ export class IdentityVaultComponent implements AfterViewInit, OnInit {
   selectedFilter: string = '';
   selectedDownload: string = 'Download';
 
-  // ✅ Custom Pagination
+  loading = false;
+
+  // pagination
   pageSize = 10;
   pageIndex = 0;
   totalPages = 0;
@@ -88,62 +90,84 @@ export class IdentityVaultComponent implements AfterViewInit, OnInit {
     private reportService: ReportService,
   ) {}
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.getIdentityVaultData();
   }
 
-  ngAfterViewInit() {
+  ngAfterViewInit(): void {
     this.dataSource.sort = this.sort;
   }
 
-  // ✅ API CALL
-  getIdentityVaultData() {
-    this.api.getlistofidentityvaults(0, 1000).subscribe({
-      next: (res: any) => {
-        const mappedData: Application[] = res.content.map((item: any) => ({
-          id: item.id,
-          firstName: item.firstName,
-          lastName: item.lastName,
-          email: item.email,
-          manager: item.manager,
-          roleSummary: item.assignedRoleSummary || '-',
-          lastRefresh: new Date(item.lastModifiedDatetime).toLocaleString(),
-          riskScore: Number(item.riskScore),
-          link: '',
-        }));
+  // ✅ API CALL WITH SERVER SEARCH + PAGINATION
+  getIdentityVaultData(): void {
+    this.loading = true;
 
-        this.originalData = mappedData;
-        this.totalElements = mappedData.length;
+    this.api
+      .getlistofidentityvaults(
+        this.pageIndex,
+        this.pageSize,
+        this.searchText?.trim() || '',
+      )
+      .subscribe({
+        next: (res: any) => {
+          const content = res?.content || [];
 
-        // categories
-        this.categories = [
-          ...new Map(
-            mappedData.map((item) => [
-              item.manager,
-              {
-                value: item.manager?.toLowerCase(),
-                viewValue: item.manager,
-              },
-            ]),
-          ).values(),
-        ];
+          const mappedData: Application[] = content.map((item: any) => ({
+            id: item.id,
+            firstName: item.firstName || '-',
+            lastName: item.lastName || '-',
+            email: item.email || '-',
+            manager: item.manager || '-',
+            roleSummary: item.assignedRoleSummary || '-',
+            lastRefresh: item.lastModifiedDatetime
+              ? new Date(item.lastModifiedDatetime).toLocaleString()
+              : '-',
+            riskScore: Number(item.riskScore || 0),
+            link: '',
+          }));
 
-        // ✅ init pagination
-        this.pageIndex = 0;
-        this.totalPages = Math.ceil(mappedData.length / this.pageSize) || 1;
+          // keep latest page data
+          this.originalData = mappedData;
 
-        this.updatePaginatedData(mappedData);
-      },
-      error: (err) => {
-        console.error('API Error:', err);
-      },
-    });
+          // table data
+          this.dataSource.data = mappedData;
+
+          // backend pagination
+          this.totalElements = res.totalElements || 0;
+          this.totalPages = res.totalPages || 0;
+
+          // categories
+          this.categories = [
+            ...new Map(
+              mappedData.map((item) => [
+                item.manager,
+                {
+                  value: item.manager?.toLowerCase(),
+                  viewValue: item.manager,
+                },
+              ]),
+            ).values(),
+          ];
+
+          // apply local dropdown filters
+          this.applyLocalFilters();
+
+          this.generatePages();
+
+          this.loading = false;
+        },
+        error: (err) => {
+          console.error('API Error:', err);
+          this.loading = false;
+        },
+      });
   }
 
-  // ✅ FILTER + SEARCH
-  applyFilters() {
+  // ✅ LOCAL FILTERS ONLY
+  applyLocalFilters(): void {
     let filteredData = [...this.originalData];
 
+    // manager filter
     if (this.selectedCategory) {
       filteredData = filteredData.filter((item) =>
         item.manager
@@ -152,107 +176,101 @@ export class IdentityVaultComponent implements AfterViewInit, OnInit {
       );
     }
 
+    // risk filter
     if (this.selectedFilter) {
       filteredData = filteredData.filter((item) => {
-        if (this.selectedFilter === 'low') return item.riskScore < 30;
-        if (this.selectedFilter === 'medium')
+        if (this.selectedFilter === 'low') {
+          return item.riskScore < 30;
+        }
+
+        if (this.selectedFilter === 'medium') {
           return item.riskScore >= 30 && item.riskScore <= 60;
-        if (this.selectedFilter === 'high') return item.riskScore > 60;
+        }
+
+        if (this.selectedFilter === 'high') {
+          return item.riskScore > 60;
+        }
+
         return true;
       });
     }
 
-    if (this.searchText) {
-      const search = this.searchText.toLowerCase();
-      filteredData = filteredData.filter((item) =>
-        `${item.firstName} ${item.lastName} ${item.email} ${item.manager}`
-          .toLowerCase()
-          .includes(search),
-      );
-    }
-    if (filteredData.length === 0) {
-      this.pageIndex = 0;
-    }
-
-    this.totalPages = Math.ceil(filteredData.length / this.pageSize) || 1;
-
-    if (this.pageIndex >= this.totalPages) {
-      this.pageIndex = 0;
-    }
-
-    this.updatePaginatedData(filteredData);
+    this.dataSource.data = filteredData;
   }
 
-  // ✅ Pagination Slice
-  updatePaginatedData(data: Application[]) {
-    const start = this.pageIndex * this.pageSize;
-    const end = start + this.pageSize;
-
-    this.dataSource.data = data.slice(start, end);
-    this.generatePages();
+  // ✅ SEARCH
+  onSearch(): void {
+    this.pageIndex = 0;
+    this.getIdentityVaultData();
   }
 
-  // ✅ Page Numbers
-  generatePages() {
-    const visible = 3;
+  // ✅ FILTER CHANGE
+  onFilterChange(): void {
+    this.applyLocalFilters();
+  }
+
+  // ✅ PAGE NUMBERS
+  generatePages(): void {
+    const visiblePages = 3;
 
     if (this.totalPages <= 0) {
-      this.pages = [1]; // ✅ fallback
+      this.pages = [1];
       return;
     }
 
     let start = Math.max(1, this.pageIndex + 1 - 1);
-    let end = Math.min(this.totalPages, start + visible - 1);
+    let end = Math.min(this.totalPages, start + visiblePages - 1);
 
-    if (end - start < visible - 1) {
-      start = Math.max(1, end - visible + 1);
+    if (end - start < visiblePages - 1) {
+      start = Math.max(1, end - visiblePages + 1);
     }
 
     this.pages = [];
+
     for (let i = start; i <= end; i++) {
       this.pages.push(i);
     }
   }
 
-  // ✅ Pagination Actions
-  goToPage(p: number) {
-    this.pageIndex = p - 1;
-    this.applyFilters();
+  // ✅ PAGINATION
+  goToPage(page: number): void {
+    this.pageIndex = page - 1;
+    this.getIdentityVaultData();
   }
 
-  nextPage() {
+  nextPage(): void {
     if (this.pageIndex < this.totalPages - 1) {
       this.pageIndex++;
-      this.applyFilters();
+      this.getIdentityVaultData();
     }
   }
 
-  prevPage() {
+  prevPage(): void {
     if (this.pageIndex > 0) {
       this.pageIndex--;
-      this.applyFilters();
+      this.getIdentityVaultData();
     }
   }
 
-  firstPage() {
+  firstPage(): void {
     this.pageIndex = 0;
-    this.applyFilters();
+    this.getIdentityVaultData();
   }
 
-  lastPage() {
+  lastPage(): void {
     this.pageIndex = this.totalPages - 1;
-    this.applyFilters();
+    this.getIdentityVaultData();
   }
 
-  resetFilters() {
+  // ✅ RESET
+  resetFilters(): void {
     this.searchText = '';
     this.selectedCategory = '';
     this.selectedFilter = '';
 
     this.pageIndex = 0;
-    this.totalPages = Math.ceil(this.originalData.length / this.pageSize);
 
-    this.updatePaginatedData(this.originalData);
+    this.getIdentityVaultData();
   }
 
   // navigation
@@ -265,9 +283,12 @@ export class IdentityVaultComponent implements AfterViewInit, OnInit {
       .replace(/-+/g, '-');
   }
 
+  // export helpers
   private getFormattedDateTime(): string {
     const now = new Date();
+
     const date = now.toLocaleDateString('en-GB').replace(/\//g, '-');
+
     const time = now
       .toLocaleTimeString('en-GB', {
         hour: '2-digit',
@@ -280,7 +301,7 @@ export class IdentityVaultComponent implements AfterViewInit, OnInit {
   }
 
   private getExportData() {
-    return this.originalData.map((item) => ({
+    return this.dataSource.data.map((item) => ({
       'First Name': item.firstName || '-',
       'Last Name': item.lastName || '-',
       'Email Id': item.email || '-',
@@ -291,9 +312,11 @@ export class IdentityVaultComponent implements AfterViewInit, OnInit {
     }));
   }
 
-  downloadExcel() {
+  // exports
+  downloadExcel(): void {
     const data = this.getExportData();
     const timestamp = this.getFormattedDateTime();
+
     this.reportService.downloadExcel(
       data,
       `identity-vault-report_${timestamp}`,
@@ -301,9 +324,10 @@ export class IdentityVaultComponent implements AfterViewInit, OnInit {
     );
   }
 
-  downloadCSV() {
+  downloadCSV(): void {
     const data = this.getExportData();
     const timestamp = this.getFormattedDateTime();
+
     this.reportService.downloadCSV(
       data,
       `identity-vault-report_${timestamp}`,
@@ -311,9 +335,10 @@ export class IdentityVaultComponent implements AfterViewInit, OnInit {
     );
   }
 
-  downloadPDF() {
+  downloadPDF(): void {
     const data = this.getExportData();
     const timestamp = this.getFormattedDateTime();
+
     this.reportService.downloadPDF(
       data,
       `identity-vault-report_${timestamp}`,
