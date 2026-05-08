@@ -14,6 +14,7 @@ import { MatRadioModule } from '@angular/material/radio';
 import { InnerheaderComponent } from '../../shared/components/innerheader/innerheader.component';
 import { ApiService } from '../../services/api.service';
 import { ReportService } from '../../services/report.service';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 interface TableRowImportant {
   folderFileName: string;
@@ -32,6 +33,7 @@ interface TableRowImportant {
     MatCheckboxModule,
     FormsModule,
     NgxSkeletonLoaderModule,
+    MatProgressSpinnerModule,
     MatTabsModule,
     NgFor,
     MatTableModule,
@@ -56,7 +58,8 @@ export class RequestWorkflowComponent implements OnInit {
   // Data
   dataSourceImportant: TableRowImportant[] = [];
   selectedUsers: any[] = [];
-  categoriesImportant: string[] = [];
+  categoriesImportant: string[] = []; // current dropdown
+  allCategoriesImportant: string[] = []; // master list
 
   // Pagination State
   pageSize = 10;
@@ -66,14 +69,21 @@ export class RequestWorkflowComponent implements OnInit {
   showingCount = 0;
   pages: number[] = [];
 
+  // ✅ PAGE CACHE
+  pageCache: { [key: string]: any } = {};
+
+  isLoading = false;
+
   displayedColumnsImportant: string[] = [
     'folderFileName',
     'resourceFullPath',
     'category',
+    'access',
     'criticality',
   ];
 
   selection = new Set<TableRowImportant>();
+
   private sanitizer = inject(DomSanitizer);
   private api = inject(ApiService);
   private reportService = inject(ReportService);
@@ -82,6 +92,7 @@ export class RequestWorkflowComponent implements OnInit {
 
   constructor() {
     const nav = this.router.getCurrentNavigation();
+
     this.selectedUsers =
       nav?.extras?.state?.['selectedUsers'] ??
       history.state?.selectedUsers ??
@@ -91,6 +102,10 @@ export class RequestWorkflowComponent implements OnInit {
   ngOnInit(): void {
     this.route.queryParams.subscribe((params) => {
       this.vaultId = Number(params['vaultId']) || 0;
+
+      // ✅ CLEAR CACHE ON PARAM CHANGE
+      this.pageCache = {};
+
       this.getWorkflowData();
     });
   }
@@ -99,9 +114,47 @@ export class RequestWorkflowComponent implements OnInit {
     return this.sanitizer.bypassSecurityTrustHtml(html);
   }
 
+  // ✅ UNIQUE CACHE KEY
+  private getCacheKey(page: number): string {
+    return JSON.stringify({
+      page,
+      pageSize: this.pageSize,
+      search: this.searchText,
+      category: this.selectedCategory,
+      criticality: this.selectedCriticality,
+      filters: this.selectedFilterIds,
+    });
+  }
+
   // --- API CALL (PAGINATED) ---
   getWorkflowData() {
     const filterString = this.selectedFilterIds.join(',');
+
+    const cacheKey = this.getCacheKey(this.pageIndex);
+
+    // ✅ LOAD FROM CACHE
+    if (this.pageCache[cacheKey]) {
+      const cached = this.pageCache[cacheKey];
+
+      this.dataSourceImportant = cached.data;
+      this.totalElements = cached.totalElements;
+      this.totalPages = cached.totalPages;
+      this.showingCount = cached.showingCount;
+
+      this.generatePages();
+      this.preloadNextPages();
+
+      return;
+    }
+
+    // ✅ CLEAR OLD DATA BEFORE API
+    this.dataSourceImportant = [];
+    this.totalElements = 0;
+    this.totalPages = 0;
+    this.showingCount = 0;
+    this.pages = [];
+
+    this.isLoading = true;
 
     this.api
       .getAllFilesAndFoldersDetails(
@@ -113,54 +166,167 @@ export class RequestWorkflowComponent implements OnInit {
       )
       .subscribe({
         next: (res: any) => {
-          const data = res?.data || res?.content || res;
+          this.isLoading = false;
 
-          this.dataSourceImportant = data.map((item: any) => ({
+          const data = res?.content || res?.data || [];
+
+          // ✅ HANDLE EMPTY RESULT
+          if (!data.length) {
+            this.dataSourceImportant = [];
+            this.categoriesImportant = [];
+            this.totalElements = 0;
+            this.totalPages = 0;
+            this.showingCount = 0;
+            this.pages = [];
+
+            return;
+          }
+
+          const mappedData = data.map((item: any) => ({
             folderFileName: item.itemName,
             resourceFullPath: item.itemUrl,
             category: item.category,
             criticality: 'Open',
+            access: {
+              fullControl: false,
+              modify: false,
+              readExecute: false,
+              listFolder: false,
+              read: false,
+              write: false,
+            },
             itemType: item.itemType,
           }));
 
-          this.totalElements =
-            res?.totalElements || this.dataSourceImportant.length;
-          this.totalPages =
-            res?.totalPages || Math.ceil(this.totalElements / this.pageSize);
-          this.showingCount = this.dataSourceImportant.length;
+          this.dataSourceImportant = mappedData;
 
-          if (this.categoriesImportant.length === 0) {
-            this.categoriesImportant = [
-              ...new Set(this.dataSourceImportant.map((x) => x.category)),
-            ];
+          this.totalElements = res?.totalElements || 0;
+          this.totalPages = res?.totalPages || 0;
+          this.showingCount = mappedData.length;
+
+          // ✅ DYNAMIC CATEGORY UPDATE
+          const dynamicCategories = Array.from(
+            new Set<string>(
+              mappedData
+                .map((item: any) => item.category as string)
+                .filter((category: string) => !!category),
+            ),
+          );
+
+          // ✅ store master categories only once
+          if (!this.allCategoriesImportant.length) {
+            this.allCategoriesImportant = dynamicCategories;
           }
 
+          // ✅ always show full category list
+          this.categoriesImportant = [...this.allCategoriesImportant];
+
+          // ✅ SAVE CACHE
+          this.pageCache[cacheKey] = {
+            data: mappedData,
+            totalElements: this.totalElements,
+            totalPages: this.totalPages,
+            showingCount: this.showingCount,
+          };
+
           this.generatePages();
+          this.preloadNextPages();
         },
-        error: (err) => console.error('Workflow API error:', err),
+
+        error: (err) => {
+          console.error('Pagination API Error:', err);
+
+          this.isLoading = false;
+
+          // ✅ ALSO CLEAR ON ERROR
+          this.dataSourceImportant = [];
+          this.totalElements = 0;
+          this.totalPages = 0;
+          this.showingCount = 0;
+        },
       });
   }
 
+  // ✅ PRELOAD NEXT 2 PAGES SILENTLY
+  preloadNextPages() {
+    const nextPages = [this.pageIndex + 1, this.pageIndex + 2];
+
+    const filterString = this.selectedFilterIds.join(',');
+
+    nextPages.forEach((page) => {
+      // skip invalid pages
+      if (page >= this.totalPages) return;
+
+      const cacheKey = this.getCacheKey(page);
+
+      // skip cached pages
+      if (this.pageCache[cacheKey]) return;
+
+      this.api
+        .getAllFilesAndFoldersDetails(
+          this.searchText,
+          this.selectedCategory,
+          filterString,
+          page,
+          this.pageSize,
+        )
+        .subscribe({
+          next: (res: any) => {
+            const data = Array.isArray(res?.content)
+              ? res.content
+              : Array.isArray(res?.data)
+                ? res.data
+                : [];
+
+            const mappedData = data.map((item: any) => ({
+              folderFileName: item.itemName,
+              resourceFullPath: item.itemUrl,
+              category: item.category,
+              criticality: 'Open',
+              access: {
+                fullControl: false,
+                modify: false,
+                readExecute: false,
+                listFolder: false,
+                read: false,
+                write: false,
+              },
+              itemType: item.itemType,
+            }));
+
+            // ✅ STORE PRELOADED DATA
+            this.pageCache[cacheKey] = {
+              data: mappedData,
+              totalElements: res?.totalElements || mappedData.length,
+              totalPages:
+                res?.totalPages || Math.ceil(mappedData.length / this.pageSize),
+              showingCount: mappedData.length,
+            };
+          },
+
+          error: (err) => {
+            console.error('Preload failed', err);
+          },
+        });
+    });
+  }
+
   // --- EXPORT LOGIC (FETCH ALL FILTERED DATA) ---
-  /**
-   * Helper to fetch all records matching current filters regardless of current page
-   */
   private fetchExportData(callback: (data: TableRowImportant[]) => void) {
     const filterString = this.selectedFilterIds.join(',');
 
-    // We request a very large page size (e.g. 99999) to ensure we get all records
-    // that match the current search/category filters.
     this.api
       .getAllFilesAndFoldersDetails(
         this.searchText,
         this.selectedCategory,
         filterString,
-        0, // Reset to first page for full export
-        99999, // Large number to bypass pagination limit
+        0,
+        99999,
       )
       .subscribe({
         next: (res: any) => {
           const rawData = res?.data || res?.content || res || [];
+
           const allDataMpped = rawData.map((item: any) => ({
             folderFileName: item.itemName,
             resourceFullPath: item.itemUrl,
@@ -168,8 +334,10 @@ export class RequestWorkflowComponent implements OnInit {
             criticality: 'Open',
             itemType: item.itemType,
           }));
+
           callback(allDataMpped);
         },
+
         error: (err) => console.error('Export fetch failed:', err),
       });
   }
@@ -193,41 +361,78 @@ export class RequestWorkflowComponent implements OnInit {
   }
 
   // --- FILTER ACTIONS ---
+  searchTimeout: any;
+
   onSearch(value: string) {
-    this.searchText = value?.trim() || '';
-    this.pageIndex = 0;
-    this.getWorkflowData();
+    clearTimeout(this.searchTimeout);
+
+    this.searchTimeout = setTimeout(() => {
+      this.searchText = value?.trim() || '';
+
+      console.log('SEARCH VALUE =>', this.searchText);
+
+      // reset everything
+      this.pageIndex = 0;
+      this.pageCache = {};
+      this.dataSourceImportant = [];
+      this.totalElements = 0;
+      this.totalPages = 0;
+      this.showingCount = 0;
+      this.allCategoriesImportant = [];
+
+      this.getWorkflowData();
+    }, 500);
   }
 
   filterCategory(value: string) {
     this.selectedCategory = value || '';
+
     this.pageIndex = 0;
+
+    // ✅ CLEAR CACHE
+    this.pageCache = {};
+
     this.getWorkflowData();
   }
 
   filterCriticality(value: string) {
     this.selectedCriticality = value || '';
+
     this.pageIndex = 0;
+
+    // ✅ CLEAR CACHE
+    this.pageCache = {};
+
     this.getWorkflowData();
   }
 
   filterType(id: number, checked: boolean) {
     if (checked) {
-      if (!this.selectedFilterIds.includes(id)) this.selectedFilterIds.push(id);
+      if (!this.selectedFilterIds.includes(id)) {
+        this.selectedFilterIds.push(id);
+      }
     } else {
       this.selectedFilterIds = this.selectedFilterIds.filter((x) => x !== id);
     }
+
     this.pageIndex = 0;
+
+    // ✅ CLEAR CACHE
+    this.pageCache = {};
+
     this.getWorkflowData();
   }
 
   // --- PAGINATION NAVIGATION ---
   generatePages() {
     const visible = 3;
+
     this.pages = [];
+
     if (this.totalPages <= 0) return;
 
     let start = Math.max(1, this.pageIndex + 1 - Math.floor(visible / 2));
+
     let end = Math.min(this.totalPages, start + visible - 1);
 
     if (end - start < visible - 1) {
@@ -235,7 +440,9 @@ export class RequestWorkflowComponent implements OnInit {
     }
 
     for (let i = start; i <= end; i++) {
-      if (i > 0) this.pages.push(i);
+      if (i > 0) {
+        this.pages.push(i);
+      }
     }
   }
 
@@ -300,9 +507,12 @@ export class RequestWorkflowComponent implements OnInit {
   // --- SUBMISSION ---
   submitAccessRequest() {
     const payloads: any[] = [];
+
     const itemsToSubmit = Array.from(this.selection);
 
-    if (!this.selectedUsers.length || !itemsToSubmit.length) return;
+    if (!this.selectedUsers.length || !itemsToSubmit.length) {
+      return;
+    }
 
     for (const user of this.selectedUsers) {
       for (const row of itemsToSubmit) {
@@ -319,11 +529,20 @@ export class RequestWorkflowComponent implements OnInit {
     }
 
     this.api.saveaccessrequestdetails(payloads).subscribe({
-      next: () =>
-        this.router.navigate(['../request-access-detail'], {
-          relativeTo: this.route,
-        }),
-      error: (err) => console.error('Submission failed', err),
+      next: (res) => {
+        // console.log('Access request submitted successfully', res);
+
+        // optional success message
+        // alert('Access request submitted successfully');
+
+        // optional reset
+        this.selection.clear();
+      },
+
+      error: (err) => {
+        console.error('Submission failed', err);
+        alert('Failed to submit access request');
+      },
     });
   }
 }

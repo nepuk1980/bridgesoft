@@ -6,6 +6,7 @@ import { environment } from '../../environments/environment';
 import {
   ApplicationAccountsResponseInterface,
   ApplicationResponseInterface,
+  AuditResponseInterface,
   ExecutiveAuditReportsInterface,
   FileSystemAccessSummaryInterface,
   FileSystemResponseInterface,
@@ -35,11 +36,13 @@ export class ApiService {
     ruleCategory: string,
     page: number = 0,
     size: number = 10,
+    searchFileOrFolderName: string,
   ): Observable<FileSystemResponseInterface> {
     const params = new HttpParams()
       .set('ruleCategory', ruleCategory)
       .set('page', page)
-      .set('size', size);
+      .set('size', size)
+      .set('searchFileOrFolderName', searchFileOrFolderName);
 
     return this.http.get<FileSystemResponseInterface>(
       `${environment.apiUrl}/getfilesharefiledetails`,
@@ -52,11 +55,13 @@ export class ApiService {
     ruleCategory: string,
     page: number = 0,
     size: number = 10,
+    searchFileOrFolderName: string,
   ): Observable<FileSystemResponseInterface> {
     const params = new HttpParams()
       .set('ruleCategory', ruleCategory)
       .set('page', page)
-      .set('size', size);
+      .set('size', size)
+      .set('searchFileOrFolderName', searchFileOrFolderName);
 
     return this.http.get<FileSystemResponseInterface>(
       `${environment.apiUrl}/getfilesharefolderdetails`,
@@ -69,11 +74,13 @@ export class ApiService {
     ruleCategory: string,
     page: number = 0,
     size: number = 10,
+    searchFileOrFolderName: string,
   ): Observable<FileSystemResponseInterface> {
     const params = new HttpParams()
       .set('ruleCategory', ruleCategory)
       .set('page', page)
-      .set('size', size);
+      .set('size', size)
+      .set('searchFileOrFolderName', searchFileOrFolderName);
 
     return this.http.get<FileSystemResponseInterface>(
       `${environment.apiUrl}/getfilesharetotaldetails`,
@@ -86,11 +93,13 @@ export class ApiService {
     ruleCategory: string,
     page: number = 0,
     size: number = 10,
+    searchFileOrFolderName: string,
   ): Observable<FileSystemResponseInterface> {
     const params = new HttpParams()
       .set('ruleCategory', ruleCategory)
       .set('page', page)
-      .set('size', size);
+      .set('size', size)
+      .set('searchFileOrFolderName', searchFileOrFolderName);
 
     return this.http.get<FileSystemResponseInterface>(
       `${environment.apiUrl}/getsharepointfiledetails`,
@@ -103,11 +112,13 @@ export class ApiService {
     ruleCategory: string,
     page: number = 0,
     size: number = 10,
+    searchFileOrFolderName: string,
   ): Observable<FileSystemResponseInterface> {
     const params = new HttpParams()
       .set('ruleCategory', ruleCategory)
       .set('page', page)
-      .set('size', size);
+      .set('size', size)
+      .set('searchFileOrFolderName', searchFileOrFolderName);
 
     return this.http.get<FileSystemResponseInterface>(
       `${environment.apiUrl}/getsharepointfolderdetails`,
@@ -120,11 +131,13 @@ export class ApiService {
     ruleCategory: string,
     page: number = 0,
     size: number = 10,
+    searchFileOrFolderName: string,
   ): Observable<FileSystemResponseInterface> {
     const params = new HttpParams()
       .set('ruleCategory', ruleCategory)
       .set('page', page)
-      .set('size', size);
+      .set('size', size)
+      .set('searchFileOrFolderName', searchFileOrFolderName);
 
     return this.http.get<FileSystemResponseInterface>(
       `${environment.apiUrl}/getsharepointtotaldetails`,
@@ -137,11 +150,13 @@ export class ApiService {
     ruleCategory: string,
     page: number = 0,
     size: number = 10,
+    searchFileOrFolderName: string,
   ): Observable<FileSystemResponseInterface> {
     const params = new HttpParams()
       .set('ruleCategory', ruleCategory)
       .set('page', page)
-      .set('size', size);
+      .set('size', size)
+      .set('searchFileOrFolderName', searchFileOrFolderName);
 
     return this.http.get<FileSystemResponseInterface>(
       `${environment.apiUrl}/getfilesystemaccesspermissiondetails`,
@@ -175,8 +190,12 @@ export class ApiService {
   getlistofidentityvaults(
     page: number = 0,
     size: number = 10,
+    searchFirstNameOrLastName: string = '',
   ): Observable<IdentityVaultResponseInterface> {
-    const params = new HttpParams().set('page', page).set('size', size);
+    let params = new HttpParams()
+      .set('searchFirstNameOrLastName', searchFirstNameOrLastName || '')
+      .set('page', page.toString())
+      .set('size', size.toString());
 
     return this.http.get<IdentityVaultResponseInterface>(
       `${environment.apiUrl}/getlistofidentityvaults`,
@@ -417,6 +436,25 @@ export class ApiService {
       `${environment.apiUrl}/updateaccessrequestdetails`,
       payload,
       { headers },
+    );
+  }
+
+  // Audit Trail
+  getaudittrail(
+    searchEmployeeName: string,
+    filter: string,
+    page: number,
+    size: number,
+  ): Observable<AuditResponseInterface> {
+    let params = new HttpParams()
+      .set('searchEmployeeName', searchEmployeeName || '')
+      .set('filter', filter || '')
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    return this.http.get<AuditResponseInterface>(
+      `${environment.apiUrl}/getaudittrail`,
+      { params },
     );
   }
 

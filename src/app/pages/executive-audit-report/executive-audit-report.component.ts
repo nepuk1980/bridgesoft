@@ -140,7 +140,7 @@ export class ExecutiveAuditReportComponent implements OnInit, AfterViewInit {
     this.api.getexecutiveauditreport('', '', 0, 1000).subscribe({
       next: (res: ExecutiveAuditReportsInterface) => {
         const uniqueEventTypes = Array.from(
-          new Set(res.content.map((x) => x.eventType)),
+          new Set(res.content.map((x) => x.datasourceType)),
         );
 
         this.filters = uniqueEventTypes.map((v) => ({
@@ -291,8 +291,7 @@ export class ExecutiveAuditReportComponent implements OnInit, AfterViewInit {
           const title = 'Executive Audit Report';
           const desc =
             'Daily scheduled search of VIP OD personal spaces for unauthorized access.';
-          const filter =
-            'Filters = Today [ And ] Id | Source System | Event Id | User Email | User Display Name | Event Type | Device Name | Event Time | Datasource Type | Event Operation | Event Description | Event Path | Account Name | Object Name | Object Type | Event Sensitive | Event Status | External Ip | Datasource | Country | Department | User Agent | Exposure Level | Permissions Before Change | Permissions After Change | Changed Permission Flag | Resource Owner | Connection Type | Client Ip | Client | Device Trust Type | Source Nat Address | Source Port | Source Zone | Destination Device Name | Device Managed Status | Source Nat Port | Logon Type | Account Type | Sam Account Name | Operating System | Malicious External Ip | Externalip Reputation | Inheritance Paths';
+          const filter = `EventTime = ${timestamp} [ And ] DataSource=${items[0].datasourceType} [AND] Account Name!=${items[0].accountName}`;
 
           switch (type) {
             case 'excel':

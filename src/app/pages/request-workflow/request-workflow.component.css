@@ -14,13 +14,17 @@
 }
 .solid-table th:nth-child(2),
 .solid-table td:nth-child(2) {
-  width: 45% !important;
+  width: 30% !important;
 }
 .solid-table th:nth-child(3),
 .solid-table td:nth-child(3) {
-  width: 15% !important;
+  width: 10% !important;
 }
 .solid-table th:nth-child(4),
 .solid-table td:nth-child(4) {
+  width: 20% !important;
+}
+.solid-table th:nth-child(5),
+.solid-table td:nth-child(5) {
   width: 20% !important;
 }

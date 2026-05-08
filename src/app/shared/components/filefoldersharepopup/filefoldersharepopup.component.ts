@@ -23,13 +23,14 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { ApiService } from '../../../services/api.service';
 import { Observable } from 'rxjs';
+import { map, shareReplay } from 'rxjs/operators';
 import { FileSystemResponseInterface } from '../../../models/type';
 
-// ✅ SAME TYPE (no backend search support)
 type ShareApiMethod = (
   ruleCategory: string,
   page: number,
   size: number,
+  search?: string,
 ) => Observable<FileSystemResponseInterface>;
 
 @Component({
@@ -57,6 +58,11 @@ export class FilefoldersharepopupComponent implements AfterViewInit, OnInit {
     private api: ApiService,
   ) {}
 
+  selectedDownload: string = 'Download';
+  // ✅ Search-aware cache
+  private pageCache = new Map<string, any[]>();
+  private requestCache = new Map<string, Observable<any[]>>();
+
   displayedColumns: string[] = [
     'name',
     'category',
@@ -68,15 +74,11 @@ export class FilefoldersharepopupComponent implements AfterViewInit, OnInit {
 
   dataSource = new MatTableDataSource<any>();
 
-  // ✅ FULL DATA + FILTERED DATA
-  allData: any[] = [];
-  filteredData: any[] = [];
-
-  selectedDownload: string = 'Download';
-
   @ViewChild(MatSort) sort!: MatSort;
 
-  // ================= PAGINATION =================
+  searchFileOrFolderName: string = '';
+  private searchTimeout: any;
+
   pageSize = 10;
   pageIndex = 0;
   totalPages = 0;
@@ -84,14 +86,8 @@ export class FilefoldersharepopupComponent implements AfterViewInit, OnInit {
   pages: number[] = [];
 
   isLoading = false;
+  isDownloading = false;
 
-  isDownloading: boolean = false; // 1. Add this property
-
-  get dataSourceLength() {
-    return this.dataSource.data.length || 0;
-  }
-
-  // ================= INIT =================
   ngOnInit() {
     const isFile = this.data?.fileicon;
 
@@ -99,7 +95,7 @@ export class FilefoldersharepopupComponent implements AfterViewInit, OnInit {
       ? ['name', 'category', 'adgroup', 'user', 'duration', 'created']
       : ['name', 'category', 'adgroup', 'created'];
 
-    this.loadAllData(); // ✅ fetch everything once
+    this.loadPageData();
   }
 
   ngAfterViewInit() {
@@ -110,76 +106,143 @@ export class FilefoldersharepopupComponent implements AfterViewInit, OnInit {
     this.dialogRef.close();
   }
 
-  // ================= API RESOLVER =================
   private getApiMethod(methodName: keyof ApiService): ShareApiMethod | null {
     const fn = this.api[methodName];
     if (typeof fn !== 'function') return null;
-
     return fn.bind(this.api) as ShareApiMethod;
   }
 
-  // ================= LOAD FULL DATA =================
-  loadAllData() {
-    this.isLoading = true;
+  private getKey(page: number) {
+    return `${this.searchFileOrFolderName}_${page}`;
+  }
 
-    const apiFn = this.getApiMethod(this.data.apiMethod);
+  private mapItem(item: any, isFile: boolean) {
+    return {
+      name: isFile
+        ? (item.fileName ?? item.itemName ?? '-')
+        : (item.itemName ?? '-'),
+      category: item.category ?? '-',
+      adgroup: item.groupsList
+        ? item.groupsList
+            .split(',')
+            .map((g: string) => g.trim())
+            .join(', ')
+        : '-',
+      user: item.userName ?? item.owner ?? '-',
+      duration: item.duration ?? '-',
+      created: item.createDatetime
+        ? new Date(item.createDatetime).toLocaleDateString()
+        : '-',
+    };
+  }
 
-    if (!apiFn) {
-      console.error(`Invalid API method: ${String(this.data.apiMethod)}`);
-      this.isLoading = false;
+  private prefetchPage(page: number) {
+    const key = this.getKey(page);
+
+    if (
+      this.pageCache.has(key) ||
+      this.requestCache.has(key) ||
+      page < 0 ||
+      page >= this.totalPages
+    ) {
       return;
     }
 
-    // ⚠️ fetch large size (adjust if backend has limits)
-    apiFn(this.data.ruleCategory, 0, 100000).subscribe({
-      next: (res) => {
+    const apiFn = this.getApiMethod(this.data.apiMethod);
+    if (!apiFn) return;
+
+    const request$ = apiFn(
+      this.data.ruleCategory,
+      page,
+      this.pageSize,
+      this.searchFileOrFolderName,
+    ).pipe(
+      map((res) => {
+        const items = res?.content ?? [];
+        const isFile = this.data?.fileicon;
+        return items.map((item: any) => this.mapItem(item, isFile));
+      }),
+      shareReplay(1),
+    );
+
+    this.requestCache.set(key, request$);
+
+    request$.subscribe((mapped) => {
+      this.pageCache.set(key, mapped);
+      this.requestCache.delete(key);
+    });
+  }
+
+  loadPageData() {
+    const key = this.getKey(this.pageIndex);
+
+    // ✅ Cache hit
+    if (this.pageCache.has(key)) {
+      this.dataSource.data = this.pageCache.get(key)!;
+      this.generatePages();
+
+      this.prefetchPage(this.pageIndex + 1);
+      this.prefetchPage(this.pageIndex + 2);
+      this.prefetchPage(this.pageIndex - 1);
+
+      return;
+    }
+
+    // ✅ Request in-flight
+    if (this.requestCache.has(key)) {
+      this.isLoading = true;
+
+      this.requestCache.get(key)!.subscribe((mapped) => {
         this.isLoading = false;
+        this.dataSource.data = mapped;
+
+        this.prefetchPage(this.pageIndex + 1);
+        this.prefetchPage(this.pageIndex + 2);
+        this.prefetchPage(this.pageIndex - 1);
+      });
+
+      return;
+    }
+
+    // ✅ Fresh API call
+    this.isLoading = true;
+
+    const apiFn = this.getApiMethod(this.data.apiMethod);
+    if (!apiFn) return;
+
+    const request$ = apiFn(
+      this.data.ruleCategory,
+      this.pageIndex,
+      this.pageSize,
+      this.searchFileOrFolderName,
+    ).pipe(
+      map((res) => {
+        this.totalElements = res.totalElements || 0;
+        this.totalPages = res.totalPages || 0;
 
         const items = res?.content ?? [];
         const isFile = this.data?.fileicon;
 
-        this.allData = items.map((item: any) => ({
-          name: isFile
-            ? (item.fileName ?? item.itemName ?? '-')
-            : (item.itemName ?? '-'),
-          category: item.category ?? '-',
-          adgroup: item.groupsList
-            ? item.groupsList
-                .split(',')
-                .map((g: string) => g.trim())
-                .join(', ')
-            : '-',
-          user: item.userName ?? item.owner ?? '-',
-          duration: item.duration ?? '-',
-          created: item.createDatetime
-            ? new Date(item.createDatetime).toLocaleDateString()
-            : '-',
-        }));
+        return items.map((item: any) => this.mapItem(item, isFile));
+      }),
+      shareReplay(1),
+    );
 
-        // initial state
-        this.filteredData = [...this.allData];
-        this.pageIndex = 0;
+    this.requestCache.set(key, request$);
 
-        this.updatePagination();
-      },
-      error: (err) => {
-        console.error('API error:', err);
-        this.isLoading = false;
-      },
+    request$.subscribe((mapped) => {
+      this.isLoading = false;
+
+      this.pageCache.set(key, mapped);
+      this.requestCache.delete(key);
+
+      this.dataSource.data = mapped;
+      this.generatePages();
+
+      this.prefetchPage(this.pageIndex + 1);
+      this.prefetchPage(this.pageIndex + 2);
+      this.prefetchPage(this.pageIndex - 1);
     });
-  }
-
-  // ================= PAGINATION CORE =================
-  updatePagination() {
-    this.totalElements = this.filteredData.length;
-    this.totalPages = Math.ceil(this.totalElements / this.pageSize);
-
-    const start = this.pageIndex * this.pageSize;
-    const end = start + this.pageSize;
-
-    this.dataSource.data = this.filteredData.slice(start, end);
-
-    this.generatePages();
   }
 
   generatePages() {
@@ -204,50 +267,50 @@ export class FilefoldersharepopupComponent implements AfterViewInit, OnInit {
     }
   }
 
-  // ================= PAGINATION ACTIONS =================
   goToPage(p: number) {
     this.pageIndex = p - 1;
-    this.updatePagination();
+    this.loadPageData();
   }
 
   nextPage() {
     if (this.pageIndex < this.totalPages - 1) {
       this.pageIndex++;
-      this.updatePagination();
+      this.loadPageData();
     }
   }
 
   prevPage() {
     if (this.pageIndex > 0) {
       this.pageIndex--;
-      this.updatePagination();
+      this.loadPageData();
     }
   }
 
   firstPage() {
     this.pageIndex = 0;
-    this.updatePagination();
+    this.loadPageData();
   }
 
   lastPage() {
     this.pageIndex = this.totalPages - 1;
-    this.updatePagination();
+    this.loadPageData();
   }
 
-  // ================= GLOBAL SEARCH =================
+  // ✅ Debounced server-side search
   applyFilter(event: Event) {
     const value = (event.target as HTMLInputElement).value.trim().toLowerCase();
 
-    this.pageIndex = 0;
+    clearTimeout(this.searchTimeout);
 
-    this.filteredData = this.allData.filter(
-      (item) =>
-        item.name.toLowerCase().includes(value) ||
-        item.category.toLowerCase().includes(value) ||
-        item.adgroup.toLowerCase().includes(value),
-    );
+    this.searchTimeout = setTimeout(() => {
+      this.searchFileOrFolderName = value;
+      this.pageIndex = 0;
 
-    this.updatePagination();
+      this.pageCache.clear();
+      this.requestCache.clear();
+
+      this.loadPageData();
+    }, 300);
   }
 
   // ================= EXPORT (UNCHANGED) =================
@@ -268,97 +331,134 @@ export class FilefoldersharepopupComponent implements AfterViewInit, OnInit {
 
   private fetchAllDataAndExport(type: 'excel' | 'csv' | 'pdf') {
     const apiFn = this.getApiMethod(this.data.apiMethod);
-    this.isDownloading = true; // 2. Start Loader
 
-    if (!apiFn) {
-      console.error(`Invalid API method: ${String(this.data.apiMethod)}`);
-      return;
-    }
+    if (!apiFn) return;
 
     this.isLoading = true;
+    this.isDownloading = true;
 
-    // ✅ ALWAYS fetch full dataset (independent of UI state)
-    const FULL_FETCH_SIZE = 100000; // ⚠️ adjust if needed
+    // ✅ fetch in chunks
+    const CHUNK_SIZE = 5000;
 
-    apiFn(this.data.ruleCategory, 0, FULL_FETCH_SIZE).subscribe({
-      next: (res) => {
-        this.isLoading = false;
-        this.isDownloading = false; // 3. Stop Loader on success
+    let currentPage = 0;
 
-        const items = res?.content ?? [];
-        const isFile = this.data?.fileicon;
+    let totalPages = 0;
 
-        const allData = items.map((item: any) => ({
-          name: isFile
-            ? (item.fileName ?? item.itemName ?? '-')
-            : (item.itemName ?? '-'),
+    let allItems: any[] = [];
 
-          category: item.category ?? '-',
+    const fetchNextPage = () => {
+      apiFn(
+        this.data.ruleCategory,
+        currentPage,
+        CHUNK_SIZE,
+        this.searchFileOrFolderName || '',
+      ).subscribe({
+        next: (res: any) => {
+          const items = res?.content ?? [];
 
-          adgroup: item.groupsList
-            ? item.groupsList
-                .split(',')
-                .map((g: string) => g.trim())
-                .join(', ')
-            : '-',
-
-          user: item.userName ?? item.owner ?? '-',
-
-          duration: item.duration ?? '-',
-
-          created: item.createDatetime
-            ? new Date(item.createDatetime).toLocaleDateString()
-            : '-',
-        }));
-
-        const exportData = allData.map((item: any) => {
-          let row: any = {};
-
-          if (this.data?.both) {
-            row['File/Folder Names'] = item.name;
-          } else if (this.data?.file) {
-            row['File Names'] = item.name;
-          } else {
-            row['Folder Names'] = item.name;
+          // ✅ set total pages once
+          if (!totalPages) {
+            totalPages = res?.totalPages ?? 0;
           }
 
-          row['Categories'] = item.category;
-          row['AD Group'] = item.adgroup;
-          row['User'] = item.user;
-          row['Duration'] = item.duration;
-          row['Created On'] = item.created;
+          // ✅ merge chunk data
+          allItems.push(...items);
 
-          return row;
-        });
+          currentPage++;
 
-        const timestamp = this.getFormattedDateTime();
+          // ✅ fetch next chunk
+          if (currentPage < totalPages) {
+            fetchNextPage();
+            return;
+          }
 
-        if (type === 'excel') {
-          this.reportService.downloadExcel(
-            exportData,
-            `dashboard-${this.data.reporttitle}_${timestamp}`,
-            `Dashboard-${this.data.title}`,
-          );
-        } else if (type === 'csv') {
-          this.reportService.downloadCSV(
-            exportData,
-            `dashboard-${this.data.reporttitle}_${timestamp}`,
-            `Dashboard-${this.data.title}`,
-          );
-        } else {
-          this.reportService.downloadPDF(
-            exportData,
-            `dashboard-${this.data.reporttitle}_${timestamp}`,
-            `Dashboard-${this.data.title}`,
-          );
-        }
-      },
-      error: (err) => {
-        console.error('Export API error:', err);
-        this.isLoading = false;
-        this.isDownloading = false; // 3. Stop Loader on success
-      },
-    });
+          // ================= FINAL EXPORT =================
+          const isFile = this.data?.fileicon;
+
+          const allData = allItems.map((item: any) => ({
+            name: isFile
+              ? (item.fileName ?? item.itemName ?? '-')
+              : (item.itemName ?? '-'),
+
+            category: item.category ?? '-',
+
+            adgroup: item.groupsList
+              ? item.groupsList
+                  .split(',')
+                  .map((g: string) => g.trim())
+                  .join(', ')
+              : '-',
+
+            user: item.userName ?? item.owner ?? '-',
+
+            duration: item.duration ?? '-',
+
+            created: item.createDatetime
+              ? new Date(item.createDatetime).toLocaleDateString()
+              : '-',
+          }));
+
+          const exportData = allData.map((item: any) => {
+            let row: any = {};
+
+            if (this.data?.both) {
+              row['File/Folder Names'] = item.name;
+            } else if (this.data?.file) {
+              row['File Names'] = item.name;
+            } else {
+              row['Folder Names'] = item.name;
+            }
+
+            row['Categories'] = item.category;
+            row['AD Group'] = item.adgroup;
+            row['User'] = item.user;
+            row['Duration'] = item.duration;
+            row['Created On'] = item.created;
+
+            return row;
+          });
+
+          const timestamp = this.getFormattedDateTime();
+
+          // ================= DOWNLOAD =================
+          if (type === 'excel') {
+            this.reportService.downloadExcel(
+              exportData,
+              `dashboard-${this.data.reporttitle}_${timestamp}`,
+              `Dashboard-${this.data.title}`,
+            );
+          } else if (type === 'csv') {
+            this.reportService.downloadCSV(
+              exportData,
+              `dashboard-${this.data.reporttitle}_${timestamp}`,
+              `Dashboard-${this.data.title}`,
+            );
+          } else {
+            this.reportService.downloadPDF(
+              exportData,
+              `dashboard-${this.data.reporttitle}_${timestamp}`,
+              `Dashboard-${this.data.title}`,
+            );
+          }
+
+          // ✅ cleanup memory
+          allItems = [];
+
+          this.isLoading = false;
+          this.isDownloading = false;
+        },
+
+        error: (err: any) => {
+          console.error('Export API error:', err);
+
+          this.isLoading = false;
+          this.isDownloading = false;
+        },
+      });
+    };
+
+    // ✅ start fetching
+    fetchNextPage();
   }
 
   downloadExcel() {
