@@ -539,7 +539,7 @@ export class RequestWorkflowComponent implements OnInit {
         if (row.access.write) accessList.push('Write');
 
         const payload = {
-          employeeName: user?.namepass ?? '',
+          employeeName: user?.name ?? '',
           employeeEmail: user?.emailpass ?? '',
           folderFileName: row.folderFileName,
           resourceFullPath: row.resourceFullPath,
