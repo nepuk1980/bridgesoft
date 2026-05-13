@@ -29,6 +29,8 @@ import { RequestWorkflowComponent } from './pages/request-workflow/request-workf
 import { ReportsLayoutComponent } from './layout/reports-layout/reports-layout.component';
 import { ReportComponent } from './pages/report/report.component';
 import { ExecutiveAuditReportComponent } from './pages/executive-audit-report/executive-audit-report.component';
+import { AgentLayoutComponent } from './layout/agent-layout/agent-layout.component';
+import { AgentComponent } from './pages/agent/agent.component';
 
 export const routes: Routes = [
   {
@@ -222,6 +224,17 @@ export const routes: Routes = [
           breadcrumb: 'Executive Audit Report',
           animation: 'ExecutiveAuditReportPage',
         },
+      },
+    ],
+  },
+  {
+    path: 'agent',
+    component: AgentLayoutComponent,
+    data: { breadcrumb: 'Agent', animation: 'AgentPage' },
+    children: [
+      {
+        path: '',
+        component: AgentComponent,
       },
     ],
   },

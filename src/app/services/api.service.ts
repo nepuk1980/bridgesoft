@@ -191,9 +191,14 @@ export class ApiService {
     page: number = 0,
     size: number = 10,
     searchFirstNameOrLastName: string = '',
+    filter: string = '',
   ): Observable<IdentityVaultResponseInterface> {
     let params = new HttpParams()
-      .set('searchFirstNameOrLastName', searchFirstNameOrLastName || '')
+      .set(
+        'searchFirstNameOrLastName',
+        (searchFirstNameOrLastName || '').trim(),
+      )
+      .set('filter', (filter || '').trim())
       .set('page', page.toString())
       .set('size', size.toString());
 
@@ -250,32 +255,23 @@ export class ApiService {
   // Request Access Workflow Update data
   saveaccessrequestdetails(data: any): Observable<any> {
     const token = this.authService.getToken();
-    // ❌ Stop if no token
+
     if (!token) {
       console.error('❌ No token found');
       throw new Error('User not authenticated');
     }
-
-    console.log('token', token);
-
-    console.log('environment.apiUrl', environment.apiUrl);
-
-    // if (!token) throw new Error('User not authenticated');
 
     const headers = new HttpHeaders({
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
     });
 
-    const payload = {
-      ...data,
-    };
-
-    console.log('🚀 FINAL PAYLOAD:', payload);
+    // ✅ DO NOT spread — send as-is
+    // console.log('🚀 FINAL PAYLOAD:', data);
 
     return this.http.post(
       `${environment.apiUrl}/saveaccessrequestdetails`,
-      payload,
+      data, // ✅ direct object
       { headers },
     );
   }

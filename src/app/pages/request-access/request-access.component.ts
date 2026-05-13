@@ -11,8 +11,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { NgFor, NgIf } from '@angular/common';
 
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+
 import { IdentityVaultResponseInterface } from '../../models/type';
 import { ApiService } from '../../services/api.service';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-request-access',
@@ -28,6 +32,7 @@ import { ApiService } from '../../services/api.service';
     MatButtonModule,
     MatIconModule,
     MatCheckboxModule,
+    MatProgressSpinnerModule,
     NgFor,
     NgIf,
   ],
@@ -35,124 +40,104 @@ import { ApiService } from '../../services/api.service';
   styleUrl: './request-access.component.css',
 })
 export class RequestAccessComponent implements OnInit {
+  // ===============================
+  // DATA
+  // ===============================
+  rawUsers: any[] = [];
   paginatedUsers: any[] = [];
-  filteredUsers: any[] = [];
   roles: string[] = [];
 
+  // ===============================
+  // PAGINATION
+  // ===============================
   pageSize = 10;
   pageIndex = 0;
   totalPages = 0;
   totalElements = 0;
   pages: number[] = [];
 
+  // ===============================
+  // FILTERS
+  // ===============================
   searchText = '';
   selectedFilter = '';
 
-  searchFirstNameOrLastName: string = '';
-
+  // ===============================
+  // SELECTION
+  // ===============================
   selectedUsers: any[] = [];
 
-  // ✅ PAGE CACHE
-  pageCache: { [key: number]: any[] } = {};
+  // ===============================
+  // CACHE
+  // ===============================
+  pageCache: {
+    [key: string]: {
+      users: any[];
+      totalPages: number;
+      totalElements: number;
+    };
+  } = {};
+
+  isLoading = false;
+  // ===============================
+  // RXJS SEARCH
+  // ===============================
+  private searchSubject = new Subject<string>();
 
   constructor(private api: ApiService) {}
 
   ngOnInit() {
+    this.searchSubject
+      .pipe(debounceTime(400), distinctUntilChanged())
+      .subscribe(() => {
+        this.pageIndex = 0;
+        this.pageCache = {};
+        this.fetchUsers();
+      });
+
     this.fetchUsers();
   }
 
-  // ✅ MAIN FETCH
+  // ===============================
+  // FETCH USERS
+  // ===============================
   fetchUsers() {
-    // ✅ IF PAGE EXISTS IN CACHE
-    if (this.pageCache[this.pageIndex]) {
-      this.paginatedUsers = this.pageCache[this.pageIndex];
-      this.filteredUsers = this.pageCache[this.pageIndex];
+    const search = (this.searchText || '').trim();
+    const filter = (this.selectedFilter || '').trim();
 
+    const cacheKey = `${this.pageIndex}_${search}_${filter}`;
+
+    // ===============================
+    // CACHE HIT
+    // ===============================
+    if (this.pageCache[cacheKey]) {
+      this.isLoading = false; // ✅ FIX: ensure loader stops on cache
+
+      const cached = this.pageCache[cacheKey];
+      this.rawUsers = cached.users;
+      this.totalPages = cached.totalPages;
+      this.totalElements = cached.totalElements;
+
+      this.paginatedUsers = [...this.rawUsers];
       this.generatePages();
-
-      // preload next pages silently
-      this.preloadNextPages();
-
       return;
     }
 
-    // ✅ API CALL
+    // ===============================
+    // API CALL
+    // ===============================
+    this.isLoading = true;
+
     this.api
-      .getlistofidentityvaults(
-        this.pageIndex,
-        this.pageSize,
-        this.searchFirstNameOrLastName,
-      )
-      .subscribe((res: IdentityVaultResponseInterface) => {
-        const mappedUsers = (res.content || []).map((u: any) => ({
-          id: u.id,
-          namepass: `${u.firstName || ''} ${u.lastName || ''}`,
-          emailpass: u.email,
-          name: `${u.firstName || ''} ${u.lastName || ''}`,
-          company: u.company,
-          role: u.job_title,
-          manager: u.manager,
-          employeeType: u.department || '-',
-          status: 'Active',
-          profileImage: '/images/profile.png',
-        }));
+      .getlistofidentityvaults(this.pageIndex, this.pageSize, search, filter)
+      .subscribe({
+        next: (res: IdentityVaultResponseInterface) => {
+          this.isLoading = false; // ✅ stop loader on success
 
-        this.roles = [
-          ...new Set(mappedUsers.map((u) => u.role).filter(Boolean)),
-        ];
-
-        this.filteredUsers = mappedUsers.filter((user: any) => {
-          const searchMatch =
-            user.name?.toLowerCase().includes(this.searchText.toLowerCase()) ||
-            user.company
-              ?.toLowerCase()
-              .includes(this.searchText.toLowerCase()) ||
-            user.role?.toLowerCase().includes(this.searchText.toLowerCase());
-
-          const filterMatch =
-            !this.selectedFilter || user.role === this.selectedFilter;
-
-          return searchMatch && filterMatch;
-        });
-
-        this.paginatedUsers = this.filteredUsers;
-
-        // ✅ STORE IN CACHE
-        this.pageCache[this.pageIndex] = this.filteredUsers;
-
-        this.totalPages = res.totalPages;
-        this.totalElements = res.totalElements;
-
-        this.generatePages();
-
-        // ✅ PRELOAD NEXT 2 PAGES
-        this.preloadNextPages();
-      });
-  }
-
-  // ✅ PRELOAD NEXT 2 PAGES SILENTLY
-  preloadNextPages() {
-    const nextPages = [this.pageIndex + 1, this.pageIndex + 2];
-
-    nextPages.forEach((page) => {
-      // skip invalid pages
-      if (page >= this.totalPages) return;
-
-      // skip already cached
-      if (this.pageCache[page]) return;
-
-      this.api
-        .getlistofidentityvaults(
-          page,
-          this.pageSize,
-          this.searchFirstNameOrLastName,
-        )
-        .subscribe((res: IdentityVaultResponseInterface) => {
           const mappedUsers = (res.content || []).map((u: any) => ({
             id: u.id,
-            namepass: `${u.firstName || ''} ${u.lastName || ''}`,
-            emailpass: u.email,
             name: `${u.firstName || ''} ${u.lastName || ''}`,
+            emailpass: u.email,
             company: u.company,
             role: u.job_title,
             manager: u.manager,
@@ -161,41 +146,54 @@ export class RequestAccessComponent implements OnInit {
             profileImage: '/images/profile.png',
           }));
 
-          const filtered = mappedUsers.filter((user: any) => {
-            const searchMatch =
-              user.name
-                ?.toLowerCase()
-                .includes(this.searchText.toLowerCase()) ||
-              user.company
-                ?.toLowerCase()
-                .includes(this.searchText.toLowerCase()) ||
-              user.role?.toLowerCase().includes(this.searchText.toLowerCase());
+          this.rawUsers = mappedUsers;
 
-            const filterMatch =
-              !this.selectedFilter || user.role === this.selectedFilter;
+          this.roles = [
+            ...new Set(mappedUsers.map((u) => u.role).filter(Boolean)),
+          ];
 
-            return searchMatch && filterMatch;
-          });
+          this.totalPages = res.totalPages;
+          this.totalElements = res.totalElements;
 
-          // ✅ SAVE SILENTLY
-          this.pageCache[page] = filtered;
-        });
-    });
+          this.pageCache[cacheKey] = {
+            users: mappedUsers,
+            totalPages: res.totalPages,
+            totalElements: res.totalElements,
+          };
+
+          this.paginatedUsers = [...this.rawUsers];
+          this.generatePages();
+        },
+
+        error: () => {
+          this.isLoading = false; // ✅ FIX: stop loader on error
+        },
+      });
   }
 
+  // ===============================
+  // SEARCH
+  // ===============================
+  applySearch() {
+    this.searchSubject.next(this.searchText);
+  }
+
+  // ===============================
+  // FILTER
+  // ===============================
   applyFilters() {
     this.pageIndex = 0;
-
-    // ✅ CLEAR CACHE WHEN FILTER CHANGES
     this.pageCache = {};
-
     this.fetchUsers();
   }
 
+  // ===============================
+  // PAGINATION
+  // ===============================
   generatePages() {
     const visible = 3;
 
-    let start = Math.max(1, this.pageIndex + 1 - 1);
+    let start = Math.max(1, this.pageIndex + 1);
     let end = Math.min(this.totalPages, start + visible - 1);
 
     if (end - start < visible - 1) {
@@ -238,15 +236,16 @@ export class RequestAccessComponent implements OnInit {
     this.fetchUsers();
   }
 
+  // ===============================
+  // SELECTION
+  // ===============================
   isSelected(user: any): boolean {
     return this.selectedUsers.some((u) => u.id === user.id);
   }
 
   toggleSelection(user: any, checked: boolean): void {
     if (checked) {
-      const exists = this.selectedUsers.some((u) => u.id === user.id);
-
-      if (!exists) {
+      if (!this.isSelected(user)) {
         this.selectedUsers = [...this.selectedUsers, user];
       }
     } else {
