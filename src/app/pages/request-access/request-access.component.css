@@ -7,6 +7,11 @@
   overflow-y: auto;
   height: calc(100vh - 28.3rem);
 }
+.spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 .request-profile-card-wrapper {
   width: calc(20% - 1.5rem);
 }

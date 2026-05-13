@@ -28,3 +28,9 @@
 .solid-table td:nth-child(5) {
   width: 20% !important;
 }
+.checktddiv img {
+  width: 1.25rem;
+  object-fit: contain;
+  object-position: left;
+  max-width: fit-content;
+}

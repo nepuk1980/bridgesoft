@@ -8,10 +8,10 @@
         type="text"
         placeholder="Search"
         [(ngModel)]="searchText"
-        (input)="applyFilters()"
+        (input)="applySearch()"
       />
     </div>
-
+    <p>Showing {{ paginatedUsers.length }} of {{ totalElements }}</p>
     <div class="custom-filter">
       <mat-form-field>
         <mat-label>Filter</mat-label>
@@ -30,8 +30,10 @@
     </div>
   </div>
 </div>
-
-<div class="card-list-wrapper">
+<div class="spinner card-list-wrapper" *ngIf="isLoading">
+  <mat-spinner></mat-spinner>
+</div>
+<div class="card-list-wrapper" *ngIf="!isLoading">
   <div
     class="request-profile-card-wrapper"
     *ngFor="let user of paginatedUsers"
@@ -56,13 +58,17 @@
             src="/svg/profileicon.svg"
             width="15"
             height="15"
-            class="profileImg" /></span
-        >{{ user.name }}
+            class="profileImg"
+          />
+        </span>
+        {{ user.name }}
       </h6>
+
       <p><strong>Company :</strong> {{ user.company || "-" }}</p>
       <p><strong>Role :</strong> {{ user.role }}</p>
       <p><strong>Manager :</strong> {{ user.manager }}</p>
       <p><strong>Employee Type :</strong> {{ user.employeeType }}</p>
+
       <p>
         <strong>Status :</strong>
         <strong style="color: green"> {{ user.status }}</strong>
@@ -74,7 +80,7 @@
 <!-- ✅ Custom Pagination -->
 <div class="custom-pagination">
   <span class="count">
-    Showing {{ paginatedUsers.length }} of {{ filteredUsers.length }}
+    Showing {{ paginatedUsers.length }} of {{ totalElements }}
   </span>
 
   <div class="pagination-buttons">
@@ -96,6 +102,7 @@
     <button (click)="nextPage()" [disabled]="pageIndex === totalPages - 1">
       ›
     </button>
+
     <button (click)="lastPage()" [disabled]="pageIndex === totalPages - 1">
       »
     </button>

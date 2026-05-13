@@ -15,6 +15,7 @@ import { InnerheaderComponent } from '../../shared/components/innerheader/innerh
 import { ApiService } from '../../services/api.service';
 import { ReportService } from '../../services/report.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 
 interface TableRowImportant {
   folderFileName: string;
@@ -22,6 +23,14 @@ interface TableRowImportant {
   category: string;
   criticality: string;
   itemType: string;
+  access: {
+    fullControl: boolean;
+    modify: boolean;
+    readExecute: boolean;
+    listFolder: boolean;
+    read: boolean;
+    write: boolean;
+  };
 }
 
 @Component({
@@ -41,6 +50,7 @@ interface TableRowImportant {
     RouterModule,
     MatRadioModule,
     NgIf,
+    MatSnackBarModule,
   ],
   templateUrl: './request-workflow.component.html',
   styleUrl: './request-workflow.component.css',
@@ -90,7 +100,7 @@ export class RequestWorkflowComponent implements OnInit {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
 
-  constructor() {
+  constructor(private snackBar: MatSnackBar) {
     const nav = this.router.getCurrentNavigation();
 
     this.selectedUsers =
@@ -506,17 +516,29 @@ export class RequestWorkflowComponent implements OnInit {
 
   // --- SUBMISSION ---
   submitAccessRequest() {
-    const payloads: any[] = [];
-
     const itemsToSubmit = Array.from(this.selection);
 
     if (!this.selectedUsers.length || !itemsToSubmit.length) {
+      this.showMessage('Please select users and items');
       return;
     }
 
+    let totalCalls = this.selectedUsers.length * itemsToSubmit.length;
+    let successCount = 0;
+    let hasError = false;
+
     for (const user of this.selectedUsers) {
       for (const row of itemsToSubmit) {
-        payloads.push({
+        const accessList: string[] = [];
+
+        if (row.access.fullControl) accessList.push('Full');
+        if (row.access.modify) accessList.push('Modify');
+        if (row.access.readExecute) accessList.push('Read & Execute');
+        if (row.access.listFolder) accessList.push('List Folder Content');
+        if (row.access.read) accessList.push('Read');
+        if (row.access.write) accessList.push('Write');
+
+        const payload = {
           employeeName: user?.namepass ?? '',
           employeeEmail: user?.emailpass ?? '',
           folderFileName: row.folderFileName,
@@ -524,25 +546,39 @@ export class RequestWorkflowComponent implements OnInit {
           category: row.category,
           criticality: row.criticality,
           sourceType: row.itemType,
+          accessLevel: accessList.join(', '),
+        };
+
+        this.api.saveaccessrequestdetails(payload).subscribe({
+          next: () => {
+            successCount++;
+
+            // ✅ Show success only once when all calls complete
+            if (successCount === totalCalls && !hasError) {
+              this.showMessage('Access request submitted successfully');
+              this.selection.clear();
+            }
+          },
+          error: (err) => {
+            console.error('Error saving:', err);
+
+            // ✅ Show error only once
+            if (!hasError) {
+              this.showMessage('Failed to submit some requests');
+              hasError = true;
+            }
+          },
         });
       }
     }
-
-    this.api.saveaccessrequestdetails(payloads).subscribe({
-      next: (res) => {
-        // console.log('Access request submitted successfully', res);
-
-        // optional success message
-        // alert('Access request submitted successfully');
-
-        // optional reset
-        this.selection.clear();
-      },
-
-      error: (err) => {
-        console.error('Submission failed', err);
-        alert('Failed to submit access request');
-      },
+  }
+  // ✅ SNACKBAR
+  showMessage(message: string) {
+    this.snackBar.open(message, '', {
+      duration: 2000,
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
+      panelClass: ['success-snackbar'],
     });
   }
 }
