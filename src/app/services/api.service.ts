@@ -267,7 +267,7 @@ export class ApiService {
     });
 
     // ✅ DO NOT spread — send as-is
-    // console.log('🚀 FINAL PAYLOAD:', data);
+    console.log('🚀 FINAL PAYLOAD:', data);
 
     return this.http.post(
       `${environment.apiUrl}/saveaccessrequestdetails`,
