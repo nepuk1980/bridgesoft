@@ -557,6 +557,9 @@ export class RequestWorkflowComponent implements OnInit {
             if (successCount === totalCalls && !hasError) {
               this.showMessage('Access request submitted successfully');
               this.selection.clear();
+              setTimeout(() => {
+                this.router.navigate(['/request-access']);
+              }, 2200);
             }
           },
           error: (err) => {
