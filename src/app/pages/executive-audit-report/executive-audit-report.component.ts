@@ -94,7 +94,7 @@ export class ExecutiveAuditReportComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     // ✅ Extract query parameters and immediately trigger data fetch
     this.route.queryParams.subscribe((params) => {
-      this.searchText = params['employeeName'] || '';
+      // this.searchText = params['employeeName'] || '';
       this.executiveEmail = params['executiveEmail'] || '';
 
       // Reset to page 0 whenever filters change via routing

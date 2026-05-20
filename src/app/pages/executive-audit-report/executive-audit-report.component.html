@@ -9,7 +9,12 @@
     <div class="application-tab-div">
       <!-- Search -->
       <div class="search-box">
-        <input type="text" placeholder="Search" (input)="applyFilters()" />
+        <input
+          type="text"
+          placeholder="Search"
+          [(ngModel)]="searchText"
+          (input)="applyFilters()"
+        />
         <img src="/svg/search.svg" class="search-icon" />
       </div>
       <p>

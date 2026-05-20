@@ -63,24 +63,21 @@ export class ReportListComponent implements OnInit {
         this.accounts = this.executiveEmails.map((email, index) => {
           const apiResponse = responses[index];
 
-          // Format the name nicely from the email prefix
-          const localPart = email.split('@')[0];
-          const nameParts = localPart.split('.');
-          const formattedName =
-            nameParts.length > 1 ? nameParts.join(' ') : localPart;
-
-          // Extract account type from the first record in content if available
+          // Grab the first record returned by the filtered search to read its properties
           const firstRecord = apiResponse?.content?.[0];
+
+          // Safe fallback variables if the API hasn't found any records for this specific email yet
+          const fallbackName = email.split('@')[0].replace(/\./g, ' ');
           const accountType =
             firstRecord?.accountType === 'USER'
               ? 'Individual'
               : firstRecord?.accountType || 'Individual';
 
           return {
-            name: formattedName,
-            type: accountType,
+            // ✅ MAPS THE ORIGINAL FIELD DIRECTLY FROM THE API RESPONSE
+            name: firstRecord?.userDisplayname || fallbackName,
+            type: firstRecord?.accountType || accountType,
             email: email,
-            // SUCCESS: Grab totalElements directly from this specific user's filtered API response
             records: apiResponse?.totalElements || 0,
           };
         });
