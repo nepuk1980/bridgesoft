@@ -1,0 +1,50 @@
+<app-innerheader
+  title="Executive Audit Report"
+  [btn]="false"
+  btntitle=" Back To Reports"
+></app-innerheader>
+
+@if (isLoading) {
+  <div class="spinner">
+    <mat-spinner></mat-spinner>
+  </div>
+} @else {
+  <div class="dashboard-card-list">
+    @for (account of accounts; track account.email) {
+      <div
+        class="dashboard-card"
+        [routerLink]="['/reports/executive-audit-report']"
+        [queryParams]="{
+          employeeName: account.name,
+          executiveEmail: account.email,
+        }"
+      >
+        <mat-card class="card-wrapper">
+          <div class="card-content">
+            <div class="card-content-data">
+              <h6>
+                Account Name : <span>{{ account.name | titlecase }}</span>
+              </h6>
+              <h6>
+                Account Type : <span>{{ account.type }}</span>
+              </h6>
+              <h6>
+                Email : <span>{{ account.email }}</span>
+              </h6>
+            </div>
+            <div class="count-footer">
+              <h5>
+                {{ account.records | number }}
+                <span>Records</span>
+              </h5>
+            </div>
+          </div>
+        </mat-card>
+      </div>
+    } @empty {
+      <div class="no-records-fallback">
+        <h6>No corporate executives configuration found.</h6>
+      </div>
+    }
+  </div>
+}

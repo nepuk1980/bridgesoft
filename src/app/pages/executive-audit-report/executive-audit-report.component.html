@@ -9,12 +9,7 @@
     <div class="application-tab-div">
       <!-- Search -->
       <div class="search-box">
-        <input
-          type="text"
-          placeholder="Search"
-          [(ngModel)]="searchText"
-          (input)="applyFilters()"
-        />
+        <input type="text" placeholder="Search" (input)="applyFilters()" />
         <img src="/svg/search.svg" class="search-icon" />
       </div>
       <p>
@@ -62,7 +57,7 @@
               <mat-option value="">Filter</mat-option>
 
               <mat-option *ngFor="let item of filters" [value]="item.value">
-                {{ item.viewValue }}
+                {{ item.value }}
               </mat-option>
             </mat-select>
           </mat-form-field>
@@ -167,4 +162,11 @@
     </div>
   </div>
 }
+
+<div class="loader-overlay" *ngIf="isDownloading">
+  <div class="loader-content">
+    <!-- You can use an <img> svg here or a CSS spinner -->
+    <p>Generating Report, please wait...</p>
+  </div>
+</div>
 <router-outlet></router-outlet>
