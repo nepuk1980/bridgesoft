@@ -31,6 +31,7 @@ import { ReportComponent } from './pages/report/report.component';
 import { ExecutiveAuditReportComponent } from './pages/executive-audit-report/executive-audit-report.component';
 import { AgentLayoutComponent } from './layout/agent-layout/agent-layout.component';
 import { AgentComponent } from './pages/agent/agent.component';
+import { ReportListComponent } from './pages/report-list/report-list.component';
 
 export const routes: Routes = [
   {
@@ -216,6 +217,14 @@ export const routes: Routes = [
       {
         path: '',
         component: ReportComponent,
+      },
+      {
+        path: 'executive-audit-report-list',
+        component: ReportListComponent,
+        data: {
+          breadcrumb: 'Executive Audit Report',
+          animation: 'ReportListPage',
+        },
       },
       {
         path: 'executive-audit-report',

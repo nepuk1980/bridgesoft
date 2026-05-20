@@ -1,7 +1,7 @@
 import { Component, ViewChild, AfterViewInit, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { RouterModule, ActivatedRoute } from '@angular/router';
 
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
@@ -54,6 +54,7 @@ export class ExecutiveAuditReportComponent implements OnInit, AfterViewInit {
   constructor(
     private reportService: ReportService,
     private api: ApiService,
+    private route: ActivatedRoute,
   ) {}
 
   // ================= TABLE =================
@@ -71,9 +72,12 @@ export class ExecutiveAuditReportComponent implements OnInit, AfterViewInit {
 
   // ================= UI STATE =================
   searchText = '';
+  executiveEmail = '';
   selectedFilter = '';
   filters: Filter[] = [];
   selectedDownload = 'download';
+  isLoading = false;
+  isDownloading = false;
 
   // ================= PAGINATION =================
   pageSize = 10;
@@ -88,8 +92,16 @@ export class ExecutiveAuditReportComponent implements OnInit, AfterViewInit {
 
   // ================= LIFECYCLE =================
   ngOnInit(): void {
-    this.loadAuditData();
-    this.loadFilters();
+    // ✅ Extract query parameters and immediately trigger data fetch
+    this.route.queryParams.subscribe((params) => {
+      this.searchText = params['employeeName'] || '';
+      this.executiveEmail = params['executiveEmail'] || '';
+
+      // Reset to page 0 whenever filters change via routing
+      this.pageIndex = 0;
+      this.loadAuditData(this.pageIndex, this.pageSize);
+      this.loadFilters(); // ✅ Dynamic filtering based on current context
+    });
   }
 
   ngAfterViewInit(): void {
@@ -116,7 +128,13 @@ export class ExecutiveAuditReportComponent implements OnInit, AfterViewInit {
   // ================= API LOAD =================
   loadAuditData(page: number = 0, size: number = this.pageSize): void {
     this.api
-      .getexecutiveauditreport(this.searchText, this.selectedFilter, page, size)
+      .getexecutiveauditreport(
+        this.searchText,
+        this.executiveEmail,
+        this.selectedFilter,
+        page,
+        size,
+      )
       .subscribe({
         next: (res: ExecutiveAuditReportsInterface) => {
           const mappedData = res.content.map((item) =>
@@ -137,19 +155,22 @@ export class ExecutiveAuditReportComponent implements OnInit, AfterViewInit {
 
   // ================= FILTER =================
   private loadFilters(): void {
-    this.api.getexecutiveauditreport('', '', 0, 1000).subscribe({
-      next: (res: ExecutiveAuditReportsInterface) => {
-        const uniqueEventTypes = Array.from(
-          new Set(res.content.map((x) => x.datasourceType)),
-        );
+    // ✅ FIX: Use active scope parameters instead of a global scan to keep it fast
+    this.api
+      .getexecutiveauditreport(this.searchText, this.executiveEmail, '', 0, 100)
+      .subscribe({
+        next: (res: ExecutiveAuditReportsInterface) => {
+          const uniqueEventTypes = Array.from(
+            new Set(res.content.map((x) => x.datasourceType)),
+          );
 
-        this.filters = uniqueEventTypes.map((v) => ({
-          value: v,
-          viewValue: v,
-        }));
-      },
-      error: (err) => console.error('Filter API Error:', err),
-    });
+          this.filters = uniqueEventTypes.map((v) => ({
+            value: v,
+            viewValue: v,
+          }));
+        },
+        error: (err) => console.error('Filter API Error:', err),
+      });
   }
 
   applyFilters(): void {
@@ -208,9 +229,7 @@ export class ExecutiveAuditReportComponent implements OnInit, AfterViewInit {
   // ================= EXPORT =================
   private getFormattedDateTime(): string {
     const now = new Date();
-
     const date = now.toLocaleDateString('en-GB').replace(/\//g, '-');
-
     const time = now
       .toLocaleTimeString('en-GB', {
         hour: '2-digit',
@@ -221,13 +240,15 @@ export class ExecutiveAuditReportComponent implements OnInit, AfterViewInit {
 
     return `${date}_${time}`;
   }
-  isLoading = false;
+
   private fetchAllDataAndExport(type: 'excel' | 'csv' | 'pdf'): void {
     this.isLoading = true;
+    this.isDownloading = true;
 
     this.api
       .getexecutiveauditreport(
         this.searchText,
+        this.executiveEmail,
         this.selectedFilter,
         0,
         this.totalElements || 10000,
@@ -235,11 +256,11 @@ export class ExecutiveAuditReportComponent implements OnInit, AfterViewInit {
       .subscribe({
         next: (res: ExecutiveAuditReportsInterface) => {
           this.isLoading = false;
-
+          this.isDownloading = false;
           const items = res?.content ?? [];
 
-          // ✅ No trimming — export FULL dataset
-          const exportData = items.map((item) => ({
+          const exportData = items.map((item, index) => ({
+            'Sr No': index + 1,
             Id: item.id ?? '-',
             'Source System': item.sourceSystem ?? '-',
             'Event Id': item.eventId ?? '-',
@@ -291,7 +312,7 @@ export class ExecutiveAuditReportComponent implements OnInit, AfterViewInit {
           const title = 'Executive Audit Report';
           const desc =
             'Daily scheduled search of VIP OD personal spaces for unauthorized access.';
-          const filter = `EventTime = ${timestamp} [ And ] DataSource=${items[0].datasourceType} [AND] Account Name!=${items[0].accountName}`;
+          const filter = `EventTime = ${timestamp} [ And ] DataSource=${items[0]?.datasourceType ?? ''} [AND] Account Name!=${items[0]?.accountName ?? ''}`;
 
           switch (type) {
             case 'excel':
@@ -317,9 +338,7 @@ export class ExecutiveAuditReportComponent implements OnInit, AfterViewInit {
                 exportData,
                 filename,
                 title,
-                {
-                  mode: 'wide',
-                },
+                { mode: 'wide' },
                 desc,
                 filter,
               );
@@ -329,6 +348,7 @@ export class ExecutiveAuditReportComponent implements OnInit, AfterViewInit {
         error: (err) => {
           console.error('Export API Error:', err);
           this.isLoading = false;
+          this.isDownloading = false;
         },
       });
   }
@@ -336,11 +356,9 @@ export class ExecutiveAuditReportComponent implements OnInit, AfterViewInit {
   downloadExcel() {
     this.fetchAllDataAndExport('excel');
   }
-
   downloadCSV() {
     this.fetchAllDataAndExport('csv');
   }
-
   downloadPDF() {
     this.fetchAllDataAndExport('pdf');
   }

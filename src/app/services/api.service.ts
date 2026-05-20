@@ -457,12 +457,14 @@ export class ApiService {
   // Reports
   getexecutiveauditreport(
     searchEmployeeName: string,
+    executiveEmail: string, // ✅ Updated parameter list
     filter: string,
     page: number,
     size: number,
   ): Observable<ExecutiveAuditReportsInterface> {
     let params = new HttpParams()
       .set('searchEmployeeName', searchEmployeeName || '')
+      .set('executiveEmail', executiveEmail || '') // ✅ Bound parameter
       .set('filter', filter || '')
       .set('page', page.toString())
       .set('size', size.toString());
