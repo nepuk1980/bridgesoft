@@ -33,7 +33,6 @@ export class ReportListComponent implements OnInit {
 
   // The base list of executive emails you want to display cards for
   private executiveEmails: string[] = [
-    'ravi@sharepoint',
     'Greg.Anderson@allegiantair.com',
     'Laura.Overton@allegiantair.com',
     'Maury.Gallagher@allegiantair.com',
