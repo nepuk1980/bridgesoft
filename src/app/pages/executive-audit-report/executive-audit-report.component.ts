@@ -315,7 +315,7 @@ export class ExecutiveAuditReportComponent implements OnInit, AfterViewInit {
           const title = 'Executive Audit Report';
           const desc =
             'Daily scheduled search of VIP OD personal spaces for unauthorized access.';
-          const filter = `EventTime = ${timestamp} [ And ] DataSource=${items[0]?.datasourceType ?? ''} [AND] Account Name!=${items[0]?.accountName ?? ''}`;
+          const filter = `EventTime = ${timestamp} [ And ] DataSource=${items[0]?.datasourceType ?? ''} [AND] Account Name!=${items[0]?.userEmail ?? ''}`;
 
           switch (type) {
             case 'excel':
