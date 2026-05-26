@@ -40,6 +40,7 @@ export class ReportListComponent implements OnInit {
     'Robert.Goldberg@allegiantair.com',
     'Robert.Neal@allegiantair.com',
     'Tyler.Hollingsworth@allegiantair.com',
+    'Drew.Wells@allegiantair.com',
   ];
 
   constructor(private api: ApiService) {}
@@ -74,7 +75,7 @@ export class ReportListComponent implements OnInit {
 
           return {
             // ✅ MAPS THE ORIGINAL FIELD DIRECTLY FROM THE API RESPONSE
-            name: firstRecord?.userDisplayname || fallbackName,
+            name: firstRecord?.targetUserDisplayName || fallbackName,
             type: firstRecord?.accountType || accountType,
             email: email,
             records: apiResponse?.totalElements || 0,

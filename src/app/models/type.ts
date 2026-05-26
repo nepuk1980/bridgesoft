@@ -295,6 +295,9 @@ export interface ExecutiveAuditReportsInterface {
     permissionsAfterChange: string;
     changedPermissionFlag: boolean;
     resourceOwner: string;
+    targetUserEmail: string;
+    targetUserDisplayName: string;
+    targetOneDrivePathKey: string;
     connectionType: string;
     clientIp: string;
     client: string;
