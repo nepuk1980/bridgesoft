@@ -187,6 +187,7 @@ export class FilefoldersharepopupComponent implements AfterViewInit, OnInit {
 
       return;
     }
+    this.isLoading = true;
 
     // ✅ Request in-flight
     if (this.requestCache.has(key)) {

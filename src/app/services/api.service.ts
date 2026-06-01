@@ -4,14 +4,17 @@ import { Observable } from 'rxjs';
 
 import { environment } from '../../environments/environment';
 import {
+  AlertInterface,
   ApplicationAccountsResponseInterface,
   ApplicationResponseInterface,
   AuditResponseInterface,
   ExecutiveAuditReportsInterface,
   FileSystemAccessSummaryInterface,
   FileSystemResponseInterface,
+  GetADGroupInterface,
   IdentityVaultDetailResponseInterface,
   IdentityVaultResponseInterface,
+  NotificationInterface,
   RequestAccessWorkflowInterface,
   ReviewAccessInterface,
   RuleResponseInterface,
@@ -472,6 +475,39 @@ export class ApiService {
     return this.http.get<ExecutiveAuditReportsInterface>(
       `${environment.apiUrl}/getexecutiveauditreport`,
       { params },
+    );
+  }
+
+  // Notification
+  getgetnotifications(
+    page: number,
+    size: number,
+  ): Observable<NotificationInterface> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    return this.http.get<NotificationInterface>(
+      `${environment.apiUrl}/getnotifications`,
+      { params },
+    );
+  }
+
+  // Alert
+  getalerts(page: number, size: number): Observable<AlertInterface> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    return this.http.get<AlertInterface>(`${environment.apiUrl}/getalerts`, {
+      params,
+    });
+  }
+
+  // ✅ Identity Vault Application Details
+  getadgroups(): Observable<GetADGroupInterface[]> {
+    return this.http.get<GetADGroupInterface[]>(
+      `${environment.apiUrl}/getadgroups`,
     );
   }
 }

@@ -16,7 +16,11 @@ import { MatInputModule } from '@angular/material/input';
 import { provideNativeDateAdapter } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatTimepickerModule } from '@angular/material/timepicker';
+import { ApiService } from '../../services/api.service';
 
+export interface SomeOne {
+  groupName: string;
+}
 interface Resource {
   name: string;
   type?: 'file' | 'folder';
@@ -102,7 +106,7 @@ export class AlertConfigurationComponent {
   includeAccessDataSource = new MatTreeNestedDataSource<TreeNode>();
   excludeAccessDataSource = new MatTreeNestedDataSource<TreeNode>();
 
-  constructor() {
+  constructor(private api: ApiService) {
     /* FILTER GROUPS */
 
     const includeGroups = GROUP_TREE.filter((g) => g.filter === 'Include');
@@ -147,6 +151,20 @@ export class AlertConfigurationComponent {
       this.excludeTreeControl.expand(excludeGroups[0]);
       this.selectedExcludeNode = excludeGroups[0];
     }
+  }
+  groupNames: string[] = [];
+  selecteAccessFolder: string = '';
+  // ✅ Init
+  ngOnInit(): void {
+    this.getADGroup();
+  }
+
+  getADGroup(): void {
+    this.api.getadgroups().subscribe({
+      next: (res) => {
+        this.groupNames = res.map((item) => item.groupName);
+      },
+    });
   }
 
   /* ---------- TREE HELPER ---------- */

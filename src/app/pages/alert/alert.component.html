@@ -5,6 +5,40 @@
 ></app-innerheader>
 
 <div class="mainWrapper">
+  <div class="popup-search-filter-div">
+    <p>
+      Showing results {{ dataSource.data.length }} of
+      {{ totalElements }}
+    </p>
+    <div class="filter-grp-div">
+      <div class="custom-filter no-icon">
+        <mat-form-field>
+          <mat-label>Download</mat-label>
+          <mat-select
+            [(ngModel)]="selectedDownload"
+            panelClass="custom-filter-panel"
+          >
+            <mat-option value="download">Download</mat-option>
+            <mat-option value="pdf" (click)="downloadPDF()"
+              ><div class="icontexttd">
+                <img src="/svg/pdf.svg" class="icons" alt="pdf" /> PDF
+              </div></mat-option
+            >
+            <mat-option value="excel" (click)="downloadExcel()"
+              ><div class="icontexttd">
+                <img src="/svg/excel.svg" class="icons" alt="excel" /> Excel
+              </div></mat-option
+            >
+            <mat-option value="csv" (click)="downloadCSV()"
+              ><div class="icontexttd">
+                <img src="/svg/csv.svg" class="icons" alt="csv" /> CSV
+              </div></mat-option
+            >
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
+  </div>
   <div class="solid-table table-wrapper">
     <div class="table-wrapper">
       <table mat-table [dataSource]="dataSource" class="custom-table">
@@ -55,7 +89,7 @@
               <button mat-icon-button>
                 <img src="/svg/copy.svg" alt="copy" class="editico" />
               </button>
-              <button mat-icon-button (click)="delete(element)">
+              <button mat-icon-button>
                 <img src="/svg/delete.svg" alt="delete" class="deleteico" />
               </button>
             </div>
@@ -74,9 +108,46 @@
       </table>
     </div>
   </div>
+  <!-- ✅ Custom Pagination -->
+  <div class="custom-pagination">
+    <span class="count">
+      Showing {{ dataSource.data.length }} of {{ totalElements }}
+    </span>
+
+    <div class="pagination-buttons">
+      <button (click)="firstPage()" [disabled]="pageIndex === 0">«</button>
+      <button (click)="prevPage()" [disabled]="pageIndex === 0">‹</button>
+
+      <span *ngIf="pages[0] > 1">...</span>
+
+      <button
+        *ngFor="let p of pages"
+        (click)="goToPage(p)"
+        [class.active]="p === pageIndex + 1"
+      >
+        {{ p }}
+      </button>
+
+      <span *ngIf="pages[pages.length - 1] < totalPages">...</span>
+
+      <button (click)="nextPage()" [disabled]="pageIndex === totalPages - 1">
+        ›
+      </button>
+      <button (click)="lastPage()" [disabled]="pageIndex === totalPages - 1">
+        »
+      </button>
+    </div>
+  </div>
 </div>
 <div class="fixed-btn">
   <button mat-flat-button routerLink="alerts-configuration" class="btn-blue">
     Create A New Alert
   </button>
+</div>
+
+<div class="loader-overlay" *ngIf="isDownloading">
+  <div class="loader-content">
+    <!-- You can use an <img> svg here or a CSS spinner -->
+    <p>Generating Report, please wait...</p>
+  </div>
 </div>

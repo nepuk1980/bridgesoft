@@ -24,14 +24,14 @@
 
       <div class="filter-field no-icon custom-filter">
         <mat-form-field>
-          <mat-label>Add Access Folder</mat-label>
-          <mat-select panelClass="custom-filter-panel">
+          <mat-select
+            panelClass="custom-filter-panel"
+            [(ngModel)]="selecteAccessFolder"
+          >
             <mat-option value="">Add Access Folder</mat-option>
-            <mat-option value="">Everyone</mat-option>
-            <mat-option value="">Human Resources</mat-option>
-            <mat-option value="">Finance</mat-option>
-            <mat-option value="">Legal</mat-option>
-            <mat-option value="">Administration</mat-option>
+            <mat-option *ngFor="let group of groupNames" [value]="group">
+              {{ group }}
+            </mat-option>
           </mat-select>
         </mat-form-field>
       </div>
