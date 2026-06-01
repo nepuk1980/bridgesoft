@@ -1,0 +1,35 @@
+.popup-search-filter-div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.solid-table {
+  height: calc(100vh - 28.9rem);
+  overflow: auto;
+}
+
+.solid-table th:nth-child(1),
+.solid-table td:nth-child(1) {
+  width: 20% !important;
+}
+
+.solid-table th:nth-child(2),
+.solid-table td:nth-child(2) {
+  width: 40% !important;
+}
+.solid-table th:nth-child(3),
+.solid-table td:nth-child(3) {
+  width: 10% !important;
+}
+.solid-table th:nth-child(4),
+.solid-table td:nth-child(4) {
+  width: 10% !important;
+}
+.solid-table th:nth-child(5),
+.solid-table td:nth-child(5) {
+  width: 10% !important;
+}
+.solid-table th:nth-child(6),
+.solid-table td:nth-child(6) {
+  width: 10% !important;
+}

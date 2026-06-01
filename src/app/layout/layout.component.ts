@@ -6,6 +6,7 @@ import {
   RouterModule,
   RouterOutlet,
 } from '@angular/router';
+import { filter } from 'rxjs';
 
 import { MatSidenavModule, MatSidenav } from '@angular/material/sidenav';
 import { MatToolbarModule } from '@angular/material/toolbar';
@@ -13,12 +14,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
 import { MatBadgeModule } from '@angular/material/badge';
-import { NgxSkeletonLoaderComponent } from 'ngx-skeleton-loader';
+import { MatDividerModule } from '@angular/material/divider';
 import { MatDialog } from '@angular/material/dialog';
-import { NotificationpopupComponent } from '../shared/components/notificationpopup/notificationpopup.component';
-import { filter } from 'rxjs';
 
-// ✅ ADDED
 import {
   trigger,
   transition,
@@ -27,11 +25,17 @@ import {
   query,
   group,
 } from '@angular/animations';
-import { MatDividerModule } from '@angular/material/divider';
+
 import { NgFor, NgIf } from '@angular/common';
+import { NgxSkeletonLoaderComponent } from 'ngx-skeleton-loader';
+
+import { NotificationpopupComponent } from '../shared/components/notificationpopup/notificationpopup.component';
+import { ApiService } from '../services/api.service';
+import { NotificationInterface } from '../models/type';
 
 @Component({
   selector: 'app-layout',
+  standalone: true,
   imports: [
     RouterModule,
     RouterOutlet,
@@ -49,8 +53,6 @@ import { NgFor, NgIf } from '@angular/common';
   ],
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.css',
-
-  // ✅ ADDED
   animations: [
     trigger('routeAnimations', [
       transition('* <=> *', [
@@ -66,10 +68,7 @@ import { NgFor, NgIf } from '@angular/common';
           ],
           { optional: true },
         ),
-
         group([
-          // ✅ IMPORTANT FIX
-
           query(
             ':leave',
             [
@@ -83,7 +82,6 @@ import { NgFor, NgIf } from '@angular/common';
             ],
             { optional: true },
           ),
-
           query(
             ':enter',
             [
@@ -108,13 +106,23 @@ import { NgFor, NgIf } from '@angular/common';
 })
 export class LayoutComponent {
   private dialog = inject(MatDialog);
+
   @ViewChild('drawer') drawer!: MatSidenav;
+
+  constructor(
+    private api: ApiService,
+    private router: Router,
+  ) {}
 
   isDashboard = true;
 
-  constructor(private router: Router) {}
+  hidden = false;
 
-  ngOnInit() {
+  // API DATA
+  notifications: any[] = [];
+  loadingNotifications = false;
+
+  ngOnInit(): void {
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event: any) => {
@@ -122,164 +130,49 @@ export class LayoutComponent {
 
         if (url === '/' || url === '/dashboard') {
           this.isDashboard = true;
-          setTimeout(() => this.drawer.open());
+          setTimeout(() => this.drawer?.open());
         } else {
           this.isDashboard = false;
-          setTimeout(() => this.drawer.close());
+          setTimeout(() => this.drawer?.close());
         }
       });
+
+    this.getNotifications();
   }
 
-  // ✅ ADDED
   prepareRoute(outlet: RouterOutlet) {
     return outlet?.activatedRouteData?.['animation'];
   }
-
-  hidden = false;
-  notification = 15;
 
   toggleBadgeVisibility() {
     this.hidden = true;
   }
 
-  notifications = [
-    {
-      notification:
-        'Bob Smith (EMP2371Y) logged in during off hours into file system',
-      sourceIp: '103.25.45.210',
-      resource: 'Fileshare Login',
-      resourceType: '',
-      targetUser: 'Bob Smith',
-      time: '02 / 12 / 2026 12:21 PM',
-    },
-    {
-      notification:
-        'User Timothy Leet (EMP2391B) from HR requested for access in Legal File',
-      sourceIp: '103.25.45.211',
-      resource: 'Fileshare Legal File',
-      resourceType: 'file',
-      targetUser: 'Timothy Leet',
-      time: '02 / 12 / 2026 09:22 AM',
-    },
-    {
-      notification:
-        'Multiple requests raised at the same time for a single user Michelle Saget (EMP2015C)',
-      sourceIp: '103.25.45.212',
-      resource: 'Fileshare Access',
-      resourceType: 'folder',
-      targetUser: 'Michelle Saget',
-      time: '02 / 12 / 2026 07:13 AM',
-    },
-    {
-      notification:
-        'Unauthorised access for Vendor Policy detected by user Ben Smithson (EMP0932V)',
-      sourceIp: '103.25.45.210',
-      resource: 'Vendor Policy',
-      resourceType: 'folder',
-      targetUser: 'Ben Smithson',
-      time: '02 / 11 / 2026 03:36 PM',
-    },
-    {
-      notification:
-        'Art Schuram (EMP2251Y) logged in during off hours into file system',
-      sourceIp: '103.25.45.210',
-      resource: 'Fileshare Login',
-      resourceType: '',
-      targetUser: 'Art Schuram',
-      time: '02 / 11 / 2026 11:24 AM',
-    },
-    {
-      notification:
-        'Bob Smith (EMP2371Y) logged in during off hours into file system',
-      sourceIp: '103.25.45.210',
-      resource: 'Fileshare Login',
-      resourceType: '',
-      targetUser: 'Bob Smith',
-      time: '02 / 12 / 2026 12:21 PM',
-    },
-    {
-      notification:
-        'User Timothy Leet (EMP2391B) from HR requested for access in Legal File',
-      sourceIp: '103.25.45.211',
-      resource: 'Fileshare Legal File',
-      resourceType: 'file',
-      targetUser: 'Timothy Leet',
-      time: '02 / 12 / 2026 09:22 AM',
-    },
-    {
-      notification:
-        'Multiple requests raised at the same time for a single user Michelle Saget (EMP2015C)',
-      sourceIp: '103.25.45.212',
-      resource: 'Fileshare Access',
-      resourceType: 'folder',
-      targetUser: 'Michelle Saget',
-      time: '02 / 12 / 2026 07:13 AM',
-    },
-    {
-      notification:
-        'Unauthorised access for Vendor Policy detected by user Ben Smithson (EMP0932V)',
-      sourceIp: '103.25.45.210',
-      resource: 'Vendor Policy',
-      resourceType: 'folder',
-      targetUser: 'Ben Smithson',
-      time: '02 / 11 / 2026 03:36 PM',
-    },
-    {
-      notification:
-        'Art Schuram (EMP2251Y) logged in during off hours into file system',
-      sourceIp: '103.25.45.210',
-      resource: 'Fileshare Login',
-      resourceType: '',
-      targetUser: 'Art Schuram',
-      time: '02 / 11 / 2026 11:24 AM',
-    },
-    {
-      notification:
-        'Bob Smith (EMP2371Y) logged in during off hours into file system',
-      sourceIp: '103.25.45.210',
-      resource: 'Fileshare Login',
-      resourceType: '',
-      targetUser: 'Bob Smith',
-      time: '02 / 12 / 2026 12:21 PM',
-    },
-    {
-      notification:
-        'User Timothy Leet (EMP2391B) from HR requested for access in Legal File',
-      sourceIp: '103.25.45.211',
-      resource: 'Fileshare Legal File',
-      resourceType: 'file',
-      targetUser: 'Timothy Leet',
-      time: '02 / 12 / 2026 09:22 AM',
-    },
-    {
-      notification:
-        'Multiple requests raised at the same time for a single user Michelle Saget (EMP2015C)',
-      sourceIp: '103.25.45.212',
-      resource: 'Fileshare Access',
-      resourceType: 'folder',
-      targetUser: 'Michelle Saget',
-      time: '02 / 12 / 2026 07:13 AM',
-    },
-    {
-      notification:
-        'Unauthorised access for Vendor Policy detected by user Ben Smithson (EMP0932V)',
-      sourceIp: '103.25.45.210',
-      resource: 'Vendor Policy',
-      resourceType: 'folder',
-      targetUser: 'Ben Smithson',
-      time: '02 / 11 / 2026 03:36 PM',
-    },
-    {
-      notification:
-        'Art Schuram (EMP2251Y) logged in during off hours into file system',
-      sourceIp: '103.25.45.210',
-      resource: 'Fileshare Login',
-      resourceType: '',
-      targetUser: 'Art Schuram',
-      time: '02 / 11 / 2026 11:24 AM',
-    },
-  ];
-  dataSource = [...this.notifications];
+  page = 0;
+  size = 10;
+  totalElements = 0;
+
+  getNotifications() {
+    this.loadingNotifications = true;
+
+    this.api.getgetnotifications(this.page, this.size).subscribe({
+      next: (res: NotificationInterface) => {
+        this.notifications = res.content ?? [];
+        this.totalElements = res.totalElements ?? 0;
+
+        this.loadingNotifications = false;
+      },
+      error: (err) => {
+        console.error('Notification API Error:', err);
+        this.loadingNotifications = false;
+      },
+    });
+  }
+
+  get notificationCount(): number {
+    return this.notifications.length;
+  }
+
   openNotificationDialog() {
     this.dialog.open(NotificationpopupComponent, {
       width: '85.75rem',

@@ -427,3 +427,110 @@ export interface AuditResponseInterface {
   numberOfElements: number;
   empty: boolean;
 }
+
+export interface NotificationInterface {
+  content: {
+    id: number;
+    notification: string;
+    sourceIp: string;
+    resource: string;
+    target_user: string;
+    notificationTime: string;
+    createdDate: string;
+  }[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      unsorted: boolean;
+      empty: boolean;
+      sorted: boolean;
+    };
+    offset: number;
+    unpaged: boolean;
+    paged: boolean;
+  };
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+  size: number;
+  number: number;
+  sort: {
+    unsorted: boolean;
+    empty: boolean;
+    sorted: boolean;
+  };
+  first: boolean;
+  numberOfElements: number;
+  empty: boolean;
+}
+
+export interface AlertInterface {
+  content: {
+    id: number;
+    alertName: string;
+    alertDesc: string;
+    whenSomeone: string;
+    alertAction: string;
+    alertResources: string;
+    includeGroups: string;
+    includeUsers: string;
+    includeResources: string;
+    excludeGroups: string;
+    excludeUsers: string;
+    excludeResources: string;
+    allTheTime: boolean;
+    fromDate: string | null;
+    toDate: string | null;
+    days: string;
+    timeZone: string;
+    alertTime: string | null;
+    alertMode: string;
+    createdDate: string | null;
+    updatedDate: string | null;
+    deletedDate: string | null;
+    alertUsers: number;
+    alertFolders: number;
+    alertFiles: number;
+  }[];
+
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      unsorted: boolean;
+      empty: boolean;
+      sorted: boolean;
+    };
+    offset: number;
+    unpaged: boolean;
+    paged: boolean;
+  };
+
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+  size: number;
+  number: number;
+
+  sort: {
+    unsorted: boolean;
+    empty: boolean;
+    sorted: boolean;
+  };
+
+  first: boolean;
+  numberOfElements: number;
+  empty: boolean;
+}
+
+export interface GetADGroupInterface {
+  id: number;
+  groupName: string;
+  distinguishedName: string;
+  managedBy: string;
+  memberCount: string;
+  parentGroups: string;
+  groupCategory: string;
+  groupScope: string;
+}

@@ -20,19 +20,26 @@
     <div class="notificationWrapper">
       <button
         mat-icon-button
-        [matBadge]="notification"
+        [matBadge]="notificationCount"
         matBadgeSize="large"
-        [matBadgeHidden]="hidden"
+        [matBadgeHidden]="hidden || notificationCount === 0"
         (click)="handleNotificationClick()"
         class="notibtn"
       >
         <img src="/svg/alerts.svg" />
       </button>
 
-      <div class="notificationlist" *ngIf="!hidden">
-        <p *ngFor="let item of dataSource">
+      <div class="notificationlist" *ngIf="!hidden && notifications.length > 0">
+        <p *ngFor="let item of notifications">
           {{ item.notification }}
         </p>
+      </div>
+
+      <div
+        class="notificationlist"
+        *ngIf="!hidden && notifications.length === 0"
+      >
+        <p>No notifications found</p>
       </div>
     </div>
 
