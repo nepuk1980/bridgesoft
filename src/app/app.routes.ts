@@ -144,22 +144,22 @@ export const routes: Routes = [
         path: '',
         component: ReviewAccessComponent,
       },
-      {
-        path: 'review-access-detail',
-        component: ReviewAccessDetailComponent,
-        data: {
-          breadcrumb: 'Review Access',
-          animation: 'ReviewAccessDetailPage',
-        },
-      },
-      {
-        path: 'sod-detail',
-        component: SodDetailComponent,
-        data: {
-          breadcrumb: 'Review Access',
-          animation: 'SodDetailPage',
-        },
-      },
+      // {
+      //   path: 'review-access-detail',
+      //   component: ReviewAccessDetailComponent,
+      //   data: {
+      //     breadcrumb: 'Review Access',
+      //     animation: 'ReviewAccessDetailPage',
+      //   },
+      // },
+      // {
+      //   path: 'sod-detail',
+      //   component: SodDetailComponent,
+      //   data: {
+      //     breadcrumb: 'Review Access',
+      //     animation: 'SodDetailPage',
+      //   },
+      // },
     ],
   },
   {

@@ -29,10 +29,18 @@
         <img src="/svg/alerts.svg" />
       </button>
 
-      <div class="notificationlist" *ngIf="!hidden && notifications.length > 0">
+      <div
+        class="notificationlist"
+        *ngIf="!hidden && notifications.length > 0"
+        (scroll)="onNotificationScroll($event)"
+      >
         <p *ngFor="let item of notifications">
           {{ item.notification }}
         </p>
+
+        <div class="spinner" *ngIf="loadingNotifications">
+          <mat-spinner></mat-spinner>
+        </div>
       </div>
 
       <div
@@ -82,7 +90,7 @@
       } @placeholder (minimum 1000ms) {
         <ngx-skeleton-loader animation="progress" />
       }
-      <!-- 
+
       @defer {
         <a
           mat-list-item
@@ -109,7 +117,7 @@
         </a>
       } @placeholder (minimum 1000ms) {
         <ngx-skeleton-loader animation="progress" />
-      } -->
+      }
 
       @defer {
         <a
@@ -125,7 +133,7 @@
         <ngx-skeleton-loader animation="progress" />
       }
 
-      <!-- @defer {
+      @defer {
         <a
           mat-list-item
           routerLink="/review-access"
@@ -137,7 +145,7 @@
         </a>
       } @placeholder (minimum 1000ms) {
         <ngx-skeleton-loader animation="progress" />
-      } -->
+      }
 
       @defer {
         <a
@@ -181,7 +189,7 @@
         <ngx-skeleton-loader animation="progress" />
       }
 
-      <!-- @defer {
+      @defer {
         <a
           mat-list-item
           routerLink="/reports"
@@ -194,7 +202,7 @@
       } @placeholder (minimum 1000ms) {
         <ngx-skeleton-loader animation="progress" />
         <ngx-skeleton-loader animation="progress" />
-      } -->
+      }
 
       <!-- @defer {
         <a

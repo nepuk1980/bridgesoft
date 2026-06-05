@@ -9,19 +9,16 @@
   <div class="fieldWrapper">
     <div class="form-control w-25">
       <label>Summary</label>
-
-      <!-- Input -->
       <input class="form-field" type="text" placeholder="Enter Name Here" />
     </div>
+
     <div class="form-control w-75">
       <label>Description</label>
-
-      <!-- Input -->
       <input class="form-field" type="text" />
     </div>
+
     <div class="form-control w-25">
       <label>When Someone</label>
-
       <div class="filter-field no-icon custom-filter">
         <mat-form-field>
           <mat-select
@@ -36,51 +33,53 @@
         </mat-form-field>
       </div>
     </div>
+
     <div class="w-75 fieldGroup">
       <div class="form-control">
-        <mat-radio-group aria-label="Select an option" class="customRadio">
+        <mat-radio-group
+          aria-label="Select an option"
+          class="customRadio"
+          [ngModel]="itemType === 'File' ? '1' : '2'"
+          (change)="onItemTypeChange($event.value === '1' ? 'File' : 'Folder')"
+        >
           <mat-radio-button value="1">Add</mat-radio-button>
           <mat-radio-button value="2">Remove</mat-radio-button>
         </mat-radio-group>
       </div>
+
       <div class="form-control search-control">
         <div class="no-icon custom-filter custom-filter-cehckbox">
           <mat-form-field>
             <mat-label>Select Resource/s</mat-label>
-
             <mat-select
               multiple
               [(ngModel)]="selectedResources"
               panelClass="custom-filter-panel"
+              (openedChange)="onDropdownOpened($event)"
             >
-              <!-- SEARCH (NO CHECKBOX) -->
               <mat-option class="search-option">
                 <div class="searchslelect" (click)="$event.stopPropagation()">
                   <img src="/svg/search.svg" class="search-icon" />
-
                   <input
                     placeholder="Search"
                     [(ngModel)]="searchText"
                     [ngModelOptions]="{ standalone: true }"
-                    (keyup)="filterResources()"
+                    (input)="filterResources()"
                   />
                 </div>
               </mat-option>
 
-              <!-- OPTIONS -->
-              <mat-option *ngFor="let item of filteredResources" [value]="item">
-                <div class="icontexttd">
-                  <img
-                    src="/svg/folder.svg"
-                    class="folderico"
-                    *ngIf="item.type === 'folder'"
-                  />
-                  <img
-                    src="/svg/file.svg"
-                    class="fileico"
-                    *ngIf="item.type === 'file'"
-                  />
-                  {{ item.name }}
+              <mat-option *ngFor="let item of filteredItemNames" [value]="item">
+                {{ item }}
+              </mat-option>
+
+              <mat-option
+                *ngIf="loadingResources"
+                disabled
+                class="loading-option"
+              >
+                <div class="dropdown-spinner-wrapper">
+                  <span>Loading more...</span>
                 </div>
               </mat-option>
             </mat-select>
@@ -89,6 +88,7 @@
       </div>
     </div>
   </div>
+
   <div class="mainboxwrapper">
     <div class="boxWrapper">
       <h6>Include</h6>
@@ -102,7 +102,6 @@
 
         <div class="innertabdiv">
           <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start">
-            <!-- GROUPS -->
             <mat-tab label="Groups">
               <mat-tree
                 [dataSource]="includeDataSource"
@@ -113,13 +112,10 @@
                 >
                   <div class="node-row">
                     <button mat-icon-button matTreeNodeToggle>
-                      <mat-icon>
-                        {{
-                          includeTreeControl.isExpanded(node) ? "remove" : "add"
-                        }}
-                      </mat-icon>
+                      <mat-icon>{{
+                        includeTreeControl.isExpanded(node) ? "remove" : "add"
+                      }}</mat-icon>
                     </button>
-
                     <div
                       class="treeheading cursor-pointer"
                       (click)="selectNode(node, 'include')"
@@ -129,7 +125,6 @@
                       <span class="dept-name">{{ node.name }}</span>
                     </div>
                   </div>
-
                   <div
                     class="children"
                     *ngIf="includeTreeControl.isExpanded(node)"
@@ -137,11 +132,9 @@
                     <ng-container matTreeNodeOutlet></ng-container>
                   </div>
                 </mat-nested-tree-node>
-
                 <mat-tree-node *matTreeNodeDef="let node">
                   <div class="node-row user-row">
                     <span class="empty"></span>
-
                     <div
                       class="treeheading cursor-pointer"
                       (click)="selectNode(node, 'include')"
@@ -155,7 +148,6 @@
               </mat-tree>
             </mat-tab>
 
-            <!-- USERS -->
             <mat-tab label="Users">
               <mat-tree
                 class="usertree"
@@ -177,7 +169,6 @@
               </mat-tree>
             </mat-tab>
 
-            <!-- ACCESS -->
             <mat-tab label="Access">
               <mat-tree
                 class="accesstree"
@@ -201,11 +192,8 @@
       </div>
     </div>
 
-    <!-- ================= EXCLUDE ================= -->
-
     <div class="boxWrapper">
       <h6>Exclude</h6>
-
       <div class="leftNav">
         <div class="filter-grp-div">
           <div class="search-box w-full">
@@ -216,7 +204,6 @@
 
         <div class="innertabdiv">
           <mat-tab-group mat-stretch-tabs="false" mat-align-tabs="start">
-            <!-- GROUPS -->
             <mat-tab label="Groups">
               <mat-tree
                 [dataSource]="excludeDataSource"
@@ -227,13 +214,10 @@
                 >
                   <div class="node-row">
                     <button mat-icon-button matTreeNodeToggle>
-                      <mat-icon>
-                        {{
-                          excludeTreeControl.isExpanded(node) ? "remove" : "add"
-                        }}
-                      </mat-icon>
+                      <mat-icon>{{
+                        excludeTreeControl.isExpanded(node) ? "remove" : "add"
+                      }}</mat-icon>
                     </button>
-
                     <div
                       class="treeheading cursor-pointer"
                       (click)="selectNode(node, 'exclude')"
@@ -243,7 +227,6 @@
                       <span class="dept-name">{{ node.name }}</span>
                     </div>
                   </div>
-
                   <div
                     class="children"
                     *ngIf="excludeTreeControl.isExpanded(node)"
@@ -251,11 +234,9 @@
                     <ng-container matTreeNodeOutlet></ng-container>
                   </div>
                 </mat-nested-tree-node>
-
                 <mat-tree-node *matTreeNodeDef="let node">
                   <div class="node-row user-row">
                     <span class="empty"></span>
-
                     <div
                       class="treeheading cursor-pointer"
                       (click)="selectNode(node, 'exclude')"
@@ -269,7 +250,6 @@
               </mat-tree>
             </mat-tab>
 
-            <!-- USERS -->
             <mat-tab label="Users">
               <mat-tree
                 class="usertree"
@@ -291,7 +271,6 @@
               </mat-tree>
             </mat-tab>
 
-            <!-- ACCESS -->
             <mat-tab label="Access">
               <mat-tree
                 class="accesstree"
