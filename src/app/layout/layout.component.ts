@@ -32,6 +32,7 @@ import { NgxSkeletonLoaderComponent } from 'ngx-skeleton-loader';
 import { NotificationpopupComponent } from '../shared/components/notificationpopup/notificationpopup.component';
 import { ApiService } from '../services/api.service';
 import { NotificationInterface } from '../models/type';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-layout',
@@ -48,6 +49,7 @@ import { NotificationInterface } from '../models/type';
     MatListModule,
     MatDividerModule,
     NgxSkeletonLoaderComponent,
+    MatProgressSpinnerModule,
     NgFor,
     NgIf,
   ],
@@ -149,15 +151,20 @@ export class LayoutComponent {
   }
 
   page = 0;
-  size = 10;
+  size = 20;
   totalElements = 0;
 
   getNotifications() {
+    if (this.loadingNotifications) return;
+
     this.loadingNotifications = true;
 
     this.api.getgetnotifications(this.page, this.size).subscribe({
       next: (res: NotificationInterface) => {
-        this.notifications = res.content ?? [];
+        const newNotifications = res.content ?? [];
+
+        this.notifications = [...this.notifications, ...newNotifications];
+
         this.totalElements = res.totalElements ?? 0;
 
         this.loadingNotifications = false;
@@ -169,8 +176,22 @@ export class LayoutComponent {
     });
   }
 
-  get notificationCount(): number {
-    return this.notifications.length;
+  onNotificationScroll(event: Event): void {
+    const element = event.target as HTMLElement;
+
+    const atBottom =
+      element.scrollHeight - element.scrollTop <= element.clientHeight + 10;
+
+    const hasMore = this.notifications.length < this.totalElements;
+
+    if (atBottom && hasMore && !this.loadingNotifications) {
+      this.page++;
+      this.getNotifications();
+    }
+  }
+
+  get notificationCount(): string | number {
+    return this.totalElements > 99 ? '99+' : this.totalElements;
   }
 
   openNotificationDialog() {

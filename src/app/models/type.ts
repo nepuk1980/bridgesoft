@@ -223,31 +223,59 @@ export interface RuleResponseInterface {
 }
 
 export interface RequestAccessWorkflowInterface {
-  id: number;
-  sourceType: string;
-  sourceName: string;
-  libraryName: string;
-  itemName: string;
-  pathValue: string;
-  itemType: 'File' | 'Folder';
-  itemUrl: string;
-  groupsList: string;
-
-  createDatetime: string;
-  lastModifiedDatetime: string;
-  lastAccessedDatetime: string | null;
-
-  sensitive: boolean;
-  openAccess: boolean;
-  fullControlOpenAccess: boolean;
-  readExecuteOpenAccess: boolean;
-  external: boolean;
-  cloudResource: boolean;
-  stale: boolean;
-  folderContainsSensitiveFiles: boolean;
-
-  ruleCategory: string;
-  category: string;
+  content: {
+    id: number;
+    sourceType: string;
+    sourceName: string;
+    libraryName: string;
+    itemName: string;
+    pathValue: string;
+    itemType: string;
+    itemUrl: string;
+    groupsList: string;
+    createDatetime: string;
+    lastModifiedDatetime: string;
+    lastAccessedDatetime: string | null;
+    sensitive: boolean;
+    openAccess: boolean;
+    fullControlOpenAccess: boolean;
+    readExecuteOpenAccess: boolean;
+    external: boolean;
+    cloudResource: boolean;
+    stale: boolean;
+    folderContainsSensitiveFiles: boolean;
+    ruleCategory: string;
+    category: string;
+    folderFileSize: number | null;
+    folderFileHitCount: number;
+    username: string;
+    duration: string;
+  }[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+  size: number;
+  number: number;
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+  first: boolean;
+  numberOfElements: number;
+  empty: boolean;
 }
 
 export type ReviewAccessInterface = {

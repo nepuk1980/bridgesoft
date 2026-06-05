@@ -169,3 +169,7 @@
   width: fit-content;
   margin-left: 2.5rem;
 }
+.spinner {
+  min-height: 2rem;
+  scale: 0.4;
+}
