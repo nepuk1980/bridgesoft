@@ -520,6 +520,7 @@ export interface AlertInterface {
     alertUsers: number;
     alertFolders: number;
     alertFiles: number;
+    alertEmail: string;
   }[];
 
   pageable: {

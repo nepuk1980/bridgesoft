@@ -130,17 +130,15 @@ export class AlertConfigurationComponent implements OnInit {
   selectedTimezone = 'GMT';
 
   days = [
-    { label: 'S', value: 'Sunday' },
-    { label: 'M', value: 'Monday' },
-    { label: 'T', value: 'Tuesday' },
-    { label: 'W', value: 'Wednesday' },
-    { label: 'T', value: 'Thursday' },
-    { label: 'F', value: 'Friday' },
-    { label: 'S', value: 'Saturday' },
+    { label: 'S', value: 'sun' },
+    { label: 'M', value: 'mon' },
+    { label: 'T', value: 'tue' },
+    { label: 'W', value: 'wed' },
+    { label: 'T', value: 'thu' },
+    { label: 'F', value: 'fri' },
+    { label: 'S', value: 'sat' },
   ];
   selectedDays: string[] = [];
-
-  public editingAlertId: number | null = null;
 
   constructor(
     private api: ApiService,
@@ -148,113 +146,7 @@ export class AlertConfigurationComponent implements OnInit {
     private router: Router,
     private http: HttpClient,
     private snackBar: MatSnackBar,
-  ) {
-    const navigation = this.router.getCurrentNavigation();
-    const state = navigation?.extras.state as { alertData: any };
-
-    if (state?.alertData) {
-      this.populateForm(state.alertData);
-    } else {
-      // Ensure it starts as null for new alerts
-      this.editingAlertId = null;
-    }
-  }
-  private treesLoadedSubject = new Subject<void>();
-  populateForm(data: any) {
-    if (!data) return;
-
-    this.editingAlertId = data.id;
-    this.alertSummary = data.alertName || '';
-    this.alertDescription = data.alertDesc || '';
-    this.selecteAccessFolder = data.whenSomeone || 'Add Access Folder';
-    this.itemType = data.alertAction === 'Remove' ? 'Folder' : 'File';
-    this.selectedResources = data.alertResources?.split(',') || [];
-
-    this.isCheckedAllTheTime = data.allTheTime ?? false;
-    this.dateFrom = data.fromDate ? new Date(data.fromDate) : null;
-    this.dateTo = data.toDate ? new Date(data.toDate) : null;
-    this.selectedTime = data.alertTime ? new Date(data.alertTime) : null;
-    this.selectedTimezone = data.timeZone || 'GMT';
-
-    this.isCheckedWebAlert = data.alertMode === 'Web Alert';
-    this.isCheckedEmailAlert = !this.isCheckedWebAlert;
-    this.recipientEmail = data.alertEmail || '';
-
-    // 1. Create a mapping for API short-codes to your full names
-    const dayMap: { [key: string]: string } = {
-      sun: 'Sunday',
-      mon: 'Monday',
-      tue: 'Tuesday',
-      wed: 'Wednesday',
-      thu: 'Thursday',
-      fri: 'Friday',
-      sat: 'Saturday',
-    };
-
-    if (data.days) {
-      // 1. Split the string by comma
-      // 2. Map and trim to ensure "Sunday" matches "Sunday" (no spaces)
-      this.selectedDays = data.days.split(',').map((d: string) => d.trim());
-    } else {
-      this.selectedDays = [];
-    }
-
-    // 2. Delay ONLY the Tree logic, as that depends on data sources being ready
-    setTimeout(() => {
-      const usersToSelect =
-        data.includeUsers?.split(',').map((s: string) => s.trim()) || [];
-      const groupsToSelect =
-        data.includeGroups?.split(',').map((s: string) => s.trim()) || [];
-      const exUsers =
-        data.excludeUsers?.split(',').map((s: string) => s.trim()) || [];
-      const exGroups =
-        data.excludeGroups?.split(',').map((s: string) => s.trim()) || [];
-
-      this.selectNodesFromList(usersToSelect, this.includeDataSource.data);
-      this.selectNodesFromList(groupsToSelect, this.includeDataSource.data);
-      this.selectNodesFromList(exUsers, this.excludeDataSource.data);
-      this.selectNodesFromList(exGroups, this.excludeDataSource.data);
-
-      // One single call to detect changes for everything
-      this.cdr.detectChanges();
-    }, 500);
-
-    // Tree Selection Logic
-    const usersToSelect =
-      data.includeUsers?.split(',').map((s: string) => s.trim()) || [];
-    const groupsToSelect =
-      data.includeGroups?.split(',').map((s: string) => s.trim()) || [];
-
-    setTimeout(() => {
-      this.selectNodesFromList(usersToSelect, this.includeDataSource.data);
-      this.selectNodesFromList(groupsToSelect, this.includeDataSource.data);
-
-      const exUsers =
-        data.excludeUsers?.split(',').map((s: string) => s.trim()) || [];
-      const exGroups =
-        data.excludeGroups?.split(',').map((s: string) => s.trim()) || [];
-      this.selectNodesFromList(exUsers, this.excludeDataSource.data);
-      this.selectNodesFromList(exGroups, this.excludeDataSource.data);
-
-      this.cdr.detectChanges();
-    }, 500); // Increased delay slightly to ensure tree is rendered
-
-    console.log('API Days Received:', data.days);
-    console.log('Calculated SelectedDays:', this.selectedDays);
-    console.log(
-      'Available Config Days:',
-      this.days.map((d) => d.value),
-    );
-  }
-
-  private selectNodesFromList(names: string[], nodes: TreeNode[]) {
-    nodes.forEach((node) => {
-      if (names.includes(node.name)) {
-        node.selected = true;
-      }
-      if (node.children) this.selectNodesFromList(names, node.children);
-    });
-  }
+  ) {}
 
   ngOnInit(): void {
     this.fetchAllUsersByGroup();
@@ -266,29 +158,6 @@ export class AlertConfigurationComponent implements OnInit {
       .subscribe(() => {
         this.resetAndFetchWithSearch();
       });
-
-    // 1. Fetch metadata first
-    forkJoin({
-      groups: this.api.getadgroups(),
-      vaults: this.api.getlistofidentityvaults(0, 50, '', ''),
-    }).subscribe({
-      next: () => {
-        this.fetchAllUsersByGroup();
-        this.getResources();
-
-        // 2. Once done, trigger the signal that trees are ready
-        this.treesLoadedSubject.next();
-      },
-    });
-
-    // 3. Listen for the signal to populate the form
-    this.treesLoadedSubject.subscribe(() => {
-      const navigation = this.router.getCurrentNavigation();
-      const state = navigation?.extras.state as { alertData: any };
-      if (state?.alertData) {
-        this.populateForm(state.alertData);
-      }
-    });
   }
 
   getADGroup(): void {
@@ -641,7 +510,6 @@ export class AlertConfigurationComponent implements OnInit {
 
   /* ---------- SAVE ACTION METRIC LOGGING ---------- */
   saveAlert(): void {
-    console.log('DEBUG: editingAlertId is', this.editingAlertId);
     // Helper to extract specific types from a flat array or tree
     const getSelectedByType = (
       data: TreeNode[],
@@ -661,7 +529,6 @@ export class AlertConfigurationComponent implements OnInit {
     };
 
     const payload = {
-      id: this.editingAlertId,
       alertName: this.alertSummary,
       alertDesc: this.alertDescription,
       whenSomeone: this.selecteAccessFolder,
@@ -688,7 +555,9 @@ export class AlertConfigurationComponent implements OnInit {
       allTheTime: this.isCheckedAllTheTime,
       fromDate: this.dateFrom ? this.dateFrom.toISOString() : '',
       toDate: this.dateTo ? this.dateTo.toISOString() : '',
-      days: this.selectedDays.join(','),
+      days: this.selectedDays
+        .map((d) => d.charAt(0).toUpperCase() + d.slice(1))
+        .join(','),
       timeZone: this.selectedTimezone,
       alertTime: this.selectedTime
         ? new Date(this.selectedTime).toISOString()
@@ -696,30 +565,27 @@ export class AlertConfigurationComponent implements OnInit {
       alertMode: this.isCheckedWebAlert ? 'Web Alert' : 'Email Alert',
       alertEmail: this.isCheckedEmailAlert ? this.recipientEmail : '',
     };
-    if (this.editingAlertId) {
-      payload.id = this.editingAlertId;
-    }
 
-    // 3. Perform the correct API call
-    if (this.editingAlertId) {
-      console.log('Updating Alert with ID:', this.editingAlertId);
-      this.api.updateAlertDetails(payload).subscribe({
-        next: (res) => {
-          this.showMessage('Alert updated successfully');
-          this.router.navigate(['/alerts']);
-        },
-        error: (err) => this.showMessage('Error updating alert'),
-      });
-    } else {
-      console.log('Creating New Alert');
-      this.api.saveAlertDetails(payload).subscribe({
-        next: (res) => {
-          this.showMessage('Alert saved successfully');
+    this.api.saveAlertDetails(payload).subscribe({
+      next: (response: string) => {
+        // 'response' will now be the string "Alert Saved Successfully"
+        this.showMessage(response);
+        setTimeout(() => {
           this.router.navigate(['/review-access']);
-        },
-        error: (err) => this.showMessage('Error saving alert'),
-      });
-    }
+        }, 1000);
+      },
+      error: (err) => {
+        // If the status is 200 but it still fails, it's a parsing issue.
+        // If it's a real network error, this block will catch it.
+        if (err.status === 200) {
+          this.showMessage('Alert saved successfully!');
+          this.router.navigate(['/review-access']);
+        } else {
+          console.error('Error saving alert:', err);
+          this.showMessage('Failed to save alert.');
+        }
+      },
+    });
   }
   // Helper used by saveAlert to extract names
   private getSelectedTreeNames(nodes: TreeNode[]): string {

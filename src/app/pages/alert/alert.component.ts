@@ -15,8 +15,11 @@ import { InnerheaderComponent } from '../../shared/components/innerheader/innerh
 import { ApiService } from '../../services/api.service';
 import { ReportService } from '../../services/report.service';
 import { forkJoin } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { AlertInterface } from '../../models/type';
 
 interface Alert {
+  id: number;
   altername: string;
   description: string;
   folders: number;
@@ -54,8 +57,8 @@ export class AlertComponent implements OnInit, AfterViewInit {
     'action',
   ];
 
-  dataSource = new MatTableDataSource<Alert>([]);
-  originalData: Alert[] = [];
+  dataSource = new MatTableDataSource<AlertInterface>([]);
+  originalData: AlertInterface[] = [];
 
   searchText = '';
   selectedFilter = '';
@@ -75,7 +78,7 @@ export class AlertComponent implements OnInit, AfterViewInit {
   pages: number[] = [];
 
   // ================= CACHE =================
-  pageCache: Map<number, Alert[]> = new Map();
+  pageCache: Map<number, AlertInterface[]> = new Map();
 
   maxCachePages = 5;
 
@@ -88,6 +91,7 @@ export class AlertComponent implements OnInit, AfterViewInit {
     private router: Router,
     private api: ApiService,
     private reportService: ReportService,
+    private snackBar: MatSnackBar,
   ) {}
 
   // ================= INIT =================
@@ -99,91 +103,90 @@ export class AlertComponent implements OnInit, AfterViewInit {
     this.dataSource.sort = this.sort;
   }
 
-  // ================= ALERTS =================
   getAlerts(): void {
-    // Use cache first
-    if (this.pageCache.has(this.pageIndex)) {
-      this.dataSource.data = this.pageCache.get(this.pageIndex) ?? [];
-
-      this.generatePages();
-
-      this.prefetchNearbyPages();
-
-      return;
-    }
-
     this.isLoading = true;
-
     this.api.getalerts(this.pageIndex, this.pageSize).subscribe({
       next: (res: any) => {
-        const mappedData: Alert[] = (res.content ?? []).map(
-          (item: any): Alert => ({
-            altername: item.alertName,
-            description: item.alertDesc,
-            folders: item.alertFolders ?? 0,
-            files: item.alertFiles ?? 0,
-            users: item.alertUsers ?? 0,
+        // Ensure you use the exact key from the API response
+        const mappedData: AlertInterface[] = (res.content ?? []).map(
+          (item: any) => ({
+            id: item.alertId ?? item.id ?? 0,
+            alertName: item.alertName ?? '',
+            alertDesc: item.alertDesc ?? '',
+            whenSomeone: item.whenSomeone ?? '',
+            alertAction: item.alertAction ?? '',
+            alertResources: item.alertResources ?? '',
+            includeGroups: item.includeGroups ?? '',
+            includeUsers: item.includeUsers ?? '',
+            includeResources: item.includeResources ?? '',
+            excludeGroups: item.excludeGroups ?? '',
+            excludeUsers: item.excludeUsers ?? '',
+            excludeResources: item.excludeResources ?? '',
+            allTheTime: item.allTheTime ?? false,
+            fromDate: item.fromDate ?? null,
+            toDate: item.toDate ?? null,
+            days: item.days ?? '',
+            timeZone: item.timeZone ?? '',
+            alertTime: item.alertTime ?? null,
+            alertMode: item.alertMode ?? '',
+            createdDate: item.createdDate ?? null,
+            updatedDate: item.updatedDate ?? null,
+            deletedDate: item.deletedDate ?? null,
+            alertUsers: item.alertUsers ?? 0,
+            alertFolders: item.alertFolders ?? 0,
+            alertFiles: item.alertFiles ?? 0,
+            alertEmail: item.alertEmail ?? null,
           }),
         );
-
-        // Cache page
-        this.pageCache.set(this.pageIndex, mappedData);
-
-        this.cleanupCache();
-
-        // Update table
         this.dataSource.data = mappedData;
-        this.originalData = mappedData;
-
-        // Pagination info
-        this.totalElements = res.totalElements ?? 0;
-
-        this.totalPages =
-          res.totalPages ?? Math.ceil(this.totalElements / this.pageSize);
-
-        this.generatePages();
-
-        // Prefetch next pages
-        this.prefetchNearbyPages();
-
+        this.totalElements = res.totalElements;
         this.isLoading = false;
       },
       error: (err) => {
-        console.error('API Error:', err);
-
         this.isLoading = false;
+        console.error(err);
       },
     });
   }
 
-  // ================= PREFETCH =================
-  prefetchNearbyPages(): void {
-    const pagesToPrefetch = [this.pageIndex + 1, this.pageIndex + 2];
-
-    pagesToPrefetch.forEach((page) => {
-      if (page >= this.totalPages) return;
-
-      if (this.pageCache.has(page)) return;
-
-      this.api.getalerts(page, this.pageSize).subscribe({
-        next: (res: any) => {
-          const mappedData: Alert[] = (res.content ?? []).map(
-            (item: any): Alert => ({
-              altername: item.alertName,
-              description: item.alertDesc,
-              folders: item.alertFolders ?? 0,
-              files: item.alertFiles ?? 0,
-              users: item.alertUsers ?? 0,
-            }),
-          );
-
-          this.pageCache.set(page, mappedData);
-
-          this.cleanupCache();
-        },
-        error: () => {},
-      });
+  // Add this helper method
+  showMessage(message: string) {
+    this.snackBar.open(message, '', {
+      duration: 3000, // Increased to 3s for better readability
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
+      panelClass: ['success-snackbar'],
     });
+  }
+
+  // Update your deleteAlert to use the new method
+  deleteAlert(element: Alert): void {
+    if (!element.id) {
+      this.showMessage('Error: Invalid Alert ID');
+      return;
+    }
+
+    if (confirm('Are you sure you want to delete this alert?')) {
+      this.isLoading = true;
+      this.api.deleteAlert(element.id).subscribe({
+        next: () => {
+          this.isLoading = false;
+          this.showMessage('Alert deleted successfully'); // Using the helper
+          this.refreshAlerts();
+        },
+        error: (err) => {
+          this.isLoading = false;
+          this.showMessage('Error deleting alert'); // Using the helper
+          console.error('Delete Error:', err);
+        },
+      });
+    }
+  }
+
+  refreshAlerts(): void {
+    this.pageCache.clear();
+    this.pageIndex = 0;
+    this.getAlerts();
   }
 
   // ================= CACHE CLEANUP =================
@@ -269,15 +272,6 @@ export class AlertComponent implements OnInit, AfterViewInit {
     if (this.totalPages <= 0) return;
 
     this.pageIndex = this.totalPages - 1;
-
-    this.getAlerts();
-  }
-
-  // ================= REFRESH =================
-  refreshAlerts(): void {
-    this.pageCache.clear();
-
-    this.pageIndex = 0;
 
     this.getAlerts();
   }
@@ -429,5 +423,11 @@ export class AlertComponent implements OnInit, AfterViewInit {
         );
         break;
     }
+  }
+  editAlert(element: AlertInterface): void {
+    // Pass the entire alert object to the configuration page
+    this.router.navigate(['alerts/alerts-configuration'], {
+      state: { alertData: element },
+    });
   }
 }

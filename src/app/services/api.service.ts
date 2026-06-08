@@ -510,4 +510,95 @@ export class ApiService {
       `${environment.apiUrl}/getadgroups`,
     );
   }
+
+  // getusersbygroupname
+  getusersbygroupname(
+    groupName: string,
+    page: number,
+    size: number,
+  ): Observable<AlertInterface> {
+    const params = new HttpParams()
+      .set('groupName', groupName || '')
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    return this.http.get<AlertInterface>(
+      `${environment.apiUrl}/getusersbygroupname`,
+      {
+        params,
+      },
+    );
+  }
+
+  // Save Alert
+  saveAlertDetails(data: any): Observable<any> {
+    const token = this.authService.getToken();
+
+    if (!token) {
+      console.error('❌ No token found');
+      throw new Error('User not authenticated');
+    }
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    });
+
+    console.log('🚀 FINAL PAYLOAD:', data);
+
+    // By setting responseType to 'text', HttpClient will treat the
+    // response as a string instead of trying to parse it as JSON.
+    return this.http.post(`${environment.apiUrl}/savealert`, data, {
+      headers,
+      responseType: 'text',
+    });
+  }
+
+  // Update Alert
+  updateAlertDetails(data: any): Observable<any> {
+    const token = this.authService.getToken();
+
+    if (!token) {
+      console.error('❌ No token found');
+      throw new Error('User not authenticated');
+    }
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    });
+
+    console.log('🚀 FINAL PAYLOAD:', data);
+
+    // Using .put() to match the Postman request, sending the full object
+    // as the request body.
+    return this.http.put(`${environment.apiUrl}/updatealert`, data, {
+      headers,
+      responseType: 'text',
+    });
+  }
+
+  deleteAlert(alertId: number): Observable<any> {
+    const token = this.authService.getToken();
+
+    if (!token) {
+      console.error('❌ No token found');
+      throw new Error('User not authenticated');
+    }
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    });
+
+    console.log(`🚀 Sending PUT request to delete alert ID: ${alertId}`);
+
+    // Using .put() to match your Postman request requirements
+    // Note: If the backend expects a body for this DELETE/PUT,
+    // pass it as the 3rd argument, otherwise null is sufficient.
+    return this.http.put(`${environment.apiUrl}/deletealert/${alertId}`, null, {
+      headers,
+      responseType: 'text',
+    });
+  }
 }
