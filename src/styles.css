@@ -1043,7 +1043,7 @@ hr {
   margin-right: 1.25rem;
 }
 .innertabdiv .mat-mdc-tab-body-wrapper {
-  max-height: calc(100vh - 31.1rem);
+  max-height: calc(100vh - 32.4rem);
 }
 .innertabdiv .mat-mdc-tab-body-content {
   padding: 2rem 0;
@@ -1195,4 +1195,24 @@ hr {
   justify-content: center;
   align-items: center;
   font-size: 1.5rem;
+}
+
+.loadMoreBtn {
+  color: #1176bd;
+  font-size: 1rem;
+  background: transparent;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+}
+.loadMoreBtn:disabled {
+  color: #9d9d9d;
+}
+.load-more-container {
+  display: flex;
+  justify-content: flex-end;
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 9;
 }

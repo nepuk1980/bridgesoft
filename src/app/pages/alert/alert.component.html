@@ -46,7 +46,7 @@
         <ng-container matColumnDef="altername">
           <th mat-header-cell *matHeaderCellDef>Alter Name</th>
           <td mat-cell *matCellDef="let element">
-            {{ element.altername }}
+            {{ element.alertName }}
           </td>
         </ng-container>
 
@@ -54,7 +54,7 @@
         <ng-container matColumnDef="description">
           <th mat-header-cell *matHeaderCellDef>Description</th>
           <td mat-cell *matCellDef="let element">
-            {{ element.description }}
+            {{ element.alertDesc }}
           </td>
         </ng-container>
 
@@ -62,34 +62,33 @@
         <ng-container matColumnDef="folders">
           <th mat-header-cell *matHeaderCellDef>Folders</th>
           <td mat-cell *matCellDef="let element">
-            {{ element.folders }}
+            {{ element.alertFolders }}
           </td>
         </ng-container>
         <ng-container matColumnDef="files">
           <th mat-header-cell *matHeaderCellDef>Files</th>
           <td mat-cell *matCellDef="let element">
-            {{ element.files }}
+            {{ element.alertFiles }}
           </td>
         </ng-container>
         <ng-container matColumnDef="users">
           <th mat-header-cell *matHeaderCellDef>Users</th>
           <td mat-cell *matCellDef="let element">
-            {{ element.users }}
+            {{ element.alertUsers }}
           </td>
         </ng-container>
 
-        <!-- Action -->
         <ng-container matColumnDef="action">
           <th mat-header-cell *matHeaderCellDef class="lastcol">Action</th>
           <td mat-cell *matCellDef="let element" class="lastcol">
             <div class="edit-delete-td">
-              <button mat-icon-button>
+              <button mat-icon-button (click)="editAlert(element)">
                 <img src="/svg/edit.svg" alt="edit" class="editico" />
               </button>
               <button mat-icon-button>
                 <img src="/svg/copy.svg" alt="copy" class="editico" />
               </button>
-              <button mat-icon-button>
+              <button mat-icon-button (click)="deleteAlert(element)">
                 <img src="/svg/delete.svg" alt="delete" class="deleteico" />
               </button>
             </div>
