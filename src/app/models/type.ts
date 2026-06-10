@@ -125,57 +125,6 @@ export type ApplicationResponseInterface = {
   totalPages: number;
 };
 
-export type IdentityVaultResponseInterface = {
-  content: {
-    assignedRoleSummary: string;
-    company: string;
-    createDatetime: string;
-    department: string;
-    email: string;
-    employee_code: string;
-    firstName: string;
-    id: number;
-    job_title: string;
-    lastModifiedDatetime: string;
-    lastName: string;
-    location: string;
-    manager: string;
-    manager_department: string;
-    manager_employee_id: string;
-    riskScore: string;
-  }[];
-
-  empty: boolean;
-  first: boolean;
-  last: boolean;
-  number: number;
-  numberOfElements: number;
-
-  pageable: {
-    offset: number;
-    pageNumber: number;
-    pageSize: number;
-    paged: boolean;
-    sort: {
-      empty: boolean;
-      sorted: boolean;
-      unsorted: boolean;
-    };
-    unpaged: boolean;
-  };
-
-  size: number;
-
-  sort: {
-    empty: boolean;
-    sorted: boolean;
-    unsorted: boolean;
-  };
-
-  totalElements: number;
-  totalPages: number;
-};
-
 export type IdentityVaultDetailResponseInterface = {
   assignedRoleSummary: string;
   company: string;
@@ -553,6 +502,8 @@ export interface AlertInterface {
   empty: boolean;
 }
 
+// add
+
 export interface GetADGroupInterface {
   id: number;
   groupName: string;
@@ -563,3 +514,213 @@ export interface GetADGroupInterface {
   groupCategory: string;
   groupScope: string;
 }
+
+export type GetUsersByGroupNameResponse = {
+  content: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    department: string;
+    manager: string;
+    manager_employee_id: string;
+    manager_department: string;
+    location: string;
+    job_title: string;
+    employee_code: string;
+    company: string;
+    createDatetime: string;
+    lastModifiedDatetime: string;
+    assignedRoleSummary: string;
+    riskScore: string;
+    groupsList: string;
+  }[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+  size: number;
+  number: number;
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+  first: boolean;
+  numberOfElements: number;
+  empty: boolean;
+};
+
+export type IdentityVaultResponseInterface = {
+  content: {
+    assignedRoleSummary: string;
+    company: string;
+    createDatetime: string;
+    department: string;
+    email: string;
+    employee_code: string;
+    firstName: string;
+    id: number;
+    job_title: string;
+    lastModifiedDatetime: string;
+    lastName: string;
+    location: string;
+    manager: string;
+    manager_department: string;
+    manager_employee_id: string;
+    riskScore: string;
+  }[];
+
+  empty: boolean;
+  first: boolean;
+  last: boolean;
+  number: number;
+  numberOfElements: number;
+
+  pageable: {
+    offset: number;
+    pageNumber: number;
+    pageSize: number;
+    paged: boolean;
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    unpaged: boolean;
+  };
+
+  size: number;
+
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+
+  totalElements: number;
+  totalPages: number;
+};
+
+export type AllFilesByGroupResponse = {
+  content: {
+    id: number;
+    sourceType: string;
+    sourceName: string;
+    libraryName: string;
+    itemName: string;
+    pathValue: string;
+    itemType: 'File' | 'Folder';
+    itemUrl: string;
+    groupsList: string;
+    createDatetime: string;
+    lastModifiedDatetime: string;
+    lastAccessedDatetime: string | null;
+    sensitive: boolean;
+    openAccess: boolean;
+    fullControlOpenAccess: boolean;
+    readExecuteOpenAccess: boolean;
+    external: boolean;
+    cloudResource: boolean;
+    stale: boolean;
+    folderContainsSensitiveFiles: boolean;
+    ruleCategory: string;
+    category: string;
+    folderFileSize: string | number | null;
+    folderFileHitCount: number;
+    username: string;
+    duration: string;
+  }[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+  size: number;
+  number: number;
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+  first: boolean;
+  numberOfElements: number;
+  empty: boolean;
+};
+
+export type GetAllFoldersResponse = {
+  content: {
+    id: number;
+    sourceType: string;
+    sourceName: string;
+    libraryName: string;
+    itemName: string;
+    pathValue: string;
+    itemType: string;
+    itemUrl: string;
+    groupsList: string;
+    createDatetime: string;
+    lastModifiedDatetime: string;
+    lastAccessedDatetime: string;
+    sensitive: boolean;
+    openAccess: boolean;
+    fullControlOpenAccess: boolean;
+    readExecuteOpenAccess: boolean;
+    external: boolean;
+    cloudResource: boolean;
+    stale: boolean;
+    folderContainsSensitiveFiles: boolean;
+    ruleCategory: string;
+    category: string;
+    folderFileSize: number | null;
+    folderFileHitCount: number;
+    username: string;
+    duration: string;
+  }[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+  size: number;
+  number: number;
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+  first: boolean;
+  numberOfElements: number;
+  empty: boolean;
+};

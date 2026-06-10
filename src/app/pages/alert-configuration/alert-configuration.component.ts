@@ -140,7 +140,8 @@ export class AlertConfigurationComponent implements OnInit {
   ];
   selectedDays: string[] = [];
 
-  public editingAlertId: number | null = null;
+  editingAlertId: number | null = null;
+  mode: 'create' | 'edit' | 'copy' = 'create';
 
   constructor(
     private api: ApiService,
@@ -149,21 +150,21 @@ export class AlertConfigurationComponent implements OnInit {
     private http: HttpClient,
     private snackBar: MatSnackBar,
   ) {
-    const navigation = this.router.getCurrentNavigation();
-    const state = navigation?.extras.state as { alertData: any };
+    const state = history.state;
+
+    if (state?.mode) {
+      this.mode = state.mode;
+    }
 
     if (state?.alertData) {
       this.populateForm(state.alertData);
-    } else {
-      // Ensure it starts as null for new alerts
-      this.editingAlertId = null;
     }
   }
   private treesLoadedSubject = new Subject<void>();
   populateForm(data: any) {
     if (!data) return;
 
-    this.editingAlertId = data.id;
+    this.editingAlertId = this.mode === 'edit' ? data.id : null;
     this.alertSummary = data.alertName || '';
     this.alertDescription = data.alertDesc || '';
     this.selecteAccessFolder = data.whenSomeone || 'Add Access Folder';
@@ -200,51 +201,51 @@ export class AlertConfigurationComponent implements OnInit {
     }
 
     // 2. Delay ONLY the Tree logic, as that depends on data sources being ready
-    setTimeout(() => {
-      const usersToSelect =
-        data.includeUsers?.split(',').map((s: string) => s.trim()) || [];
-      const groupsToSelect =
-        data.includeGroups?.split(',').map((s: string) => s.trim()) || [];
-      const exUsers =
-        data.excludeUsers?.split(',').map((s: string) => s.trim()) || [];
-      const exGroups =
-        data.excludeGroups?.split(',').map((s: string) => s.trim()) || [];
+    // setTimeout(() => {
+    //   const usersToSelect =
+    //     data.includeUsers?.split(',').map((s: string) => s.trim()) || [];
+    //   const groupsToSelect =
+    //     data.includeGroups?.split(',').map((s: string) => s.trim()) || [];
+    //   const exUsers =
+    //     data.excludeUsers?.split(',').map((s: string) => s.trim()) || [];
+    //   const exGroups =
+    //     data.excludeGroups?.split(',').map((s: string) => s.trim()) || [];
 
-      this.selectNodesFromList(usersToSelect, this.includeDataSource.data);
-      this.selectNodesFromList(groupsToSelect, this.includeDataSource.data);
-      this.selectNodesFromList(exUsers, this.excludeDataSource.data);
-      this.selectNodesFromList(exGroups, this.excludeDataSource.data);
+    //   this.selectNodesFromList(usersToSelect, this.includeDataSource.data);
+    //   this.selectNodesFromList(groupsToSelect, this.includeDataSource.data);
+    //   this.selectNodesFromList(exUsers, this.excludeDataSource.data);
+    //   this.selectNodesFromList(exGroups, this.excludeDataSource.data);
 
-      // One single call to detect changes for everything
-      this.cdr.detectChanges();
-    }, 500);
+    //   // One single call to detect changes for everything
+    //   this.cdr.detectChanges();
+    // }, 5000);
 
-    // Tree Selection Logic
-    const usersToSelect =
-      data.includeUsers?.split(',').map((s: string) => s.trim()) || [];
-    const groupsToSelect =
-      data.includeGroups?.split(',').map((s: string) => s.trim()) || [];
+    // // Tree Selection Logic
+    // const usersToSelect =
+    //   data.includeUsers?.split(',').map((s: string) => s.trim()) || [];
+    // const groupsToSelect =
+    //   data.includeGroups?.split(',').map((s: string) => s.trim()) || [];
 
-    setTimeout(() => {
-      this.selectNodesFromList(usersToSelect, this.includeDataSource.data);
-      this.selectNodesFromList(groupsToSelect, this.includeDataSource.data);
+    // setTimeout(() => {
+    //   this.selectNodesFromList(usersToSelect, this.includeDataSource.data);
+    //   this.selectNodesFromList(groupsToSelect, this.includeDataSource.data);
 
-      const exUsers =
-        data.excludeUsers?.split(',').map((s: string) => s.trim()) || [];
-      const exGroups =
-        data.excludeGroups?.split(',').map((s: string) => s.trim()) || [];
-      this.selectNodesFromList(exUsers, this.excludeDataSource.data);
-      this.selectNodesFromList(exGroups, this.excludeDataSource.data);
+    //   const exUsers =
+    //     data.excludeUsers?.split(',').map((s: string) => s.trim()) || [];
+    //   const exGroups =
+    //     data.excludeGroups?.split(',').map((s: string) => s.trim()) || [];
+    //   this.selectNodesFromList(exUsers, this.excludeDataSource.data);
+    //   this.selectNodesFromList(exGroups, this.excludeDataSource.data);
 
-      this.cdr.detectChanges();
-    }, 500); // Increased delay slightly to ensure tree is rendered
+    //   this.cdr.detectChanges();
+    // }, 5000); // Increased delay slightly to ensure tree is rendered
 
-    console.log('API Days Received:', data.days);
-    console.log('Calculated SelectedDays:', this.selectedDays);
-    console.log(
-      'Available Config Days:',
-      this.days.map((d) => d.value),
-    );
+    // console.log('API Days Received:', data.days);
+    // console.log('Calculated SelectedDays:', this.selectedDays);
+    // console.log(
+    //   'Available Config Days:',
+    //   this.days.map((d) => d.value),
+    // );
   }
 
   private selectNodesFromList(names: string[], nodes: TreeNode[]) {
@@ -283,8 +284,7 @@ export class AlertConfigurationComponent implements OnInit {
 
     // 3. Listen for the signal to populate the form
     this.treesLoadedSubject.subscribe(() => {
-      const navigation = this.router.getCurrentNavigation();
-      const state = navigation?.extras.state as { alertData: any };
+      const state = history.state;
       if (state?.alertData) {
         this.populateForm(state.alertData);
       }
@@ -641,8 +641,6 @@ export class AlertConfigurationComponent implements OnInit {
 
   /* ---------- SAVE ACTION METRIC LOGGING ---------- */
   saveAlert(): void {
-    console.log('DEBUG: editingAlertId is', this.editingAlertId);
-    // Helper to extract specific types from a flat array or tree
     const getSelectedByType = (
       data: TreeNode[],
       type: 'department' | 'user' | 'directory',
@@ -653,22 +651,22 @@ export class AlertConfigurationComponent implements OnInit {
           if (node.selected && node.type === type) {
             names.push(node.name);
           }
-          if (node.children) traverse(node.children);
+          if (node.children) {
+            traverse(node.children);
+          }
         });
       };
       traverse(data);
       return [...new Set(names)].join(',');
     };
 
-    const payload = {
-      id: this.editingAlertId,
+    const payload: any = {
       alertName: this.alertSummary,
       alertDesc: this.alertDescription,
       whenSomeone: this.selecteAccessFolder,
       alertAction: this.itemType,
       alertResources: this.selectedResources.join(','),
 
-      // Include Fields
       includeGroups: getSelectedByType(
         this.includeDataSource.data,
         'department',
@@ -676,7 +674,6 @@ export class AlertConfigurationComponent implements OnInit {
       includeUsers: getSelectedByType(this.includeDataSource.data, 'user'),
       includeResources: this.selectedResources.join(','),
 
-      // Exclude Fields
       excludeGroups: getSelectedByType(
         this.excludeDataSource.data,
         'department',
@@ -684,7 +681,6 @@ export class AlertConfigurationComponent implements OnInit {
       excludeUsers: getSelectedByType(this.excludeDataSource.data, 'user'),
       excludeResources: this.selectedResources.join(','),
 
-      // ... (rest of your date/time fields)
       allTheTime: this.isCheckedAllTheTime,
       fromDate: this.dateFrom ? this.dateFrom.toISOString() : '',
       toDate: this.dateTo ? this.dateTo.toISOString() : '',
@@ -696,28 +692,28 @@ export class AlertConfigurationComponent implements OnInit {
       alertMode: this.isCheckedWebAlert ? 'Web Alert' : 'Email Alert',
       alertEmail: this.isCheckedEmailAlert ? this.recipientEmail : '',
     };
-    if (this.editingAlertId) {
+
+    // Only send ID when editing
+    if (this.mode === 'edit') {
       payload.id = this.editingAlertId;
     }
 
-    // 3. Perform the correct API call
-    if (this.editingAlertId) {
-      console.log('Updating Alert with ID:', this.editingAlertId);
+    if (this.mode === 'edit') {
       this.api.updateAlertDetails(payload).subscribe({
-        next: (res) => {
+        next: () => {
           this.showMessage('Alert updated successfully');
           this.router.navigate(['/alerts']);
         },
-        error: (err) => this.showMessage('Error updating alert'),
+        error: () => this.showMessage('Error updating alert'),
       });
     } else {
-      console.log('Creating New Alert');
+      // create and copy both create new alerts
       this.api.saveAlertDetails(payload).subscribe({
-        next: (res) => {
+        next: () => {
           this.showMessage('Alert saved successfully');
-          this.router.navigate(['/review-access']);
+          this.router.navigate(['/alerts']);
         },
-        error: (err) => this.showMessage('Error saving alert'),
+        error: () => this.showMessage('Error saving alert'),
       });
     }
   }

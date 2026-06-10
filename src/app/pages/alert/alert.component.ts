@@ -427,7 +427,13 @@ export class AlertComponent implements OnInit, AfterViewInit {
   editAlert(element: AlertInterface): void {
     // Pass the entire alert object to the configuration page
     this.router.navigate(['alerts/alerts-configuration'], {
-      state: { alertData: element },
+      state: { alertData: element, mode: 'edit' },
+    });
+  }
+  copyAlert(element: AlertInterface): void {
+    // Pass the entire alert object to the configuration page
+    this.router.navigate(['alerts/alerts-configuration'], {
+      state: { alertData: element, mode: 'copy' },
     });
   }
 }

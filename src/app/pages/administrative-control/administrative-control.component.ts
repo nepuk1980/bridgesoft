@@ -1,20 +1,24 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { BreadcrumbComponent } from '../../shared/components/breadcrumb/breadcrumb.component';
 import { MatButtonModule } from '@angular/material/button';
-import { MatDialog } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { CloudresourcespopupComponent } from '../../shared/components/cloudresourcespopup/cloudresourcespopup.component';
 import { MatSelectModule } from '@angular/material/select';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatTabChangeEvent, MatTabsModule } from '@angular/material/tabs';
 import { NestedTreeControl } from '@angular/cdk/tree';
 import { MatTreeModule, MatTreeNestedDataSource } from '@angular/material/tree';
 import { MatIconModule } from '@angular/material/icon';
 import { NgClass, NgFor, NgIf } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar'; // ✅ Added SnackBar Import
 import { AdduserdpopupComponent } from '../../shared/components/adduserdpopup/adduserdpopup.component';
 import { AddaccessdpopupComponent } from '../../shared/components/addaccessdpopup/addaccessdpopup.component';
 import { ResourceeditdpopupComponent } from '../../shared/components/resourceeditdpopup/resourceeditdpopup.component';
+import { ApiService } from '../../services/api.service';
 
-export interface sharedData {
+export interface SharedData {
   sharedBy: string;
   sharedWith: string;
   fileName: string;
@@ -24,7 +28,7 @@ export interface sharedData {
   path: string;
 }
 
-export interface externalFilesData {
+export interface ExternalFilesData {
   name: string;
   type: string;
   serviceType: string;
@@ -44,12 +48,23 @@ interface CardData {
 }
 
 interface TreeNode {
+  id?: number | string;
   name: string;
-  type: 'department' | 'user' | 'directory' | 'file' | 'folder';
-  department?: string;
+  type:
+    | 'groupList'
+    | 'user'
+    | 'group'
+    | 'directory'
+    | 'file'
+    | 'folder'
+    | 'loadMore';
+  groupList?: string;
   children?: TreeNode[];
+  userData?: any;
 }
+
 interface TableItem {
+  id?: number;
   name: string;
   type: 'file' | 'folder';
   permissions: {
@@ -58,7 +73,6 @@ interface TableItem {
     R: boolean;
     W: boolean;
     X: boolean;
-    L: boolean;
   };
   totalHitCount: number;
   size: string;
@@ -68,85 +82,15 @@ interface TableItem {
   directoryname: string;
 }
 
-const tabs: { items: TableItem[] }[] = [
-  {
-    items: [
-      {
-        name: 'Employee Data.xlsx',
-        type: 'file',
-        permissions: { F: true, M: true, R: true, W: false, X: true, L: true },
-        totalHitCount: 1027,
-        size: '1.23 GB',
-        classification: 'PCI (38)',
-        category: 'Company (Intl)',
-        directory: 'Human Resources',
-        directoryname: 'Christopher Williams',
-      },
-      {
-        name: 'Employee Perks.xlsx',
-        type: 'file',
-        permissions: { F: true, M: true, R: true, W: false, X: true, L: true },
-        totalHitCount: 363,
-        size: '2.82 KB',
-        classification: null,
-        category: null,
-        directory: 'Human Resources',
-        directoryname: 'Christopher Williams',
-      },
-      {
-        name: 'Employee Leave Policy.xlsx',
-        type: 'file',
-        permissions: { F: true, M: true, R: true, W: false, X: true, L: true },
-        totalHitCount: 2361,
-        size: '4.01 KB',
-        classification: 'PIL (6)',
-        category: 'Company (Intl)',
-        directory: 'Human Resources',
-        directoryname: 'Melinda Kite',
-      },
-      {
-        name: 'Employee Travel Policy',
-        type: 'file',
-        permissions: { F: true, M: true, R: true, W: true, X: true, L: true },
-        totalHitCount: 2745,
-        size: '10.32 GB',
-        classification: null,
-        category: null,
-        directory: 'Administration',
-        directoryname: 'Melinda Kite',
-      },
-      {
-        name: 'Employee Training.xlsx',
-        type: 'file',
-        permissions: { F: true, M: true, R: true, W: true, X: true, L: true },
-        totalHitCount: 392,
-        size: '239.00 MB',
-        classification: 'PCI (88)',
-        category: null,
-        directory: 'Administration',
-        directoryname: 'Christopher Williams',
-      },
-      {
-        name: 'Employee Device List.xlsx',
-        type: 'file',
-        permissions: { F: true, M: true, R: false, W: true, X: true, L: true },
-        totalHitCount: 237,
-        size: '121.21 GB',
-        classification: null,
-        category: null,
-        directory: 'Administration',
-        directoryname: 'Christopher Williams',
-      },
-    ],
-  },
-];
-
 @Component({
   selector: 'app-administrative-control',
+  standalone: true,
   imports: [
     BreadcrumbComponent,
     MatButtonModule,
+    MatDialogModule,
     MatSelectModule,
+    MatFormFieldModule,
     MatTabsModule,
     MatTreeModule,
     MatIconModule,
@@ -154,12 +98,16 @@ const tabs: { items: TableItem[] }[] = [
     NgFor,
     NgClass,
     MatTableModule,
+    MatProgressSpinnerModule,
+    MatSnackBarModule, // ✅ Added to imports
   ],
   templateUrl: './administrative-control.component.html',
   styleUrl: './administrative-control.component.css',
 })
-export class AdministrativeControlComponent {
+export class AdministrativeControlComponent implements OnInit {
+  private api = inject(ApiService);
   private dialog = inject(MatDialog);
+  private snackBar = inject(MatSnackBar); // ✅ Injected SnackBar
 
   displayedColumns: string[] = [
     'directory',
@@ -171,13 +119,10 @@ export class AdministrativeControlComponent {
     'action',
   ];
 
-  /** FULL DATA */
-  allTableData = tabs[0].items;
+  tableData: TableItem[] = [];
+  isLoading = false;
 
-  /** TABLE DATA */
-  tableData = [...this.allTableData];
-
-  /** TREE CONTROL */
+  /** TREE CONTROLS */
   treeControl = new NestedTreeControl<TreeNode>((node) => node.children);
   dataSource = new MatTreeNestedDataSource<TreeNode>();
 
@@ -187,523 +132,647 @@ export class AdministrativeControlComponent {
   accessTreeControl = new NestedTreeControl<TreeNode>(() => []);
   accessDataSource = new MatTreeNestedDataSource<TreeNode>();
 
-  constructor() {
-    this.dataSource.data = this.buildTree();
-    this.usersDataSource.data = this.buildUsersTree();
+  groupNames: string[] = [];
 
-    // ACCESS DIRECTORIES
-    this.accessDataSource.data = this.buildAccessTree();
+  leftPage = 0;
+  leftSize = 10;
+  hasMoreLeftData = true;
+  rawIdentitiesAccumulator: any[] = [];
 
-    if (this.dataSource.data.length > 0) {
-      const firstNode = this.dataSource.data[0];
+  accessPage = 0;
+  accessSize = 10;
+  hasMoreAccessData = true;
+  rawAccessAccumulator: string[] = [];
 
-      this.treeControl.expand(firstNode);
-      this.selectNode(firstNode);
+  nestedUserPageSize = 10;
+
+  pageIndex = 0;
+  pageSize = 10;
+  totalPages = 0;
+  totalElements = 0;
+  pages: number[] = [];
+
+  private globalFileCacheRegistry = new Map<
+    string,
+    { rows: TableItem[]; totalElements: number; totalPages: number }
+  >();
+  private activeFlightFetches = new Set<string>();
+
+  private activeNormalizedGroupName = '';
+
+  activeTabIndex: number = 0;
+  selectedNode: TreeNode | null = null;
+  selectedNodeType: TreeNode['type'] | null = null;
+  activeSelectedGroupNode: TreeNode | null = null;
+
+  Shared: SharedData[] = [];
+  ExternalFiles: ExternalFilesData[] = [];
+
+  ngOnInit(): void {
+    this.loadInitialData();
+  }
+
+  loadInitialData(): void {
+    this.api.getadgroups().subscribe({
+      next: (res: any) => {
+        const groupsRaw = Array.isArray(res)
+          ? res
+          : res.content || res.data || [];
+        this.groupNames = groupsRaw.map((g: any) => g.groupName).sort();
+
+        const adGroupTreeNodes: TreeNode[] = groupsRaw.map((g: any) => ({
+          id: g.id,
+          name: g.groupName,
+          type: 'group' as const,
+          children: [],
+          userData: { currentPage: 0, hasMore: true },
+        }));
+        this.dataSource.data = adGroupTreeNodes;
+
+        this.loadAccessTreeData(false);
+
+        adGroupTreeNodes.forEach((node) => {
+          this.loadUsersForGroupNode(node, false);
+        });
+
+        if (adGroupTreeNodes.length && !this.selectedNode) {
+          this.treeControl.expand(adGroupTreeNodes[0]);
+          this.selectNode(adGroupTreeNodes[0]);
+        }
+      },
+      error: (err) => console.error(err),
+    });
+
+    this.loadIdentityVaultTree(false);
+  }
+
+  toggleGroupNode(node: TreeNode): void {
+    if (node.type === 'group' && this.treeControl.isExpanded(node)) {
+      node.userData = node.userData || { currentPage: 0, hasMore: true };
+      if (!node.children || node.children.length === 0) {
+        this.loadUsersForGroupNode(node, false);
+      }
     }
   }
 
-  /** BUILD TREE FROM TABS DATA */
-  buildTree(): TreeNode[] {
-    const departmentMap = new Map<string, Map<string, TreeNode>>();
+  loadUsersForGroupNode(node: TreeNode, append: boolean = false): void {
+    const pageToFetch = node.userData?.currentPage || 0;
 
-    this.allTableData.forEach((item) => {
-      if (!departmentMap.has(item.directory)) {
-        departmentMap.set(item.directory, new Map());
-      }
+    this.api
+      .getusersbygroupname(node.name, pageToFetch, this.nestedUserPageSize)
+      .subscribe({
+        next: (res: any) => {
+          const fetchedUsers =
+            res.content || res.data || (Array.isArray(res) ? res : []);
+          const currentTree: TreeNode[] = JSON.parse(
+            JSON.stringify(this.dataSource.data),
+          );
+          const targetGroupNode = this.findNodeByName(currentTree, node.name);
 
-      const userMap = departmentMap.get(item.directory)!;
+          if (targetGroupNode) {
+            const uniqueNames = new Set<string>();
+            let existingChildren: TreeNode[] = [];
 
-      if (!userMap.has(item.directoryname)) {
-        userMap.set(item.directoryname, {
-          name: item.directoryname,
-          type: 'user',
-          department: item.directory,
-        });
-      }
-    });
+            if (append && targetGroupNode.children) {
+              existingChildren = [...targetGroupNode.children];
+              existingChildren.forEach((child) =>
+                uniqueNames.add(child.name.toLowerCase()),
+              );
+            }
 
-    const tree: TreeNode[] = [];
+            const newUniqueChildren: TreeNode[] = [];
 
-    departmentMap.forEach((users, department) => {
-      tree.push({
-        name: department,
-        type: 'department',
-        children: Array.from(users.values()),
+            fetchedUsers.forEach((user: any) => {
+              const userName =
+                `${user.firstName || ''} ${user.lastName || ''}`.trim() ||
+                'Unknown User';
+              const uniqueKey = userName.toLowerCase();
+
+              if (!uniqueNames.has(uniqueKey)) {
+                uniqueNames.add(uniqueKey);
+                newUniqueChildren.push({
+                  id: user.id,
+                  name: userName,
+                  type: 'user',
+                  groupList: targetGroupNode.name,
+                  userData: user,
+                });
+              }
+            });
+
+            if (append) {
+              targetGroupNode.children = [
+                ...existingChildren,
+                ...newUniqueChildren,
+              ];
+            } else {
+              targetGroupNode.children = newUniqueChildren;
+            }
+
+            targetGroupNode.userData.hasMore = res.last === false;
+            this.dataSource.data = currentTree;
+          }
+        },
+        error: (err) =>
+          console.error('Error loading users by group name:', err),
       });
-    });
-
-    return tree;
   }
 
-  buildUsersTree(): TreeNode[] {
-    const userMap = new Map<string, TreeNode>();
-
-    this.allTableData.forEach((item) => {
-      if (!userMap.has(item.directoryname)) {
-        userMap.set(item.directoryname, {
-          name: item.directoryname,
-          type: 'user',
-        });
+  private findNodeByName(nodes: TreeNode[], name: string): TreeNode | null {
+    for (const node of nodes) {
+      if (node.name === name) return node;
+      if (node.children) {
+        const found = this.findNodeByName(node.children, name);
+        if (found) return found;
       }
-    });
-
-    return Array.from(userMap.values());
+    }
+    return null;
   }
 
-  buildAccessTree(): TreeNode[] {
-    const directories = new Set<string>();
+  loadMoreNestedUsers(loadMoreNode: TreeNode, event?: Event): void {
+    if (event) event.stopPropagation();
+    const parentGroupNode = loadMoreNode.userData;
+    if (parentGroupNode) {
+      parentGroupNode.userData.currentPage++;
+      this.loadUsersForGroupNode(parentGroupNode, true);
+    }
+  }
 
-    this.allTableData.forEach((item) => {
-      directories.add(item.directory);
-    });
+  handleMasterLeftLoadMore(): void {
+    if (this.activeTabIndex === 0) {
+      if (this.activeSelectedGroupNode) {
+        this.activeSelectedGroupNode.userData.currentPage++;
+        this.loadUsersForGroupNode(this.activeSelectedGroupNode, true);
+      }
+    } else if (this.activeTabIndex === 1) {
+      this.leftPage++;
+      this.loadIdentityVaultTree(true);
+    }
+  }
 
-    return Array.from(directories).map((item) => ({
-      name: item,
-      type: 'directory',
+  get hasMoreGroupUsersData(): boolean {
+    if (this.activeTabIndex === 0 && this.activeSelectedGroupNode) {
+      return this.activeSelectedGroupNode.userData?.hasMore ?? false;
+    }
+    return false;
+  }
+
+  loadIdentityVaultTree(append: boolean = false): void {
+    this.api
+      .getlistofidentityvaults(this.leftPage, this.leftSize, '', '')
+      .subscribe({
+        next: (res: any) => {
+          const identityList =
+            res.content || res.data || (Array.isArray(res) ? res : []);
+
+          this.hasMoreLeftData = identityList.length >= this.leftSize;
+
+          if (append) {
+            this.rawIdentitiesAccumulator = [
+              ...this.rawIdentitiesAccumulator,
+              ...identityList,
+            ];
+          } else {
+            this.rawIdentitiesAccumulator = [...identityList];
+          }
+
+          const userMap = new Map<string, TreeNode>();
+
+          this.rawIdentitiesAccumulator.forEach((user: any) => {
+            const userName =
+              `${user.firstName || ''} ${user.lastName || ''}`.trim() ||
+              'Unknown User';
+            const uniqueNameKey = userName.toLowerCase();
+
+            if (!userMap.has(uniqueNameKey)) {
+              userMap.set(uniqueNameKey, {
+                id: user.id,
+                name: userName,
+                type: 'user',
+                groupList: user.groupsList || '',
+                userData: user,
+              });
+            }
+          });
+
+          this.usersDataSource.data = Array.from(userMap.values()).sort(
+            (a, b) => a.name.localeCompare(b.name),
+          );
+        },
+        error: (err) => {
+          console.error(err);
+          this.hasMoreLeftData = false;
+        },
+      });
+  }
+
+  loadAccessTreeData(append: boolean = false): void {
+    const startIdx = this.accessPage * this.accessSize;
+    const endIdx = startIdx + this.accessSize;
+    const chunk = this.groupNames.slice(startIdx, endIdx);
+
+    this.hasMoreAccessData = endIdx < this.groupNames.length;
+
+    if (append) {
+      this.rawAccessAccumulator = [...this.rawAccessAccumulator, ...chunk];
+    } else {
+      this.rawAccessAccumulator = chunk;
+    }
+
+    this.accessDataSource.data = this.rawAccessAccumulator.map((group) => ({
+      name: group,
+      type: 'directory' as const,
     }));
   }
 
-  /** TREE CHILD CHECK */
-  hasChild = (_: number, node: TreeNode) =>
-    !!node.children && node.children.length > 0;
+  loadMoreAccess(): void {
+    this.accessPage++;
+    this.loadAccessTreeData(true);
+  }
 
-  selectedNode: TreeNode | null = null;
-  /** TREE CLICK FILTER */
-  selectedNodeType:
-    | 'department'
-    | 'user'
-    | 'directory'
-    | 'file'
-    | 'folder'
-    | null = null;
-  selectNode(node: TreeNode) {
-    this.selectedNode = node;
-    this.selectedNodeType = node.type;
+  loadFilesByGroup(groupName: string, userFilter: string = ''): void {
+    const normalizedGroupName = groupName.trim();
+    this.activeNormalizedGroupName = normalizedGroupName;
 
-    const filtered = this.allTableData.filter((item) => {
-      if (node.type === 'department') {
-        return item.directory === node.name;
-      }
+    const currentTargetCacheKey = `${normalizedGroupName}_page_${this.pageIndex}_user_${userFilter}`;
 
-      if (node.type === 'user') {
-        if (node.department) {
-          return (
-            item.directoryname === node.name &&
-            item.directory === node.department
+    if (this.globalFileCacheRegistry.has(currentTargetCacheKey)) {
+      const cachedMetadata = this.globalFileCacheRegistry.get(
+        currentTargetCacheKey,
+      )!;
+      this.totalElements = cachedMetadata.totalElements;
+      this.totalPages = cachedMetadata.totalPages;
+      this.renderTableData(groupName, cachedMetadata.rows);
+      return;
+    }
+
+    this.isLoading = true;
+    this.api
+      .getallfilesbygroup(normalizedGroupName, this.pageIndex, this.pageSize)
+      .subscribe({
+        next: (res: any) => {
+          let filesList =
+            res.content || res.data || (Array.isArray(res) ? res : []);
+
+          if (userFilter) {
+            const filterLower = userFilter.toLowerCase().trim();
+            filesList = filesList.filter((file: any) => {
+              const fileUser = (file.username || '').toLowerCase().trim();
+              if (!fileUser) return false;
+              return (
+                fileUser.includes(filterLower) || filterLower.includes(fileUser)
+              );
+            });
+          }
+
+          this.totalElements = userFilter
+            ? filesList.length
+            : (res.totalElements ?? filesList.length);
+          this.totalPages = userFilter
+            ? 1
+            : (res.totalPages ?? Math.ceil(this.totalElements / this.pageSize));
+
+          const mappedRows = this.mapFilePayloadToTableItems(
+            filesList,
+            groupName,
           );
-        }
-        return item.directoryname === node.name;
+          this.globalFileCacheRegistry.set(currentTargetCacheKey, {
+            rows: mappedRows,
+            totalElements: this.totalElements,
+            totalPages: this.totalPages,
+          });
+
+          this.renderTableData(groupName, mappedRows);
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error(`❌ API Error for "${normalizedGroupName}":`, err);
+          this.resetPaginationProperties();
+          this.clearTableWithHeader(groupName);
+          this.isLoading = false;
+        },
+      });
+  }
+
+  private mapFilePayloadToTableItems(
+    filesList: any[],
+    groupName: string,
+  ): TableItem[] {
+    return filesList.map((file: any) => ({
+      id: file.id,
+      name: file.itemName || '-',
+      type: file.itemType?.toLowerCase() === 'folder' ? 'folder' : 'file',
+      permissions: {
+        F: file.fullControlOpenAccess || false,
+        M: file.fullControlOpenAccess || false,
+        R: file.readExecuteOpenAccess || file.openAccess || false,
+        W: file.fullControlOpenAccess || false,
+        X: file.readExecuteOpenAccess || false,
+      },
+      totalHitCount: file.folderFileHitCount || 0,
+      size: file.folderFileSize || '-',
+      classification: file.ruleCategory || '-',
+      category: file.category || '-',
+      directory: groupName,
+      directoryname: file.itemName || '-',
+    }));
+  }
+
+  private renderTableData(groupName: string, fileRows: TableItem[]): void {
+    const parentRow: TableItem = {
+      name: '',
+      type: 'folder',
+      permissions: { F: false, M: false, R: false, W: false, X: false },
+      totalHitCount: 0,
+      size: '',
+      classification: null,
+      category: null,
+      directory: groupName,
+      directoryname: groupName,
+    };
+    this.tableData = [parentRow, ...fileRows];
+    this.generatePages();
+  }
+
+  invalidateCacheAndRefresh(): void {
+    this.globalFileCacheRegistry.clear();
+    this.activeFlightFetches.clear();
+    this.refreshCurrentNodeFiles();
+  }
+
+  private resetPaginationProperties(): void {
+    this.totalPages = 0;
+    this.totalElements = 0;
+    this.pages = [];
+  }
+
+  generatePages(): void {
+    if (!this.totalPages) {
+      this.pages = [];
+      return;
+    }
+    const visiblePages = 3;
+    let start = Math.max(1, this.pageIndex + 1 - Math.floor(visiblePages / 2));
+    let end = start + visiblePages - 1;
+    if (end > this.totalPages) {
+      end = this.totalPages;
+      start = Math.max(1, end - visiblePages + 1);
+    }
+    this.pages = [];
+    for (let i = start; i <= end; i++) {
+      this.pages.push(i);
+    }
+  }
+
+  private refreshCurrentNodeFiles(): void {
+    if (this.selectedNode) {
+      let groupTargetName = '';
+      let userTargetName = '';
+
+      if (this.selectedNode.type === 'user') {
+        const groupsArray = (this.selectedNode.groupList || '').split(',');
+        groupTargetName = groupsArray[0].trim();
+        userTargetName = this.selectedNode.name;
+      } else if (
+        ['group', 'directory', 'groupList'].includes(this.selectedNode.type)
+      ) {
+        groupTargetName = this.selectedNode.name;
       }
 
-      if (node.type === 'directory') {
-        return item.directory === node.name;
+      if (groupTargetName) {
+        this.loadFilesByGroup(groupTargetName, userTargetName);
       }
+    }
+  }
 
-      return false;
-    });
+  goToPage = (p: number) => {
+    if (p !== this.pageIndex + 1 && !this.isLoading) {
+      this.pageIndex = p - 1;
+      this.refreshCurrentNodeFiles();
+    }
+  };
 
-    if (filtered.length) {
-      const parentRow: TableItem = {
+  nextPage = () => {
+    if (this.pageIndex < this.totalPages - 1 && !this.isLoading) {
+      this.pageIndex++;
+      this.refreshCurrentNodeFiles();
+    }
+  };
+
+  prevPage = () => {
+    if (this.pageIndex > 0 && !this.isLoading) {
+      this.pageIndex--;
+      this.refreshCurrentNodeFiles();
+    }
+  };
+
+  firstPage = () => {
+    if (this.pageIndex !== 0 && !this.isLoading) {
+      this.pageIndex = 0;
+      this.refreshCurrentNodeFiles();
+    }
+  };
+
+  lastPage = () => {
+    if (
+      this.totalPages > 0 &&
+      this.pageIndex !== this.totalPages - 1 &&
+      !this.isLoading
+    ) {
+      this.pageIndex = this.totalPages - 1;
+      this.refreshCurrentNodeFiles();
+    }
+  };
+
+  clearTableWithHeader(groupName: string): void {
+    this.tableData = [
+      {
         name: '',
         type: 'folder',
-        permissions: {
-          F: false,
-          M: false,
-          R: false,
-          W: false,
-          X: false,
-          L: false,
-        },
+        permissions: { F: false, M: false, R: false, W: false, X: false },
         totalHitCount: 0,
         size: '',
         classification: null,
         category: null,
-        directory: node.type === 'user' ? filtered[0].directory : node.name,
-        directoryname:
-          node.type === 'user' ? node.name : filtered[0].directoryname,
-      };
+        directory: groupName,
+        directoryname: groupName,
+      },
+    ];
+  }
 
-      this.tableData = [parentRow, ...filtered];
+  hasChild = (_: number, node: TreeNode) => node.type === 'group';
+
+  selectNode(node: TreeNode) {
+    if (node.type === 'loadMore') return;
+    this.selectedNode = node;
+    this.selectedNodeType = node.type;
+
+    if (node.type === 'group') {
+      this.activeSelectedGroupNode = node;
+    }
+
+    this.pageIndex = 0;
+    this.resetPaginationProperties();
+
+    let groupTargetName = '';
+    let userTargetName = '';
+
+    if (node.type === 'user') {
+      const groupsArray = (node.groupList || '').split(',');
+      groupTargetName = groupsArray[0].trim();
+      userTargetName = node.name;
+    } else if (['group', 'directory', 'groupList'].includes(node.type)) {
+      groupTargetName = node.name;
+    }
+
+    if (groupTargetName) {
+      this.loadFilesByGroup(groupTargetName, userTargetName);
     } else {
-      this.tableData = [];
+      this.clearTableWithHeader('No Group Assigned');
     }
   }
 
   onTabChange(event: MatTabChangeEvent) {
     this.activeTabIndex = event.index;
-
-    const index = event.index;
-
-    if (index === 0 && this.dataSource.data.length) {
+    if (this.activeTabIndex === 0 && this.dataSource.data.length) {
       const first = this.dataSource.data[0];
       this.treeControl.expand(first);
       this.selectNode(first);
-    }
-
-    if (index === 1 && this.usersDataSource.data.length) {
-      const first = this.usersDataSource.data[0];
-      this.selectNode(first);
-    }
-
-    if (index === 2 && this.accessDataSource.data.length) {
-      const first = this.accessDataSource.data[0];
-      this.selectNode(first);
+    } else if (this.activeTabIndex === 1 && this.usersDataSource.data.length) {
+      this.selectNode(this.usersDataSource.data[0]);
+    } else if (this.activeTabIndex === 2 && this.accessDataSource.data.length) {
+      this.selectNode(this.accessDataSource.data[0]);
     }
   }
+
   isAllAccessTrue(access: any): boolean {
-    if (!access) return false;
-    return Object.values(access).every((val) => val === true);
+    return access ? Object.values(access).every((val) => val === true) : false;
   }
 
-  activeTabIndex: number = 0;
   onAddClick() {
-    if (this.activeTabIndex === 0) {
-      this.addGroupUser();
+    if (this.activeTabIndex === 0) this.openResourceEditDialog();
+    else if (this.activeTabIndex === 1) this.openAddUserDialog();
+    else if (this.activeTabIndex === 2) this.openAddAccessDialog();
+  }
+
+  // 🔥 UPDATED DELETE METHOD
+  onDeleteClick(element: TableItem) {
+    let groupId = '1';
+    const groupNode = this.dataSource.data.find(
+      (g) => g.name === element.directory,
+    );
+
+    if (groupNode?.id) {
+      groupId = groupNode.id.toString();
+    } else if (this.activeSelectedGroupNode?.name === element.directory) {
+      groupId = this.activeSelectedGroupNode.id?.toString() || '1';
     }
 
-    if (this.activeTabIndex === 1) {
-      this.addUser();
-    }
+    // Build the Payload precisely for deletion
+    const payload = [
+      {
+        groupId: groupId,
+        groupName: element.directory,
+        folderId: element.id?.toString() || '',
+        folderName: element.name,
+        status: 'Delete', // Ensures deletion logic fires on backend
+      },
+    ];
 
-    if (this.activeTabIndex === 2) {
-      this.addAccess();
-    }
+    this.isLoading = true;
+
+    this.api.addFolderToGroup(payload).subscribe({
+      next: () => {
+        this.isLoading = false;
+        this.showMessage('Access deleted successfully');
+        this.invalidateCacheAndRefresh();
+      },
+      error: (err) => {
+        console.error('❌ Delete failed', err);
+        this.isLoading = false;
+        this.showMessage('Failed to delete access');
+      },
+    });
   }
 
-  addGroupUser() {
-    this.openAddAccessDialog();
-    // open dialog / API call
+  // ✅ New Snack Bar Helper for Delete Action
+  showMessage(message: string) {
+    this.snackBar.open(message, '', {
+      duration: 1500,
+      horizontalPosition: 'center',
+      verticalPosition: 'bottom',
+      panelClass: ['success-snackbar'],
+    });
   }
 
-  addUser() {
-    this.openAddAccessDialog();
-    // open dialog / API call
-  }
-
-  addAccess() {
-    this.openAddUserDialog();
-    // open dialog / API call
-  }
-
-  Shared: sharedData[] = [
-    {
-      sharedBy: 'William Bridges',
-      sharedWith: 'Christopher Williams',
-      fileName: 'Finance Policy.xlsx',
-      fileType: 'File',
-      date: '07/21/2025 02:24 AM',
-      tag: 'Private',
-      path: '/gsuite/Finance/ William Bridges',
-    },
-    {
-      sharedBy: 'Amanda Jones',
-      sharedWith: 'Bob Smith',
-      fileName: 'Employee Perks.xlsx',
-      fileType: 'File',
-      date: '08/22/2025 12:08 PM',
-      tag: 'Private',
-      path: '/gsuite/Finance/ William Bridges',
-    },
-    {
-      sharedBy: 'Peter Biel',
-      sharedWith: 'Randy Jefferson',
-      fileName: 'Vendor Policy.xlsx',
-      fileType: 'File',
-      date: '07/21/2025 02:24 AM',
-      tag: 'Private',
-      path: '/gsuite/Finance/ William Bridges',
-    },
-    {
-      sharedBy: 'Brenda Jenna',
-      sharedWith: 'Miroslav L',
-      fileName: 'Medical Insurance.xlsx',
-      fileType: 'File',
-      date: '08/22/2025 12:08 PM',
-      tag: 'Private',
-      path: '/gsuite/Finance/ William Bridges',
-    },
-    {
-      sharedBy: 'Ashley Smithson',
-      sharedWith: 'Christopher Williams',
-      fileName: 'Vendor Legal.xlsx',
-      fileType: 'File',
-      date: '07/21/2025 02:24 AM',
-      tag: 'Private',
-      path: '/gsuite/Finance/ William Bridges',
-    },
-    {
-      sharedBy: 'Deepak Sharma',
-      sharedWith: 'Bob Smith',
-      fileName: 'Employee Onboarding.xlsx',
-      fileType: 'File',
-      date: '08/22/2025 12:08 PM',
-      tag: 'Private',
-      path: '/gsuite/Finance/ William Bridges',
-    },
-    {
-      sharedBy: 'William Bridges',
-      sharedWith: 'Christopher Williams',
-      fileName: 'Finance Policy.xlsx',
-      fileType: 'File',
-      date: '07/21/2025 02:24 AM',
-      tag: 'Private',
-      path: '/gsuite/Finance/ William Bridges',
-    },
-    {
-      sharedBy: 'Amanda Jones',
-      sharedWith: 'Bob Smith',
-      fileName: 'Employee Perks.xlsx',
-      fileType: 'File',
-      date: '08/22/2025 12:08 PM',
-      tag: 'Private',
-      path: '/gsuite/Finance/ William Bridges',
-    },
-    {
-      sharedBy: 'Peter Biel',
-      sharedWith: 'Randy Jefferson',
-      fileName: 'Vendor Policy.xlsx',
-      fileType: 'File',
-      date: '07/21/2025 02:24 AM',
-      tag: 'Private',
-      path: '/gsuite/Finance/ William Bridges',
-    },
-    {
-      sharedBy: 'Brenda Jenna',
-      sharedWith: 'Miroslav L',
-      fileName: 'Medical Insurance.xlsx',
-      fileType: 'File',
-      date: '08/22/2025 12:08 PM',
-      tag: 'Private',
-      path: '/gsuite/Finance/ William Bridges',
-    },
-    {
-      sharedBy: 'Ashley Smithson',
-      sharedWith: 'Christopher Williams',
-      fileName: 'Vendor Legal.xlsx',
-      fileType: 'File',
-      date: '07/21/2025 02:24 AM',
-      tag: 'Private',
-      path: '/gsuite/Finance/ William Bridges',
-    },
-    {
-      sharedBy: 'Deepak Sharma',
-      sharedWith: 'Bob Smith',
-      fileName: 'Employee Onboarding.xlsx',
-      fileType: 'File',
-      date: '08/22/2025 12:08 PM',
-      tag: 'Private',
-      path: '/gsuite/Finance/ William Bridges',
-    },
-  ];
-
-  ExternalFiles: externalFilesData[] = [
-    {
-      name: 'Employee DB 2025.xlsx',
-      type: 'File',
-      service: 'polyrizeab.com',
-      serviceType: 'drive',
-      lastViewed: '07/21/2024 02:24 AM',
-      lastViewedRecent: '01/21/2025 02:24 AM',
-      tags: ['Sensitive', 'Share Externally'],
-    },
-    {
-      name: 'Vendor List Domestic.xlsx',
-      type: 'File',
-      service: 'polyrizeab.com',
-      serviceType: 'drive',
-      lastViewed: '08/22/2024 12:08 PM',
-      lastViewedRecent: '08/22/2025 14:08 PM',
-      tags: ['Sensitive', 'Share Externally'],
-    },
-    {
-      name: 'Employee Policies.xlsx',
-      type: 'File',
-      service: 'Test3',
-      serviceType: 'amazon',
-      lastViewed: '07/21/2024 02:24 AM',
-      lastViewedRecent: '02/21/2025 02:24 AM',
-      tags: ['Sensitive', 'Share Externally'],
-    },
-    {
-      name: 'Medical Policies.xlsx',
-      type: 'File',
-      service: 'polyrizeab.com',
-      serviceType: 'drive',
-      lastViewed: '08/22/2024 12:08 PM',
-      lastViewedRecent: '08/22/2025 12:08 PM',
-      tags: ['Public', 'Sensitive', 'Share Externally'],
-    },
-    {
-      name: 'Employee Device List.xlsx',
-      type: 'File',
-      service: 'Staging S2',
-      serviceType: 'dropbox',
-      lastViewed: '07/21/2024 02:24 AM',
-      lastViewedRecent: '07/21/2025 02:24 AM',
-      tags: ['Sensitive'],
-    },
-    {
-      name: 'Code of Conduct Policy.pdf',
-      type: 'File',
-      service: 'polyrizeab.com',
-      serviceType: 'drive',
-      lastViewed: '08/22/2024 12:08 PM',
-      lastViewedRecent: '08/22/2025 12:08 PM',
-      tags: ['Sensitive', 'Share Externally'],
-    },
-    {
-      name: 'Work from home policy.pdf',
-      type: 'File',
-      service: 'Inbound Enquiries',
-      serviceType: 'dropbox',
-      lastViewed: '08/22/2024 12:08 PM',
-      lastViewedRecent: '08/22/2025 12:08 PM',
-      tags: ['Public'],
-    },
-    {
-      name: 'Uniform & Accessories.pdf',
-      type: 'File',
-      service: 'polyrizeab.com',
-      serviceType: 'drive',
-      lastViewed: '08/22/2024 12:08 PM',
-      lastViewedRecent: '08/22/2025 12:08 PM',
-      tags: ['Public'],
-    },
-    {
-      name: 'Office Overheads.pdf',
-      type: 'File',
-      service: 'polyrizeab.com',
-      serviceType: 'drive',
-      lastViewed: '08/22/2024 12:08 PM',
-      lastViewedRecent: '08/22/2025 12:08 PM',
-      tags: ['Public', 'Sensitive', 'Share Externally'],
-    },
-    {
-      name: 'Employee DB 2025.xlsx',
-      type: 'File',
-      service: 'polyrizeab.com',
-      serviceType: 'drive',
-      lastViewed: '07/21/2024 02:24 AM',
-      lastViewedRecent: '01/21/2025 02:24 AM',
-      tags: ['Sensitive', 'Share Externally'],
-    },
-    {
-      name: 'Vendor List Domestic.xlsx',
-      type: 'File',
-      service: 'polyrizeab.com',
-      serviceType: 'drive',
-      lastViewed: '08/22/2024 12:08 PM',
-      lastViewedRecent: '08/22/2025 14:08 PM',
-      tags: ['Sensitive', 'Share Externally'],
-    },
-    {
-      name: 'Employee Policies.xlsx',
-      type: 'File',
-      service: 'Test3',
-      serviceType: 'amazon',
-      lastViewed: '07/21/2024 02:24 AM',
-      lastViewedRecent: '02/21/2025 02:24 AM',
-      tags: ['Sensitive', 'Share Externally'],
-    },
-    {
-      name: 'Medical Policies.xlsx',
-      type: 'File',
-      service: 'polyrizeab.com',
-      serviceType: 'drive',
-      lastViewed: '08/22/2024 12:08 PM',
-      lastViewedRecent: '08/22/2025 12:08 PM',
-      tags: ['Public', 'Sensitive', 'Share Externally'],
-    },
-    {
-      name: 'Employee Device List.xlsx',
-      type: 'File',
-      service: 'Staging S2',
-      serviceType: 'dropbox',
-      lastViewed: '07/21/2024 02:24 AM',
-      lastViewedRecent: '07/21/2025 02:24 AM',
-      tags: ['Sensitive'],
-    },
-    {
-      name: 'Code of Conduct Policy.pdf',
-      type: 'File',
-      service: 'polyrizeab.com',
-      serviceType: 'drive',
-      lastViewed: '08/22/2024 12:08 PM',
-      lastViewedRecent: '08/22/2025 12:08 PM',
-      tags: ['Sensitive', 'Share Externally'],
-    },
-    {
-      name: 'Work from home policy.pdf',
-      type: 'File',
-      service: 'Inbound Enquiries',
-      serviceType: 'dropbox',
-      lastViewed: '08/22/2024 12:08 PM',
-      lastViewedRecent: '08/22/2025 12:08 PM',
-      tags: ['Public'],
-    },
-    {
-      name: 'Uniform & Accessories.pdf',
-      type: 'File',
-      service: 'polyrizeab.com',
-      serviceType: 'drive',
-      lastViewed: '08/22/2024 12:08 PM',
-      lastViewedRecent: '08/22/2025 12:08 PM',
-      tags: ['Public'],
-    },
-    {
-      name: 'Office Overheads.pdf',
-      type: 'File',
-      service: 'polyrizeab.com',
-      serviceType: 'drive',
-      lastViewed: '08/22/2024 12:08 PM',
-      lastViewedRecent: '08/22/2025 12:08 PM',
-      tags: ['Public', 'Sensitive', 'Share Externally'],
-    },
-  ];
-
-  /** CLOUD DIALOG */
   openCloudDialog(
     card: CardData,
-    shared: sharedData[],
-    externalFiles: externalFilesData[],
+    shared: SharedData[],
+    externalFiles: ExternalFilesData[],
   ) {
     this.dialog.open(CloudresourcespopupComponent, {
       width: '95%',
       minWidth: '95%',
       maxWidth: '100%',
-      data: {
-        ...card,
-        shared,
-        externalFiles,
-      },
+      data: { ...card, shared, externalFiles },
     });
   }
+
   openAddUserDialog() {
-    this.dialog.open(AdduserdpopupComponent, {
+    const activeGroup = this.activeSelectedGroupNode
+      ? {
+          id: this.activeSelectedGroupNode.id,
+          name: this.activeSelectedGroupNode.name,
+        }
+      : null;
+
+    const dialogRef = this.dialog.open(AdduserdpopupComponent, {
       width: '34.375rem',
       minWidth: '34.375rem',
       maxWidth: '100%',
+      data: { group: activeGroup },
+    });
+
+    dialogRef.afterClosed().subscribe((didUpdate) => {
+      if (didUpdate) {
+        this.invalidateCacheAndRefresh();
+        if (this.activeSelectedGroupNode) {
+          this.activeSelectedGroupNode.userData.currentPage = 0;
+          this.loadUsersForGroupNode(this.activeSelectedGroupNode, false);
+        }
+      }
     });
   }
 
   openAddAccessDialog() {
-    this.dialog.open(AddaccessdpopupComponent, {
+    const activeGroup = this.activeSelectedGroupNode
+      ? {
+          id: this.activeSelectedGroupNode.id,
+          name: this.activeSelectedGroupNode.name,
+        }
+      : null;
+
+    const dialogRef = this.dialog.open(AddaccessdpopupComponent, {
       width: '46rem',
       minWidth: '46rem',
       maxWidth: '100%',
+      data: { group: activeGroup },
+    });
+
+    dialogRef.afterClosed().subscribe((didUpdate) => {
+      if (didUpdate) this.invalidateCacheAndRefresh();
     });
   }
 
   openResourceEditDialog() {
-    this.dialog.open(ResourceeditdpopupComponent, {
+    const dialogRef = this.dialog.open(ResourceeditdpopupComponent, {
       width: '58rem',
       minWidth: '58rem',
       maxWidth: '100%',
     });
-  }
-  ngOnInit(): void {
-    // this.openAddUserDialog();
-    // this.openAddAccessDialog();
-    // this.openResourceEditDialog();
+
+    dialogRef.afterClosed().subscribe((didUpdate) => {
+      if (didUpdate) this.invalidateCacheAndRefresh();
+    });
   }
 }

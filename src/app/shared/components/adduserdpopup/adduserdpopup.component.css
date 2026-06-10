@@ -45,6 +45,8 @@
 .checkboxwrapper {
   display: flex;
   flex-wrap: wrap;
+  max-height: 300px;
+  overflow-y: auto;
 }
 .checkboxwrapper div {
   width: 100%;

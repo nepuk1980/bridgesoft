@@ -85,11 +85,16 @@ canvas {
 .content-main-wrapper {
   width: calc(100% - 52.5rem);
 }
+.popup-search-filter-div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.625rem;
+}
 .chart-content-wrapper h4 {
   font-weight: 500;
   font-size: 1rem;
   color: #000;
-  margin-bottom: 0.625rem;
 }
 .dialog-content-external {
   max-height: 40vh;
@@ -168,4 +173,28 @@ table div img {
 }
 .tdClick:hover {
   color: #1176bd;
+}
+
+.dialog-content-shared table th:nth-child(1),
+.dialog-content-shared table td:nth-child(1) {
+  width: 20%;
+}
+.dialog-content-shared table th:nth-child(2),
+.dialog-content-shared table td:nth-child(2) {
+  width: 20%;
+}
+.dialog-content-shared table th:nth-child(3),
+.dialog-content-shared table td:nth-child(3) {
+  width: 20%;
+}
+.dialog-content-shared table th:nth-child(4),
+.dialog-content-shared table td:nth-child(4) {
+  width: 15%;
+}
+.dialog-content-shared table th:nth-child(5),
+.dialog-content-shared table td:nth-child(5) {
+  width: 25%;
+}
+.spinner {
+  min-height: auto;
 }
