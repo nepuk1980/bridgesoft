@@ -12,7 +12,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { NgClass, NgFor, NgIf } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar'; // ✅ Added SnackBar Import
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AdduserdpopupComponent } from '../../shared/components/adduserdpopup/adduserdpopup.component';
 import { AddaccessdpopupComponent } from '../../shared/components/addaccessdpopup/addaccessdpopup.component';
 import { ResourceeditdpopupComponent } from '../../shared/components/resourceeditdpopup/resourceeditdpopup.component';
@@ -99,7 +99,7 @@ interface TableItem {
     NgClass,
     MatTableModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule, // ✅ Added to imports
+    MatSnackBarModule,
   ],
   templateUrl: './administrative-control.component.html',
   styleUrl: './administrative-control.component.css',
@@ -107,7 +107,7 @@ interface TableItem {
 export class AdministrativeControlComponent implements OnInit {
   private api = inject(ApiService);
   private dialog = inject(MatDialog);
-  private snackBar = inject(MatSnackBar); // ✅ Injected SnackBar
+  private snackBar = inject(MatSnackBar);
 
   displayedColumns: string[] = [
     'directory',
@@ -134,6 +134,14 @@ export class AdministrativeControlComponent implements OnInit {
 
   groupNames: string[] = [];
 
+  // --- AD Group Pagination State ---
+  groupPage = 0;
+  groupSize = 10;
+  groupNameFilter = '';
+  hasMoreGroupsData = true;
+  rawGroupsAccumulator: any[] = [];
+
+  // --- Other Pagination State ---
   leftPage = 0;
   leftSize = 10;
   hasMoreLeftData = true;
@@ -173,37 +181,69 @@ export class AdministrativeControlComponent implements OnInit {
   }
 
   loadInitialData(): void {
-    this.api.getadgroups().subscribe({
-      next: (res: any) => {
-        const groupsRaw = Array.isArray(res)
-          ? res
-          : res.content || res.data || [];
-        this.groupNames = groupsRaw.map((g: any) => g.groupName).sort();
-
-        const adGroupTreeNodes: TreeNode[] = groupsRaw.map((g: any) => ({
-          id: g.id,
-          name: g.groupName,
-          type: 'group' as const,
-          children: [],
-          userData: { currentPage: 0, hasMore: true },
-        }));
-        this.dataSource.data = adGroupTreeNodes;
-
-        this.loadAccessTreeData(false);
-
-        adGroupTreeNodes.forEach((node) => {
-          this.loadUsersForGroupNode(node, false);
-        });
-
-        if (adGroupTreeNodes.length && !this.selectedNode) {
-          this.treeControl.expand(adGroupTreeNodes[0]);
-          this.selectNode(adGroupTreeNodes[0]);
-        }
-      },
-      error: (err) => console.error(err),
-    });
-
+    this.loadGroupsData(false);
     this.loadIdentityVaultTree(false);
+  }
+
+  loadGroupsData(append: boolean = false): void {
+    this.api
+      .getadgroups(this.groupNameFilter, this.groupPage, this.groupSize)
+      .subscribe({
+        next: (res: any) => {
+          const groupsRaw = Array.isArray(res)
+            ? res
+            : res.content || res.data || [];
+
+          this.hasMoreGroupsData = groupsRaw.length >= this.groupSize;
+
+          if (append) {
+            this.rawGroupsAccumulator = [
+              ...this.rawGroupsAccumulator,
+              ...groupsRaw,
+            ];
+          } else {
+            this.rawGroupsAccumulator = [...groupsRaw];
+          }
+
+          this.groupNames = this.rawGroupsAccumulator
+            .map((g: any) => g.groupName)
+            .sort();
+
+          const adGroupTreeNodes: TreeNode[] = this.rawGroupsAccumulator.map(
+            (g: any) => ({
+              id: g.id,
+              name: g.groupName,
+              type: 'group' as const,
+              children: [],
+              userData: { currentPage: 0, hasMore: true },
+            }),
+          );
+
+          this.dataSource.data = adGroupTreeNodes;
+
+          this.loadAccessTreeData(false);
+
+          adGroupTreeNodes.forEach((node) => {
+            this.loadUsersForGroupNode(node, false);
+          });
+
+          if (adGroupTreeNodes.length && !this.selectedNode && !append) {
+            this.treeControl.expand(adGroupTreeNodes[0]);
+            this.selectNode(adGroupTreeNodes[0]);
+          }
+        },
+        error: (err) => {
+          console.error('Error loading AD groups:', err);
+          this.hasMoreGroupsData = false;
+        },
+      });
+  }
+
+  loadMoreGroups(): void {
+    if (this.hasMoreGroupsData) {
+      this.groupPage++;
+      this.loadGroupsData(true);
+    }
   }
 
   toggleGroupNode(node: TreeNode): void {
@@ -308,6 +348,9 @@ export class AdministrativeControlComponent implements OnInit {
       this.leftPage++;
       this.loadIdentityVaultTree(true);
     }
+    this.loadMoreGroups();
+    this.leftPage++;
+    this.loadIdentityVaultTree(true);
   }
 
   get hasMoreGroupUsersData(): boolean {
@@ -655,7 +698,6 @@ export class AdministrativeControlComponent implements OnInit {
     else if (this.activeTabIndex === 2) this.openAddAccessDialog();
   }
 
-  // 🔥 UPDATED DELETE METHOD
   onDeleteClick(element: TableItem) {
     let groupId = '1';
     const groupNode = this.dataSource.data.find(
@@ -668,14 +710,13 @@ export class AdministrativeControlComponent implements OnInit {
       groupId = this.activeSelectedGroupNode.id?.toString() || '1';
     }
 
-    // Build the Payload precisely for deletion
     const payload = [
       {
         groupId: groupId,
         groupName: element.directory,
         folderId: element.id?.toString() || '',
         folderName: element.name,
-        status: 'Delete', // Ensures deletion logic fires on backend
+        status: 'Delete',
       },
     ];
 
@@ -695,7 +736,6 @@ export class AdministrativeControlComponent implements OnInit {
     });
   }
 
-  // ✅ New Snack Bar Helper for Delete Action
   showMessage(message: string) {
     this.snackBar.open(message, '', {
       duration: 1500,

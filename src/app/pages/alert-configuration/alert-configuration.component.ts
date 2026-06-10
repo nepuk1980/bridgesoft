@@ -95,6 +95,11 @@ export class AlertConfigurationComponent implements OnInit {
   selecteAccessFolder: string = '';
   selectedResources: string[] = [];
 
+  /* ---------- AD GROUP PAGINATION STATE ---------- */
+  groupPage = 0;
+  groupSize = 50;
+  groupNameFilter = '';
+
   /* ---------- RESOURCES STATE ---------- */
   itemName: string[] = [];
   filteredItemNames: string[] = [];
@@ -181,7 +186,6 @@ export class AlertConfigurationComponent implements OnInit {
     this.isCheckedEmailAlert = !this.isCheckedWebAlert;
     this.recipientEmail = data.alertEmail || '';
 
-    // 1. Create a mapping for API short-codes to your full names
     const dayMap: { [key: string]: string } = {
       sun: 'Sunday',
       mon: 'Monday',
@@ -193,59 +197,10 @@ export class AlertConfigurationComponent implements OnInit {
     };
 
     if (data.days) {
-      // 1. Split the string by comma
-      // 2. Map and trim to ensure "Sunday" matches "Sunday" (no spaces)
       this.selectedDays = data.days.split(',').map((d: string) => d.trim());
     } else {
       this.selectedDays = [];
     }
-
-    // 2. Delay ONLY the Tree logic, as that depends on data sources being ready
-    // setTimeout(() => {
-    //   const usersToSelect =
-    //     data.includeUsers?.split(',').map((s: string) => s.trim()) || [];
-    //   const groupsToSelect =
-    //     data.includeGroups?.split(',').map((s: string) => s.trim()) || [];
-    //   const exUsers =
-    //     data.excludeUsers?.split(',').map((s: string) => s.trim()) || [];
-    //   const exGroups =
-    //     data.excludeGroups?.split(',').map((s: string) => s.trim()) || [];
-
-    //   this.selectNodesFromList(usersToSelect, this.includeDataSource.data);
-    //   this.selectNodesFromList(groupsToSelect, this.includeDataSource.data);
-    //   this.selectNodesFromList(exUsers, this.excludeDataSource.data);
-    //   this.selectNodesFromList(exGroups, this.excludeDataSource.data);
-
-    //   // One single call to detect changes for everything
-    //   this.cdr.detectChanges();
-    // }, 5000);
-
-    // // Tree Selection Logic
-    // const usersToSelect =
-    //   data.includeUsers?.split(',').map((s: string) => s.trim()) || [];
-    // const groupsToSelect =
-    //   data.includeGroups?.split(',').map((s: string) => s.trim()) || [];
-
-    // setTimeout(() => {
-    //   this.selectNodesFromList(usersToSelect, this.includeDataSource.data);
-    //   this.selectNodesFromList(groupsToSelect, this.includeDataSource.data);
-
-    //   const exUsers =
-    //     data.excludeUsers?.split(',').map((s: string) => s.trim()) || [];
-    //   const exGroups =
-    //     data.excludeGroups?.split(',').map((s: string) => s.trim()) || [];
-    //   this.selectNodesFromList(exUsers, this.excludeDataSource.data);
-    //   this.selectNodesFromList(exGroups, this.excludeDataSource.data);
-
-    //   this.cdr.detectChanges();
-    // }, 5000); // Increased delay slightly to ensure tree is rendered
-
-    // console.log('API Days Received:', data.days);
-    // console.log('Calculated SelectedDays:', this.selectedDays);
-    // console.log(
-    //   'Available Config Days:',
-    //   this.days.map((d) => d.value),
-    // );
   }
 
   private selectNodesFromList(names: string[], nodes: TreeNode[]) {
@@ -268,9 +223,13 @@ export class AlertConfigurationComponent implements OnInit {
         this.resetAndFetchWithSearch();
       });
 
-    // 1. Fetch metadata first
+    // 1. Fetch metadata first (Updated with new API signature)
     forkJoin({
-      groups: this.api.getadgroups(),
+      groups: this.api.getadgroups(
+        this.groupNameFilter,
+        this.groupPage,
+        this.groupSize,
+      ),
       vaults: this.api.getlistofidentityvaults(0, 50, '', ''),
     }).subscribe({
       next: () => {
@@ -292,12 +251,17 @@ export class AlertConfigurationComponent implements OnInit {
   }
 
   getADGroup(): void {
-    this.api.getadgroups().subscribe({
-      next: (res) => {
-        this.groupNames = res.map((item: any) => item.groupName);
-      },
-      error: (err) => console.error('Failed fetching AD groups:', err),
-    });
+    this.api
+      .getadgroups(this.groupNameFilter, this.groupPage, this.groupSize)
+      .subscribe({
+        next: (res: any) => {
+          const groupsRaw = Array.isArray(res)
+            ? res
+            : res.content || res.data || [];
+          this.groupNames = groupsRaw.map((item: any) => item.groupName);
+        },
+        error: (err) => console.error('Failed fetching AD groups:', err),
+      });
   }
 
   fetchAllUsersByGroup(): void {
@@ -305,9 +269,13 @@ export class AlertConfigurationComponent implements OnInit {
     this.loadingTreeData = true;
 
     this.api
-      .getadgroups()
+      .getadgroups(this.groupNameFilter, this.groupPage, this.groupSize)
       .pipe(
-        switchMap((groups: any[]) => {
+        switchMap((res: any) => {
+          const groups = Array.isArray(res)
+            ? res
+            : res.content || res.data || [];
+
           if (!groups || !groups.length) {
             this.hasMoreTreeElements = false;
             return [[]];
@@ -319,9 +287,9 @@ export class AlertConfigurationComponent implements OnInit {
             return this.api
               .getlistofidentityvaults(this.treePage, this.treeSize, '', '')
               .pipe(
-                map((res: any) => {
-                  const vaultUsers = res?.content || [];
-                  const totalVaultElements = res?.totalElements || 0;
+                map((vaultRes: any) => {
+                  const vaultUsers = vaultRes?.content || [];
+                  const totalVaultElements = vaultRes?.totalElements || 0;
 
                   if (
                     (this.treePage + 1) * this.treeSize >=
@@ -377,7 +345,6 @@ export class AlertConfigurationComponent implements OnInit {
 
   onWhenSomeoneChange(selectedValue: string): void {
     this.selecteAccessFolder = selectedValue;
-    // this.applyGroupFilter();
   }
 
   filterIncludeTree(): void {
@@ -507,14 +474,12 @@ export class AlertConfigurationComponent implements OnInit {
   toggleParentSelection(node: TreeNode, checked: boolean): void {
     node.selected = checked;
 
-    // Recursively select/deselect all children
     if (node.children) {
       node.children.forEach((child) => {
         this.toggleParentSelection(child, checked);
       });
     }
 
-    // Trigger change detection to update the UI
     this.cdr.detectChanges();
   }
 
@@ -575,7 +540,6 @@ export class AlertConfigurationComponent implements OnInit {
     const currentAccessInclude: TreeNode[] = [];
     const currentAccessExclude: TreeNode[] = [];
 
-    // Always process full compiled data
     this.allCompiledGroupData.forEach((item) => {
       const createGroupNode = (): TreeNode => ({
         name: item.groupName,
@@ -693,7 +657,6 @@ export class AlertConfigurationComponent implements OnInit {
       alertEmail: this.isCheckedEmailAlert ? this.recipientEmail : '',
     };
 
-    // Only send ID when editing
     if (this.mode === 'edit') {
       payload.id = this.editingAlertId;
     }
@@ -707,7 +670,6 @@ export class AlertConfigurationComponent implements OnInit {
         error: () => this.showMessage('Error updating alert'),
       });
     } else {
-      // create and copy both create new alerts
       this.api.saveAlertDetails(payload).subscribe({
         next: () => {
           this.showMessage('Alert saved successfully');
@@ -717,7 +679,7 @@ export class AlertConfigurationComponent implements OnInit {
       });
     }
   }
-  // Helper used by saveAlert to extract names
+
   private getSelectedTreeNames(nodes: TreeNode[]): string {
     let names: string[] = [];
     const traverse = (nodeList: TreeNode[]) => {

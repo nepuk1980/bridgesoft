@@ -504,7 +504,8 @@ export interface AlertInterface {
 
 // add
 
-export interface GetADGroupInterface {
+// 1. The individual AD Group Item
+export interface ADGroup {
   id: number;
   groupName: string;
   distinguishedName: string;
@@ -513,6 +514,36 @@ export interface GetADGroupInterface {
   parentGroups: string;
   groupCategory: string;
   groupScope: string;
+}
+
+// 2. The Paginated API Response Wrapper
+export interface GetADGroupInterface {
+  content: ADGroup[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+  size: number;
+  number: number;
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+  first: boolean;
+  numberOfElements: number;
+  empty: boolean;
 }
 
 export type GetUsersByGroupNameResponse = {

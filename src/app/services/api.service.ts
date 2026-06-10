@@ -560,9 +560,21 @@ export class ApiService {
   // Add
 
   // ✅ Identity Vault Application Details
-  getadgroups(): Observable<GetADGroupInterface[]> {
-    return this.http.get<GetADGroupInterface[]>(
+  getadgroups(
+    groupName: string,
+    page: number,
+    size: number,
+  ): Observable<GetADGroupInterface> {
+    const params = new HttpParams()
+      .set('groupName', groupName || '')
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    return this.http.get<GetADGroupInterface>(
       `${environment.apiUrl}/getadgroups`,
+      {
+        params,
+      },
     );
   }
 
