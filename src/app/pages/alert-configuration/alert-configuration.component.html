@@ -494,7 +494,7 @@
             Cancel
           </button>
           <button mat-flat-button class="btn-blue" (click)="saveAlert()">
-            {{ editingAlertId ? "Update Alert" : "Save Alert" }}
+            {{ mode === "edit" ? "Update Alert" : "Save Alert" }}
           </button>
         </div>
       </div>

@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import {
   AlertInterface,
+  AllFilesByGroupResponse,
   ApplicationAccountsResponseInterface,
   ApplicationResponseInterface,
   AuditResponseInterface,
@@ -12,6 +13,8 @@ import {
   FileSystemAccessSummaryInterface,
   FileSystemResponseInterface,
   GetADGroupInterface,
+  GetAllFoldersResponse,
+  GetUsersByGroupNameResponse,
   IdentityVaultDetailResponseInterface,
   IdentityVaultResponseInterface,
   NotificationInterface,
@@ -187,28 +190,6 @@ export class ApiService {
     return this.http.get<any>(`${environment.apiUrl}/getapplicationdetails`, {
       params,
     });
-  }
-
-  // ✅ Identity Vault List
-  getlistofidentityvaults(
-    page: number = 0,
-    size: number = 10,
-    searchFirstNameOrLastName: string = '',
-    filter: string = '',
-  ): Observable<IdentityVaultResponseInterface> {
-    let params = new HttpParams()
-      .set(
-        'searchFirstNameOrLastName',
-        (searchFirstNameOrLastName || '').trim(),
-      )
-      .set('filter', (filter || '').trim())
-      .set('page', page.toString())
-      .set('size', size.toString());
-
-    return this.http.get<IdentityVaultResponseInterface>(
-      `${environment.apiUrl}/getlistofidentityvaults`,
-      { params },
-    );
   }
 
   // ✅ Identity Vault Details
@@ -504,32 +485,6 @@ export class ApiService {
     });
   }
 
-  // ✅ Identity Vault Application Details
-  getadgroups(): Observable<GetADGroupInterface[]> {
-    return this.http.get<GetADGroupInterface[]>(
-      `${environment.apiUrl}/getadgroups`,
-    );
-  }
-
-  // getusersbygroupname
-  getusersbygroupname(
-    groupName: string,
-    page: number,
-    size: number,
-  ): Observable<AlertInterface> {
-    const params = new HttpParams()
-      .set('groupName', groupName || '')
-      .set('page', page.toString())
-      .set('size', size.toString());
-
-    return this.http.get<AlertInterface>(
-      `${environment.apiUrl}/getusersbygroupname`,
-      {
-        params,
-      },
-    );
-  }
-
   // Save Alert
   saveAlertDetails(data: any): Observable<any> {
     const token = this.authService.getToken();
@@ -599,6 +554,131 @@ export class ApiService {
     return this.http.put(`${environment.apiUrl}/deletealert/${alertId}`, null, {
       headers,
       responseType: 'text',
+    });
+  }
+
+  // Add
+
+  // ✅ Identity Vault Application Details
+  getadgroups(): Observable<GetADGroupInterface[]> {
+    return this.http.get<GetADGroupInterface[]>(
+      `${environment.apiUrl}/getadgroups`,
+    );
+  }
+
+  // getusersbygroupname
+  getusersbygroupname(
+    groupName: string,
+    page: number,
+    size: number,
+  ): Observable<GetUsersByGroupNameResponse> {
+    const params = new HttpParams()
+      .set('groupName', groupName || '')
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    return this.http.get<GetUsersByGroupNameResponse>(
+      `${environment.apiUrl}/getusersbygroupname`,
+      {
+        params,
+      },
+    );
+  }
+
+  // ✅ Identity Vault List
+  getlistofidentityvaults(
+    page: number = 0,
+    size: number = 10,
+    searchFirstNameOrLastName: string = '',
+    filter: string = '',
+  ): Observable<IdentityVaultResponseInterface> {
+    let params = new HttpParams()
+      .set(
+        'searchFirstNameOrLastName',
+        (searchFirstNameOrLastName || '').trim(),
+      )
+      .set('filter', (filter || '').trim())
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    return this.http.get<IdentityVaultResponseInterface>(
+      `${environment.apiUrl}/getlistofidentityvaults`,
+      { params },
+    );
+  }
+
+  // getallfilesbygroup
+  getallfilesbygroup(
+    groupName: string,
+    page: number,
+    size: number,
+  ): Observable<AllFilesByGroupResponse> {
+    const params = new HttpParams()
+      .set('groupName', groupName || '')
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    return this.http.get<AllFilesByGroupResponse>(
+      `${environment.apiUrl}/getallfilesbygroup`,
+      {
+        params,
+      },
+    );
+  }
+
+  // Get All Folders
+  getAllFolders(page: number, size: number): Observable<GetAllFoldersResponse> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    return this.http.get<GetAllFoldersResponse>(
+      `${environment.apiUrl}/getallfolders`,
+      {
+        params,
+      },
+    );
+  }
+
+  // Add User(s) to Group
+  addUserToGroup(payload: any[]): Observable<any> {
+    const token = this.authService.getToken();
+
+    if (!token) {
+      console.error('❌ No token found');
+      throw new Error('User not authenticated');
+    }
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    });
+
+    return this.http.post(`${environment.apiUrl}/addusertothegroup`, payload, {
+      headers: headers,
+      responseType: 'text', // ✅ ADD THIS LINE: Tells Angular not to parse the response as JSON
+    });
+  }
+
+  // Add Folder(s) to Group
+  addFolderToGroup(data: any): Observable<any> {
+    const token = this.authService.getToken();
+
+    if (!token) {
+      console.error('❌ No token found');
+      throw new Error('User not authenticated');
+    }
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    });
+
+    console.log('🚀 FINAL PAYLOAD:', data);
+
+    return this.http.post(`${environment.apiUrl}/addfoldertothegroup`, data, {
+      headers: headers,
+      responseType: 'text', // ✅ ADD THIS: Tells Angular not to parse the successful response as JSON
     });
   }
 }

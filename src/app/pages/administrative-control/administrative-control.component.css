@@ -154,6 +154,8 @@ mat-icon {
 }
 .table-wrapper {
   margin-top: 1rem;
+  max-height: calc(100vh - 30rem);
+  overflow-y: auto;
 }
 table {
   background: #fff;
@@ -273,4 +275,11 @@ table tr td:nth-child(7) {
 }
 .add-access {
   margin-top: 1rem;
+}
+.normalbtn {
+  margin-top: 0;
+}
+
+.innertabdiv {
+  padding-bottom: 2rem;
 }

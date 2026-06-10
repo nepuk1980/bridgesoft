@@ -128,7 +128,7 @@ export class FilefoldersharepopupComponent implements AfterViewInit, OnInit {
             .map((g: string) => g.trim())
             .join(', ')
         : '-',
-      user: item.userName ?? item.owner ?? '-',
+      user: item.username ?? item.owner ?? '-',
       duration: item.duration ?? '-',
       created: item.createDatetime
         ? new Date(item.createDatetime).toLocaleDateString()

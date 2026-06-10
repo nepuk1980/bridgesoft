@@ -135,7 +135,7 @@ export class FilefolderpopupComponent implements AfterViewInit, OnInit {
             .join(', ')
         : '-',
 
-      user: item.userName ?? item.owner ?? '-',
+      user: item.username ?? item.owner ?? '-',
 
       duration: item.duration ?? '-',
 
