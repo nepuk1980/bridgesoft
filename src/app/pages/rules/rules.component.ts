@@ -10,6 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { ApiService } from '../../services/api.service';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 export interface RuleResponseInterface {
   id: number;
@@ -36,6 +37,7 @@ export interface RuleResponseInterface {
     NgIf,
     HttpClientModule,
     MatSnackBarModule,
+    NgxSkeletonLoaderModule,
   ],
   templateUrl: './rules.component.html',
   styleUrl: './rules.component.css',

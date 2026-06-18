@@ -83,6 +83,8 @@ export interface FileSystemResponseInterface {
   totalPages: number;
 }
 
+export type ExternalResourcesGroupByResponse = [string, number][];
+
 export type ApplicationResponseInterface = {
   content: {
     applicationHost: string;
@@ -755,3 +757,94 @@ export type GetAllFoldersResponse = {
   numberOfElements: number;
   empty: boolean;
 };
+
+export type GroupFolderPermissionResponse = {
+  content: {
+    id: number;
+    groupId: string;
+    groupName: string;
+    folderId: string;
+    folderName: string;
+    userId: string;
+    userName: string;
+    fileSystemPermissions: string;
+    totalHitCount: number;
+    folderFileSize: string;
+    classification: string;
+    accessAction: string;
+    status: string;
+  }[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+  size: number;
+  number: number;
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+  first: boolean;
+  numberOfElements: number;
+  empty: boolean;
+};
+
+export type UserFolderPermissionResponse = {
+  content: {
+    id: number;
+    groupId: string;
+    groupName: string;
+    folderId: string;
+    folderName: string;
+    userId: string;
+    userName: string;
+    fileSystemPermissions: string;
+    totalHitCount: number;
+    folderFileSize: string;
+    classification: string;
+    accessAction: string;
+    status: string;
+  }[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      empty: boolean;
+      unsorted: boolean;
+      sorted: boolean;
+    };
+    offset: number;
+    unpaged: boolean;
+    paged: boolean;
+  };
+  last: boolean;
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  number: number;
+  sort: {
+    empty: boolean;
+    unsorted: boolean;
+    sorted: boolean;
+  };
+  first: boolean;
+  numberOfElements: number;
+  empty: boolean;
+};
+export type IdentityVaultCategoryResponse = {
+  id: number;
+  categoryType: string;
+  categoryName: string;
+}[];

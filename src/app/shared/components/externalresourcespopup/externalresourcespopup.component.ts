@@ -108,12 +108,21 @@ export class ExternalresourcespopupComponent implements AfterViewInit, OnInit {
 
   @ViewChild('sort1') sort1!: MatSort;
   @ViewChild('sort2') sort2!: MatSort;
+  @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
 
   driveDialogRef!: MatDialogRef<MydrivepopupComponent>;
 
   ngOnInit(): void {
-    this.setStaticChartData();
     this.loadTableData(true);
+
+    this.api.getExternalResourcesGroupBy().subscribe({
+      next: (response) => {
+        this.setChartData(response);
+      },
+      error: (err) => {
+        console.error('Error loading chart data', err);
+      },
+    });
   }
 
   ngAfterViewInit(): void {
@@ -302,7 +311,7 @@ export class ExternalresourcespopupComponent implements AfterViewInit, OnInit {
       },
       y: {
         min: 0,
-        max: 14000,
+        max: 1000, // Default value, updated dynamically
         ticks: {
           display: false,
         },
@@ -342,41 +351,47 @@ export class ExternalresourcespopupComponent implements AfterViewInit, OnInit {
     datasets: [],
   };
 
-  private setStaticChartData(): void {
+  private setChartData(data: [string, number][]): void {
+    const gradients = [
+      ['#F4FAFF', '#7EC8F8'],
+      ['#FFF8F0', '#F5B971'],
+      ['#F4FFF6', '#7EDB8C'],
+      ['#F7FDFF', '#A6EFFF'],
+      ['#F4FCFD', '#6CC9D9'],
+      ['#F5F7FF', '#8C9EFF'],
+    ];
+
+    const values = data.map(([, count]) => count);
+    const maxValue = Math.max(...values);
+
+    // Add 10% headroom and round up to the next 1000
+    const dynamicMax = Math.ceil((maxValue * 1.1) / 1000) * 1000;
+
+    // Update Y-axis max dynamically
+    if (this.barChartOptions?.scales?.['y']) {
+      (this.barChartOptions.scales['y'] as any).max = dynamicMax;
+    }
+
     this.barChartData = {
-      labels: [
-        ['Stale', 'Resources'],
-        ['Private'],
-        ['Shared', 'External'],
-        ['Sensitive', 'Files'],
-        ['Public'],
-        ['Shared Internal', 'Files'],
-      ],
+      labels: data.map(([label]) => label.split(' ')),
       datasets: [
         {
           label: 'External Resources',
-          data: [12700, 12300, 2970, 2550, 1180, 1170],
+          data: values,
           borderRadius: 8,
           categoryPercentage: 1,
           barPercentage: 1,
           barThickness: 84,
           maxBarThickness: 84,
-          backgroundColor: (context) => {
-            const { chart, dataIndex, dataset } = context;
+          backgroundColor: (context: any) => {
+            const { chart, dataIndex } = context;
             const { ctx, chartArea } = chart;
 
             if (!chartArea) {
               return '#6C63FF';
             }
 
-            const gradients = [
-              ['#F4FAFF', '#7EC8F8'], // Light Blue
-              ['#FFF8F0', '#F5B971'], // Light Orange
-              ['#F4FFF6', '#7EDB8C'], // Light Green
-              ['#F7FDFF', '#A6EFFF'], // Light Cyan
-              ['#F4FCFD', '#6CC9D9'], // Light Teal
-              ['#F5F7FF', '#8C9EFF'], // Light Indigo
-            ];
+            const colors = gradients[dataIndex % gradients.length];
 
             const gradient = ctx.createLinearGradient(
               0,
@@ -385,14 +400,17 @@ export class ExternalresourcespopupComponent implements AfterViewInit, OnInit {
               chartArea.top,
             );
 
-            gradient.addColorStop(0, gradients[dataIndex][0]);
-            gradient.addColorStop(0.4, gradients[dataIndex][1]);
+            gradient.addColorStop(0, colors[0]);
+            gradient.addColorStop(0.4, colors[1]);
 
             return gradient;
           },
         },
       ],
     };
+
+    // Refresh chart after updating options and data
+    this.chart?.update();
   }
 
   chartClicked({

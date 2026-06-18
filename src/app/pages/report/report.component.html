@@ -4,20 +4,43 @@
   btntitle=" Back To Reports"
 ></app-innerheader>
 
-<div class="dashboard-card-list">
-  <div class="dashboard-card" routerLink="/reports/executive-audit-report-list">
-    <mat-card class="card-wrapper">
-      <div class="card-header">
-        <h6 class="card-title">Executive Audit Report</h6>
-      </div>
-      <div class="card-content">
-        <div class="card-content-data">
-          <h6>
-            {{ totalElements }}
-            <span>Record{{ totalElements > 0 ? "s" : "" }}</span>
-          </h6>
+@defer {
+  <div class="dashboard-card-list">
+    <div
+      class="dashboard-card"
+      routerLink="/reports/executive-audit-report-list"
+    >
+      <mat-card class="card-wrapper">
+        <div class="card-header">
+          <h6 class="card-title">Executive Audit Report</h6>
         </div>
-      </div>
-    </mat-card>
+        <div class="card-content">
+          <div class="card-content-data">
+            <h6>
+              {{ totalElements }}
+              <span>Record{{ totalElements > 0 ? "s" : "" }}</span>
+            </h6>
+          </div>
+        </div>
+      </mat-card>
+    </div>
   </div>
-</div>
+} @placeholder (minimum 1000ms) {
+  <div class="dashboard-card-list">
+    <div
+      class="dashboard-card"
+      routerLink="/reports/executive-audit-report-list"
+    >
+      <mat-card class="card-wrapper">
+        <div class="card-header">
+          <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+        </div>
+        <div class="card-content">
+          <div class="card-content-data">
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </div>
+        </div>
+      </mat-card>
+    </div>
+  </div>
+}

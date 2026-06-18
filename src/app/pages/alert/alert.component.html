@@ -4,149 +4,259 @@
   btntitle="Back To Dashboard"
 ></app-innerheader>
 
-<div class="mainWrapper">
-  <div class="popup-search-filter-div">
-    <p>
-      Showing results {{ dataSource.data.length }} of
-      {{ totalElements }}
-    </p>
-    <div class="filter-grp-div">
-      <div class="custom-filter no-icon">
-        <mat-form-field>
-          <mat-label>Download</mat-label>
-          <mat-select
-            [(ngModel)]="selectedDownload"
-            panelClass="custom-filter-panel"
-          >
-            <mat-option value="download">Download</mat-option>
-            <mat-option value="pdf" (click)="downloadPDF()"
-              ><div class="icontexttd">
-                <img src="/svg/pdf.svg" class="icons" alt="pdf" /> PDF
-              </div></mat-option
+@defer {
+  <div class="mainWrapper">
+    <div class="popup-search-filter-div">
+      <p>
+        Showing results {{ dataSource.data.length }} of
+        {{ totalElements }}
+      </p>
+      <div class="filter-grp-div">
+        <div class="custom-filter no-icon">
+          <mat-form-field>
+            <mat-label>Download</mat-label>
+            <mat-select
+              [(ngModel)]="selectedDownload"
+              panelClass="custom-filter-panel"
             >
-            <mat-option value="excel" (click)="downloadExcel()"
-              ><div class="icontexttd">
-                <img src="/svg/excel.svg" class="icons" alt="excel" /> Excel
-              </div></mat-option
-            >
-            <mat-option value="csv" (click)="downloadCSV()"
-              ><div class="icontexttd">
-                <img src="/svg/csv.svg" class="icons" alt="csv" /> CSV
-              </div></mat-option
-            >
-          </mat-select>
-        </mat-form-field>
+              <mat-option value="download">Download</mat-option>
+              <mat-option value="pdf" (click)="downloadPDF()"
+                ><div class="icontexttd">
+                  <img src="/svg/pdf.svg" class="icons" alt="pdf" /> PDF
+                </div></mat-option
+              >
+              <mat-option value="excel" (click)="downloadExcel()"
+                ><div class="icontexttd">
+                  <img src="/svg/excel.svg" class="icons" alt="excel" /> Excel
+                </div></mat-option
+              >
+              <mat-option value="csv" (click)="downloadCSV()"
+                ><div class="icontexttd">
+                  <img src="/svg/csv.svg" class="icons" alt="csv" /> CSV
+                </div></mat-option
+              >
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+    <div class="solid-table table-wrapper">
+      <div class="table-wrapper">
+        <table mat-table [dataSource]="dataSource" class="custom-table">
+          <!-- Resource Path -->
+          <ng-container matColumnDef="altername">
+            <th mat-header-cell *matHeaderCellDef>Alter Name</th>
+            <td mat-cell *matCellDef="let element">
+              {{ element.alertName }}
+            </td>
+          </ng-container>
+
+          <!-- Name -->
+          <ng-container matColumnDef="description">
+            <th mat-header-cell *matHeaderCellDef>Description</th>
+            <td mat-cell *matCellDef="let element">
+              {{ element.alertDesc }}
+            </td>
+          </ng-container>
+
+          <!-- Category -->
+          <ng-container matColumnDef="folders">
+            <th mat-header-cell *matHeaderCellDef>Folders</th>
+            <td mat-cell *matCellDef="let element">
+              {{ element.alertFolders }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="files">
+            <th mat-header-cell *matHeaderCellDef>Files</th>
+            <td mat-cell *matCellDef="let element">
+              {{ element.alertFiles }}
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="users">
+            <th mat-header-cell *matHeaderCellDef>Users</th>
+            <td mat-cell *matCellDef="let element">
+              {{ element.alertUsers }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="action">
+            <th mat-header-cell *matHeaderCellDef class="lastcol">Action</th>
+            <td mat-cell *matCellDef="let element" class="lastcol">
+              <div class="edit-delete-td">
+                <button mat-icon-button (click)="editAlert(element)">
+                  <img src="/svg/edit.svg" alt="edit" class="editico" />
+                </button>
+                <button mat-icon-button (click)="copyAlert(element)">
+                  <img src="/svg/copy.svg" alt="copy" class="editico" />
+                </button>
+                <button mat-icon-button (click)="deleteAlert(element)">
+                  <img src="/svg/delete.svg" alt="delete" class="deleteico" />
+                </button>
+              </div>
+            </td>
+          </ng-container>
+
+          <!-- Rows -->
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+          <tr class="mat-row" *matNoDataRow>
+            <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+              No data found
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <!-- ✅ Custom Pagination -->
+    <div class="custom-pagination">
+      <span class="count">
+        Showing {{ dataSource.data.length }} of {{ totalElements }}
+      </span>
+
+      <div class="pagination-buttons">
+        <button (click)="firstPage()" [disabled]="pageIndex === 0">«</button>
+        <button (click)="prevPage()" [disabled]="pageIndex === 0">‹</button>
+
+        <span *ngIf="pages[0] > 1">...</span>
+
+        <button
+          *ngFor="let p of pages"
+          (click)="goToPage(p)"
+          [class.active]="p === pageIndex + 1"
+        >
+          {{ p }}
+        </button>
+
+        <span *ngIf="pages[pages.length - 1] < totalPages">...</span>
+
+        <button (click)="nextPage()" [disabled]="pageIndex === totalPages - 1">
+          ›
+        </button>
+        <button (click)="lastPage()" [disabled]="pageIndex === totalPages - 1">
+          »
+        </button>
       </div>
     </div>
   </div>
-  <div class="solid-table table-wrapper">
-    <div class="table-wrapper">
-      <table mat-table [dataSource]="dataSource" class="custom-table">
-        <!-- Resource Path -->
-        <ng-container matColumnDef="altername">
-          <th mat-header-cell *matHeaderCellDef>Alter Name</th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.alertName }}
-          </td>
-        </ng-container>
+  <div class="fixed-btn">
+    <button mat-flat-button routerLink="alerts-configuration" class="btn-blue">
+      Create A New Alert
+    </button>
+  </div>
 
-        <!-- Name -->
-        <ng-container matColumnDef="description">
-          <th mat-header-cell *matHeaderCellDef>Description</th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.alertDesc }}
-          </td>
-        </ng-container>
-
-        <!-- Category -->
-        <ng-container matColumnDef="folders">
-          <th mat-header-cell *matHeaderCellDef>Folders</th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.alertFolders }}
-          </td>
-        </ng-container>
-        <ng-container matColumnDef="files">
-          <th mat-header-cell *matHeaderCellDef>Files</th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.alertFiles }}
-          </td>
-        </ng-container>
-        <ng-container matColumnDef="users">
-          <th mat-header-cell *matHeaderCellDef>Users</th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.alertUsers }}
-          </td>
-        </ng-container>
-
-        <ng-container matColumnDef="action">
-          <th mat-header-cell *matHeaderCellDef class="lastcol">Action</th>
-          <td mat-cell *matCellDef="let element" class="lastcol">
-            <div class="edit-delete-td">
-              <button mat-icon-button (click)="editAlert(element)">
-                <img src="/svg/edit.svg" alt="edit" class="editico" />
-              </button>
-              <button mat-icon-button (click)="copyAlert(element)">
-                <img src="/svg/copy.svg" alt="copy" class="editico" />
-              </button>
-              <button mat-icon-button (click)="deleteAlert(element)">
-                <img src="/svg/delete.svg" alt="delete" class="deleteico" />
-              </button>
-            </div>
-          </td>
-        </ng-container>
-
-        <!-- Rows -->
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-
-        <tr class="mat-row" *matNoDataRow>
-          <td class="mat-cell" [attr.colspan]="displayedColumns.length">
-            No data found
-          </td>
-        </tr>
-      </table>
+  <div class="loader-overlay" *ngIf="isDownloading">
+    <div class="loader-content">
+      <!-- You can use an <img> svg here or a CSS spinner -->
+      <p>Generating Report, please wait...</p>
     </div>
   </div>
-  <!-- ✅ Custom Pagination -->
-  <div class="custom-pagination">
-    <span class="count">
-      Showing {{ dataSource.data.length }} of {{ totalElements }}
-    </span>
-
-    <div class="pagination-buttons">
-      <button (click)="firstPage()" [disabled]="pageIndex === 0">«</button>
-      <button (click)="prevPage()" [disabled]="pageIndex === 0">‹</button>
-
-      <span *ngIf="pages[0] > 1">...</span>
-
-      <button
-        *ngFor="let p of pages"
-        (click)="goToPage(p)"
-        [class.active]="p === pageIndex + 1"
-      >
-        {{ p }}
-      </button>
-
-      <span *ngIf="pages[pages.length - 1] < totalPages">...</span>
-
-      <button (click)="nextPage()" [disabled]="pageIndex === totalPages - 1">
-        ›
-      </button>
-      <button (click)="lastPage()" [disabled]="pageIndex === totalPages - 1">
-        »
-      </button>
+} @placeholder (minimum 1000ms) {
+  <div class="mainWrapper">
+    <div class="popup-search-filter-div">
+      <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+      <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
     </div>
-  </div>
-</div>
-<div class="fixed-btn">
-  <button mat-flat-button routerLink="alerts-configuration" class="btn-blue">
-    Create A New Alert
-  </button>
-</div>
+    <div class="solid-table table-wrapper">
+      <div class="table-wrapper">
+        <table mat-table [dataSource]="dataSource" class="custom-table">
+          <!-- Resource Path -->
+          <ng-container matColumnDef="altername">
+            <th mat-header-cell *matHeaderCellDef>
+              <ngx-skeleton-loader
+                animation="progress"
+                class="skeleton-w-100"
+              />
+            </th>
+            <td mat-cell *matCellDef="let element">
+              <ngx-skeleton-loader
+                animation="progress"
+                class="skeleton-w-100"
+              />
+            </td>
+          </ng-container>
 
-<div class="loader-overlay" *ngIf="isDownloading">
-  <div class="loader-content">
-    <!-- You can use an <img> svg here or a CSS spinner -->
-    <p>Generating Report, please wait...</p>
+          <!-- Name -->
+          <ng-container matColumnDef="description">
+            <th mat-header-cell *matHeaderCellDef>
+              <ngx-skeleton-loader
+                animation="progress"
+                class="skeleton-w-100"
+              />
+            </th>
+            <td mat-cell *matCellDef="let element">
+              <ngx-skeleton-loader
+                animation="progress"
+                class="skeleton-w-100"
+              />
+            </td>
+          </ng-container>
+
+          <!-- Category -->
+          <ng-container matColumnDef="folders">
+            <th mat-header-cell *matHeaderCellDef>
+              <ngx-skeleton-loader
+                animation="progress"
+                class="skeleton-w-100"
+              />
+            </th>
+            <td mat-cell *matCellDef="let element">
+              <ngx-skeleton-loader
+                animation="progress"
+                class="skeleton-w-100"
+              />
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="files">
+            <th mat-header-cell *matHeaderCellDef>
+              <ngx-skeleton-loader
+                animation="progress"
+                class="skeleton-w-100"
+              />
+            </th>
+            <td mat-cell *matCellDef="let element">
+              <ngx-skeleton-loader
+                animation="progress"
+                class="skeleton-w-100"
+              />
+            </td>
+          </ng-container>
+          <ng-container matColumnDef="users">
+            <th mat-header-cell *matHeaderCellDef>
+              <ngx-skeleton-loader
+                animation="progress"
+                class="skeleton-w-100"
+              />
+            </th>
+            <td mat-cell *matCellDef="let element">
+              <ngx-skeleton-loader
+                animation="progress"
+                class="skeleton-w-100"
+              />
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="action">
+            <th mat-header-cell *matHeaderCellDef>
+              <ngx-skeleton-loader
+                animation="progress"
+                class="skeleton-w-100"
+              />
+            </th>
+            <td mat-cell *matCellDef="let element">
+              <ngx-skeleton-loader
+                animation="progress"
+                class="skeleton-w-100"
+              />
+            </td>
+          </ng-container>
+
+          <!-- Rows -->
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+      </div>
+    </div>
+    <!-- ✅ Custom Pagination -->
   </div>
-</div>
+}
