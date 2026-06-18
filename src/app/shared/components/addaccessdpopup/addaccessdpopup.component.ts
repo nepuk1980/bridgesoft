@@ -6,13 +6,11 @@ import {
   inject,
   OnInit,
 } from '@angular/core';
-
 import {
   MAT_DIALOG_DATA,
   MatDialogRef,
   MatDialogModule,
 } from '@angular/material/dialog';
-
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
 import { FormsModule } from '@angular/forms';
@@ -24,12 +22,16 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { ApiService } from '../../../services/api.service';
+import { IdentityVaultCategoryResponse } from '../../../models/type';
 
-export interface Folder {
+export interface FileFolderItem {
   id: string | number;
   name: string;
   category: string;
   created: string;
+  totalHitCount: number;
+  folderFileSize: string;
+  classification: string;
 }
 
 @Component({
@@ -60,14 +62,17 @@ export class AddaccessdpopupComponent implements AfterViewInit, OnInit {
   constructor(@Inject(MAT_DIALOG_DATA) public data: any) {}
 
   displayedColumns: string[] = ['name', 'category', 'created'];
-  dataSource = new MatTableDataSource<Folder>([]);
-  selection = new SelectionModel<Folder>(true, []);
+  dataSource = new MatTableDataSource<FileFolderItem>([]);
+  selection = new SelectionModel<FileFolderItem>(true, []);
 
-  types: string[] = ['PIL', 'HIPAA', 'General', 'Cloud Resources'];
+  // Filter Variables
+  types: IdentityVaultCategoryResponse = [];
   selectedType: string = '';
   searchValue: string = '';
 
-  isFetchingFolders = true;
+  selectedItemFilter: string = '';
+
+  isFetchingData = true;
   isLoading = false;
 
   // 🔥 PAGINATION VARIABLES
@@ -78,82 +83,106 @@ export class AddaccessdpopupComponent implements AfterViewInit, OnInit {
   pages: number[] = [];
 
   // 🔥 SILENT PREFETCH CACHE
-  private pageCache = new Map<number, Folder[]>();
+  private pageCache = new Map<number, FileFolderItem[]>();
   private prefetchInFlight = new Set<number>();
 
   @ViewChild(MatSort) sort!: MatSort;
 
   ngOnInit() {
-    this.loadFolders(this.pageIndex);
+    this.getDropdownCategories();
+    this.loadData(this.pageIndex);
+    console.log('get data', this.data);
   }
 
   ngAfterViewInit() {
-    this.sort.sortChange.subscribe((sortState: Sort) => {
-      this.sortDataLocal(sortState);
+    // 🔥 FIXED: Added null check to prevent TypeError before sort is initialized
+    if (this.sort) {
+      this.sort.sortChange.subscribe((sortState: Sort) => {
+        this.sortDataLocal(sortState);
+      });
+    } else {
+      console.warn('MatSort is not initialized yet.');
+    }
+  }
+
+  getDropdownCategories() {
+    // 🔥 FIXED: Called 'getcategories' (lowercase 'c') to match your service precisely
+    this.api.getcategories('identityvault').subscribe({
+      next: (res: IdentityVaultCategoryResponse) => {
+        this.types = res || [];
+      },
+      error: (err) => {
+        console.error('Failed to load filter categories', err);
+      },
     });
+
+    console.log('types', this.types);
   }
 
   // 🔥 MAIN DATA LOADER
-  loadFolders(pageToLoad: number) {
-    // 1. If data is already silently cached, use it instantly!
+  loadData(pageToLoad: number) {
     if (this.pageCache.has(pageToLoad)) {
       console.log(
         `[Silent Log] Loading Page ${pageToLoad + 1} instantly from cache.`,
       );
       this.dataSource.data = this.pageCache.get(pageToLoad)!;
       this.generatePages();
-      this.triggerSilentPrefetch(pageToLoad); // Fetch next pages
+      this.triggerSilentPrefetch(pageToLoad);
       return;
     }
 
-    // 2. If not cached, show spinner and call API
-    this.isFetchingFolders = true;
-    console.log(
-      `[Silent Log] API Fetching Page ${pageToLoad + 1} with Spinner.`,
-    );
+    this.isFetchingData = true;
 
-    this.api.getAllFolders(pageToLoad, this.pageSize).subscribe({
-      next: (res: any) => {
-        const folders =
-          res.content || res.data || (Array.isArray(res) ? res : []);
+    this.api
+      .getAllFilesAndFoldersDetails(
+        this.searchValue,
+        this.selectedItemFilter,
 
-        const mappedFolders = folders.map((f: any) => ({
-          id: f.id,
-          name: f.itemName || 'Unnamed Folder',
-          category: f.category || 'General',
-          created: f.createDatetime,
-        }));
+        this.selectedType,
+        pageToLoad,
+        this.pageSize,
+      )
+      .subscribe({
+        next: (res: any) => {
+          const items =
+            res.content || res.data || (Array.isArray(res) ? res : []);
 
-        // Save to cache and UI
-        this.pageCache.set(pageToLoad, mappedFolders);
-        this.dataSource.data = mappedFolders;
+          const mappedItems = items.map((item: any) => ({
+            id: item.id,
+            name: item.itemName || 'Unnamed Item',
+            category: item.category || 'General',
+            created: item.createDatetime,
+            totalHitCount: item.folderFileHitCount || 0,
+            folderFileSize: item.folderFileSize || '',
+            classification: item.category || 'General',
+          }));
 
-        // Update pagination totals
-        this.totalElements = res.totalElements || mappedFolders.length;
-        this.totalPages =
-          res.totalPages || Math.ceil(this.totalElements / this.pageSize);
+          this.pageCache.set(pageToLoad, mappedItems);
+          this.dataSource.data = mappedItems;
 
-        this.generatePages();
-        this.isFetchingFolders = false;
+          this.totalElements = res.totalElements || mappedItems.length;
+          this.totalPages =
+            res.totalPages || Math.ceil(this.totalElements / this.pageSize);
 
-        // 3. Trigger silent prefetch for next 2 pages
-        this.triggerSilentPrefetch(pageToLoad);
-      },
-      error: (err) => {
-        console.error('Failed to load folders', err);
-        this.isFetchingFolders = false;
-      },
-    });
+          this.generatePages();
+          this.isFetchingData = false;
+
+          this.triggerSilentPrefetch(pageToLoad);
+        },
+        error: (err) => {
+          console.error('Failed to load files and folders', err);
+          this.isFetchingData = false;
+        },
+      });
   }
 
   // 🔥 SILENT PREFETCH LOGIC
   triggerSilentPrefetch(currentPage: number) {
-    this.executeSilentPrefetch(currentPage + 1); // Prefetch Next Page
-    this.executeSilentPrefetch(currentPage + 2); // Prefetch Page After Next
+    this.executeSilentPrefetch(currentPage + 1);
+    this.executeSilentPrefetch(currentPage + 2);
   }
 
   executeSilentPrefetch(pageToPrefetch: number) {
-    // Don't prefetch if it exceeds total pages, is already cached, or is currently fetching
     if (this.totalPages > 0 && pageToPrefetch >= this.totalPages) return;
     if (
       this.pageCache.has(pageToPrefetch) ||
@@ -162,37 +191,40 @@ export class AddaccessdpopupComponent implements AfterViewInit, OnInit {
       return;
 
     this.prefetchInFlight.add(pageToPrefetch);
-    console.log(
-      `[Silent Log] Silently prefetching Page ${pageToPrefetch + 1} in background...`,
-    );
 
-    // Call API WITHOUT triggering `isFetchingFolders` (so no spinner shows)
-    this.api.getAllFolders(pageToPrefetch, this.pageSize).subscribe({
-      next: (res: any) => {
-        const folders =
-          res.content || res.data || (Array.isArray(res) ? res : []);
-        const mappedFolders = folders.map((f: any) => ({
-          id: f.id,
-          name: f.itemName || 'Unnamed Folder',
-          category: f.category || 'General',
-          created: f.createDatetime,
-        }));
+    this.api
+      .getAllFilesAndFoldersDetails(
+        this.searchValue,
+        this.selectedType,
+        this.selectedItemFilter,
+        pageToPrefetch,
+        this.pageSize,
+      )
+      .subscribe({
+        next: (res: any) => {
+          const items =
+            res.content || res.data || (Array.isArray(res) ? res : []);
+          const mappedItems = items.map((item: any) => ({
+            id: item.id,
+            name: item.itemName || 'Unnamed Item',
+            category: item.category || 'General',
+            created: item.createDatetime,
+            totalHitCount: item.folderFileHitCount || 0,
+            folderFileSize: item.folderFileSize || '',
+            classification: item.category || 'General',
+          }));
 
-        // Store quietly in cache
-        this.pageCache.set(pageToPrefetch, mappedFolders);
-        this.prefetchInFlight.delete(pageToPrefetch);
-        console.log(
-          `[Silent Log] ✅ Page ${pageToPrefetch + 1} successfully cached in background.`,
-        );
-      },
-      error: (err) => {
-        console.error(
-          `[Silent Log] Failed to prefetch Page ${pageToPrefetch + 1}`,
-          err,
-        );
-        this.prefetchInFlight.delete(pageToPrefetch);
-      },
-    });
+          this.pageCache.set(pageToPrefetch, mappedItems);
+          this.prefetchInFlight.delete(pageToPrefetch);
+        },
+        error: (err) => {
+          console.error(
+            `[Silent Log] Failed to prefetch Page ${pageToPrefetch + 1}`,
+            err,
+          );
+          this.prefetchInFlight.delete(pageToPrefetch);
+        },
+      });
   }
 
   // --- PAGINATION CONTROLS ---
@@ -216,30 +248,30 @@ export class AddaccessdpopupComponent implements AfterViewInit, OnInit {
   }
 
   goToPage = (p: number) => {
-    if (p !== this.pageIndex + 1 && !this.isFetchingFolders) {
+    if (p !== this.pageIndex + 1 && !this.isFetchingData) {
       this.pageIndex = p - 1;
-      this.loadFolders(this.pageIndex);
+      this.loadData(this.pageIndex);
     }
   };
 
   nextPage = () => {
-    if (this.pageIndex < this.totalPages - 1 && !this.isFetchingFolders) {
+    if (this.pageIndex < this.totalPages - 1 && !this.isFetchingData) {
       this.pageIndex++;
-      this.loadFolders(this.pageIndex);
+      this.loadData(this.pageIndex);
     }
   };
 
   prevPage = () => {
-    if (this.pageIndex > 0 && !this.isFetchingFolders) {
+    if (this.pageIndex > 0 && !this.isFetchingData) {
       this.pageIndex--;
-      this.loadFolders(this.pageIndex);
+      this.loadData(this.pageIndex);
     }
   };
 
   firstPage = () => {
-    if (this.pageIndex !== 0 && !this.isFetchingFolders) {
+    if (this.pageIndex !== 0 && !this.isFetchingData) {
       this.pageIndex = 0;
-      this.loadFolders(this.pageIndex);
+      this.loadData(this.pageIndex);
     }
   };
 
@@ -247,51 +279,23 @@ export class AddaccessdpopupComponent implements AfterViewInit, OnInit {
     if (
       this.totalPages > 0 &&
       this.pageIndex !== this.totalPages - 1 &&
-      !this.isFetchingFolders
+      !this.isFetchingData
     ) {
       this.pageIndex = this.totalPages - 1;
-      this.loadFolders(this.pageIndex);
+      this.loadData(this.pageIndex);
     }
   };
 
   // --- FILTERING & SORTING ---
 
-  applyFilter(event?: Event) {
+  applyBackendFilter(event?: Event) {
     if (event) {
-      this.searchValue = (event.target as HTMLInputElement).value
-        .trim()
-        .toLowerCase();
+      this.searchValue = (event.target as HTMLInputElement).value.trim();
     }
-
-    // 🔥 CLEAR CACHE ON SEARCH: If the user searches, the old cached pages are no longer valid!
     this.pageCache.clear();
     this.prefetchInFlight.clear();
     this.pageIndex = 0;
-
-    // Note: For true backend search, pass this.searchValue into your API here
-    // this.loadFolders(0);
-
-    const filterValue = {
-      search: this.searchValue,
-      category: this.selectedType,
-    };
-
-    this.dataSource.filterPredicate = (
-      data: Folder,
-      filter: string,
-    ): boolean => {
-      const filterData = JSON.parse(filter);
-      const searchMatch =
-        data.name.toLowerCase().includes(filterData.search) ||
-        (data.category
-          ? data.category.toLowerCase().includes(filterData.search)
-          : false);
-      const categoryMatch =
-        !filterData.category || data.category === filterData.category;
-      return !!(searchMatch && categoryMatch);
-    };
-
-    this.dataSource.filter = JSON.stringify(filterValue);
+    this.loadData(0);
   }
 
   sortDataLocal(sortState: Sort) {
@@ -340,26 +344,40 @@ export class AddaccessdpopupComponent implements AfterViewInit, OnInit {
   }
 
   onSubmit() {
-    const selectedFolders = this.selection.selected;
+    const selectedItems = this.selection.selected;
 
-    if (selectedFolders.length === 0) return;
+    if (selectedItems.length === 0) return;
 
-    if (!this.data?.group?.id) {
-      this.showMessage('Error: No active group selected.');
+    const hasGroup = !!this.data?.group?.id;
+    const hasUser = !!this.data?.user?.id;
+
+    if (!hasGroup && !hasUser) {
+      this.showMessage('Error: No active group or user selected.');
       return;
     }
 
     this.isLoading = true;
 
-    const payload = selectedFolders.map((folder) => ({
-      groupId: this.data.group.id.toString(),
-      groupName: this.data.group.name,
-      folderId: folder.id.toString(),
-      folderName: folder.name,
+    const payload = selectedItems.map((item) => ({
+      groupId: hasGroup ? this.data.group.id.toString() : '',
+      groupName: hasGroup
+        ? this.data.group.groupName || this.data.group.name
+        : '',
+      folderId: item.id.toString(),
+      folderName: item.name,
+      userId: this.data.user.id || '',
+      userName: this.data.user.name || '',
+      fileSystemPermissions: 'Full Control',
+      totalHitCount: item.totalHitCount?.toString() || '0',
+      folderFileSize: item.folderFileSize || '',
+      classification: item.classification || 'General',
+      accessAction: 'Add',
       status: 'New',
     }));
 
-    this.api.addFolderToGroup(payload).subscribe({
+    console.log('access', payload);
+
+    this.api.addfolderorfiletothegrouporuser(payload).subscribe({
       next: () => {
         this.showMessage('Access added successfully');
         setTimeout(() => {

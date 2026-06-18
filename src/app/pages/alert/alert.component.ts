@@ -17,6 +17,7 @@ import { ReportService } from '../../services/report.service';
 import { forkJoin } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AlertInterface } from '../../models/type';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 interface Alert {
   id: number;
@@ -40,6 +41,7 @@ interface Alert {
     MatSelectModule,
     MatSortModule,
     MatPaginatorModule,
+    NgxSkeletonLoaderModule,
     FormsModule,
     NgFor,
     NgIf,

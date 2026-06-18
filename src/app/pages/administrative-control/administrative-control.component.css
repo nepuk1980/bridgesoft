@@ -283,3 +283,33 @@ table tr td:nth-child(7) {
 .innertabdiv {
   padding-bottom: 2rem;
 }
+
+.access-table-view th:nth-child(1),
+.access-table-view td:nth-child(1) {
+  width: 15% !important;
+  padding-left: 0 !important;
+}
+.access-table-view th:nth-child(2),
+.access-table-view td:nth-child(2) {
+  width: 15% !important;
+}
+.access-table-view th:nth-child(3),
+.access-table-view td:nth-child(3) {
+  width: 20% !important;
+}
+.access-table-view th:nth-child(4),
+.access-table-view td:nth-child(4) {
+  width: 15% !important;
+}
+.access-table-view th:nth-child(5),
+.access-table-view td:nth-child(5) {
+  width: 20% !important;
+}
+.access-table-view th:nth-child(6),
+.access-table-view td:nth-child(6) {
+  width: 20% !important;
+}
+.access-table-view th:nth-child(7),
+.access-table-view td:nth-child(7) {
+  width: 5% !important;
+}

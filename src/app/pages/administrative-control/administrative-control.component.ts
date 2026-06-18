@@ -1,4 +1,10 @@
-import { Component, inject, OnInit } from '@angular/core';
+import {
+  Component,
+  inject,
+  OnInit,
+  ViewChild,
+  ElementRef,
+} from '@angular/core';
 import { BreadcrumbComponent } from '../../shared/components/breadcrumb/breadcrumb.component';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
@@ -59,6 +65,7 @@ interface TreeNode {
     | 'folder'
     | 'loadMore';
   groupList?: string;
+  groupName?: string;
   children?: TreeNode[];
   userData?: any;
 }
@@ -105,6 +112,10 @@ interface TableItem {
   styleUrl: './administrative-control.component.css',
 })
 export class AdministrativeControlComponent implements OnInit {
+  @ViewChild('leftSearchInput') leftSearchInput!: ElementRef<HTMLInputElement>;
+  @ViewChild('rightSearchInput')
+  rightSearchInput!: ElementRef<HTMLInputElement>;
+
   private api = inject(ApiService);
   private dialog = inject(MatDialog);
   private snackBar = inject(MatSnackBar);
@@ -119,7 +130,7 @@ export class AdministrativeControlComponent implements OnInit {
     'action',
   ];
 
-  tableData: TableItem[] = [];
+  tableData: any[] = [];
   isLoading = false;
 
   /** TREE CONTROLS */
@@ -162,11 +173,12 @@ export class AdministrativeControlComponent implements OnInit {
 
   private globalFileCacheRegistry = new Map<
     string,
-    { rows: TableItem[]; totalElements: number; totalPages: number }
+    { rows: any[]; totalElements: number; totalPages: number }
   >();
-  private activeFlightFetches = new Set<string>();
-
-  private activeNormalizedGroupName = '';
+  private rawTableDataMaster: any[] = [];
+  private currentDirectoryLabel = '';
+  searchQuery = '';
+  leftSearchQuery = '';
 
   activeTabIndex: number = 0;
   selectedNode: TreeNode | null = null;
@@ -220,7 +232,6 @@ export class AdministrativeControlComponent implements OnInit {
           );
 
           this.dataSource.data = adGroupTreeNodes;
-
           this.loadAccessTreeData(false);
 
           adGroupTreeNodes.forEach((node) => {
@@ -270,43 +281,31 @@ export class AdministrativeControlComponent implements OnInit {
           const targetGroupNode = this.findNodeByName(currentTree, node.name);
 
           if (targetGroupNode) {
-            const uniqueNames = new Set<string>();
             let existingChildren: TreeNode[] = [];
 
             if (append && targetGroupNode.children) {
               existingChildren = [...targetGroupNode.children];
-              existingChildren.forEach((child) =>
-                uniqueNames.add(child.name.toLowerCase()),
-              );
             }
 
-            const newUniqueChildren: TreeNode[] = [];
-
-            fetchedUsers.forEach((user: any) => {
+            const newChildren: TreeNode[] = fetchedUsers.map((user: any) => {
               const userName =
                 `${user.firstName || ''} ${user.lastName || ''}`.trim() ||
                 'Unknown User';
-              const uniqueKey = userName.toLowerCase();
 
-              if (!uniqueNames.has(uniqueKey)) {
-                uniqueNames.add(uniqueKey);
-                newUniqueChildren.push({
-                  id: user.id,
-                  name: userName,
-                  type: 'user',
-                  groupList: targetGroupNode.name,
-                  userData: user,
-                });
-              }
+              return {
+                id: user.id,
+                name: userName,
+                type: 'user' as const,
+                groupList: targetGroupNode.name,
+                groupName: user.groupName || targetGroupNode.name,
+                userData: user,
+              };
             });
 
             if (append) {
-              targetGroupNode.children = [
-                ...existingChildren,
-                ...newUniqueChildren,
-              ];
+              targetGroupNode.children = [...existingChildren, ...newChildren];
             } else {
-              targetGroupNode.children = newUniqueChildren;
+              targetGroupNode.children = newChildren;
             }
 
             targetGroupNode.userData.hasMore = res.last === false;
@@ -362,7 +361,12 @@ export class AdministrativeControlComponent implements OnInit {
 
   loadIdentityVaultTree(append: boolean = false): void {
     this.api
-      .getlistofidentityvaults(this.leftPage, this.leftSize, '', '')
+      .getlistofidentityvaults(
+        this.leftPage,
+        this.leftSize,
+        this.leftSearchQuery,
+        '',
+      )
       .subscribe({
         next: (res: any) => {
           const identityList =
@@ -379,27 +383,25 @@ export class AdministrativeControlComponent implements OnInit {
             this.rawIdentitiesAccumulator = [...identityList];
           }
 
-          const userMap = new Map<string, TreeNode>();
+          const allUsers: TreeNode[] = this.rawIdentitiesAccumulator.map(
+            (user: any) => {
+              const userName =
+                `${user.firstName || ''} ${user.lastName || ''}`.trim() ||
+                'Unknown User';
 
-          this.rawIdentitiesAccumulator.forEach((user: any) => {
-            const userName =
-              `${user.firstName || ''} ${user.lastName || ''}`.trim() ||
-              'Unknown User';
-            const uniqueNameKey = userName.toLowerCase();
-
-            if (!userMap.has(uniqueNameKey)) {
-              userMap.set(uniqueNameKey, {
+              return {
                 id: user.id,
                 name: userName,
-                type: 'user',
+                type: 'user' as const,
                 groupList: user.groupsList || '',
+                groupName: user.groupName || user.groupsList || '',
                 userData: user,
-              });
-            }
-          });
+              };
+            },
+          );
 
-          this.usersDataSource.data = Array.from(userMap.values()).sort(
-            (a, b) => a.name.localeCompare(b.name),
+          this.usersDataSource.data = allUsers.sort((a, b) =>
+            a.name.localeCompare(b.name),
           );
         },
         error: (err) => {
@@ -410,11 +412,18 @@ export class AdministrativeControlComponent implements OnInit {
   }
 
   loadAccessTreeData(append: boolean = false): void {
+    let sourceList = this.groupNames;
+    if (this.leftSearchQuery) {
+      sourceList = this.groupNames.filter((name) =>
+        name.toLowerCase().includes(this.leftSearchQuery.toLowerCase()),
+      );
+    }
+
     const startIdx = this.accessPage * this.accessSize;
     const endIdx = startIdx + this.accessSize;
-    const chunk = this.groupNames.slice(startIdx, endIdx);
+    const chunk = sourceList.slice(startIdx, endIdx);
 
-    this.hasMoreAccessData = endIdx < this.groupNames.length;
+    this.hasMoreAccessData = endIdx < sourceList.length;
 
     if (append) {
       this.rawAccessAccumulator = [...this.rawAccessAccumulator, ...chunk];
@@ -433,96 +442,210 @@ export class AdministrativeControlComponent implements OnInit {
     this.loadAccessTreeData(true);
   }
 
-  loadFilesByGroup(groupName: string, userFilter: string = ''): void {
-    const normalizedGroupName = groupName.trim();
-    this.activeNormalizedGroupName = normalizedGroupName;
+  onLeftSearch(event: Event): void {
+    const inputElement = event.target as HTMLInputElement;
+    const query = inputElement.value;
+    this.leftSearchQuery = query;
 
-    const currentTargetCacheKey = `${normalizedGroupName}_page_${this.pageIndex}_user_${userFilter}`;
+    if (this.activeTabIndex === 0) {
+      this.groupNameFilter = query;
+      this.groupPage = 0;
+      this.loadGroupsData(false);
+    } else if (this.activeTabIndex === 1) {
+      this.leftPage = 0;
+      this.loadIdentityVaultTree(false);
+    } else if (this.activeTabIndex === 2) {
+      this.accessPage = 0;
+      this.loadAccessTreeData(false);
+    }
+  }
 
-    if (this.globalFileCacheRegistry.has(currentTargetCacheKey)) {
-      const cachedMetadata = this.globalFileCacheRegistry.get(
-        currentTargetCacheKey,
-      )!;
+  loadRightSideTableData(node: TreeNode): void {
+    if (!node) return;
+
+    const normalizedTargetName = node.name.trim();
+    const cacheKey = `${node.type}_${normalizedTargetName}_page_${this.pageIndex}`;
+
+    if (this.globalFileCacheRegistry.has(cacheKey)) {
+      const cachedMetadata = this.globalFileCacheRegistry.get(cacheKey)!;
       this.totalElements = cachedMetadata.totalElements;
       this.totalPages = cachedMetadata.totalPages;
-      this.renderTableData(groupName, cachedMetadata.rows);
+      this.renderTableData(normalizedTargetName, cachedMetadata.rows);
       return;
     }
 
     this.isLoading = true;
-    this.api
-      .getallfilesbygroup(normalizedGroupName, this.pageIndex, this.pageSize)
-      .subscribe({
-        next: (res: any) => {
-          let filesList =
-            res.content || res.data || (Array.isArray(res) ? res : []);
 
-          if (userFilter) {
-            const filterLower = userFilter.toLowerCase().trim();
-            filesList = filesList.filter((file: any) => {
-              const fileUser = (file.username || '').toLowerCase().trim();
-              if (!fileUser) return false;
-              return (
-                fileUser.includes(filterLower) || filterLower.includes(fileUser)
-              );
-            });
-          }
+    const endpointObservable$ = (
+      this.activeTabIndex === 2
+        ? this.api.getusersbygroupname(
+            normalizedTargetName,
+            this.pageIndex,
+            this.pageSize,
+          )
+        : node.type === 'user'
+          ? this.api.getuserfoldersorfiles(
+              normalizedTargetName,
+              // 'Christopher Williams',
+              this.pageIndex,
+              this.pageSize,
+            )
+          : this.api.getgroupfoldersorfiles(
+              normalizedTargetName,
+              this.pageIndex,
+              this.pageSize,
+            )
+    ) as any;
 
-          this.totalElements = userFilter
-            ? filesList.length
-            : (res.totalElements ?? filesList.length);
-          this.totalPages = userFilter
-            ? 1
-            : (res.totalPages ?? Math.ceil(this.totalElements / this.pageSize));
+    endpointObservable$.subscribe({
+      next: (res: any) => {
+        const payloadContent = res?.content || [];
 
-          const mappedRows = this.mapFilePayloadToTableItems(
-            filesList,
-            groupName,
-          );
-          this.globalFileCacheRegistry.set(currentTargetCacheKey, {
-            rows: mappedRows,
-            totalElements: this.totalElements,
-            totalPages: this.totalPages,
-          });
+        this.totalElements = res?.totalElements ?? payloadContent.length;
+        this.totalPages =
+          res?.totalPages ?? Math.ceil(this.totalElements / this.pageSize);
 
-          this.renderTableData(groupName, mappedRows);
-          this.isLoading = false;
-        },
-        error: (err) => {
-          console.error(`❌ API Error for "${normalizedGroupName}":`, err);
-          this.resetPaginationProperties();
-          this.clearTableWithHeader(groupName);
-          this.isLoading = false;
-        },
-      });
-  }
+        const mappedRows = this.mapPayloadToTableItems(
+          payloadContent,
+          normalizedTargetName,
+        );
 
-  private mapFilePayloadToTableItems(
-    filesList: any[],
-    groupName: string,
-  ): TableItem[] {
-    return filesList.map((file: any) => ({
-      id: file.id,
-      name: file.itemName || '-',
-      type: file.itemType?.toLowerCase() === 'folder' ? 'folder' : 'file',
-      permissions: {
-        F: file.fullControlOpenAccess || false,
-        M: file.fullControlOpenAccess || false,
-        R: file.readExecuteOpenAccess || file.openAccess || false,
-        W: file.fullControlOpenAccess || false,
-        X: file.readExecuteOpenAccess || false,
+        this.globalFileCacheRegistry.set(cacheKey, {
+          rows: mappedRows,
+          totalElements: this.totalElements,
+          totalPages: this.totalPages,
+        });
+
+        this.renderTableData(normalizedTargetName, mappedRows);
+        this.isLoading = false;
       },
-      totalHitCount: file.folderFileHitCount || 0,
-      size: file.folderFileSize || '-',
-      classification: file.ruleCategory || '-',
-      category: file.category || '-',
-      directory: groupName,
-      directoryname: file.itemName || '-',
-    }));
+      error: (err: any) => {
+        console.error(
+          `❌ API Error for type "${node.type}" label "${normalizedTargetName}":`,
+          err,
+        );
+        this.clearTableWithHeader(normalizedTargetName);
+        this.isLoading = false;
+      },
+    });
   }
 
-  private renderTableData(groupName: string, fileRows: TableItem[]): void {
-    const parentRow: TableItem = {
+  private parsePermissions(permissionsStr: string) {
+    const cleanStr = (permissionsStr || '').toLowerCase().trim();
+    const tokens = cleanStr.split(',').map((t) => t.trim());
+
+    const hasFull = tokens.some((t) => t.includes('full control') || t === 'f');
+    const hasModify = tokens.some((t) => t.includes('modify') || t === 'm');
+    const hasRead = tokens.some((t) => t.includes('read') || t === 'r');
+    const hasWrite = tokens.some((t) => t.includes('write') || t === 'w');
+    const hasExecute = tokens.some((t) => t.includes('execute') || t === 'x');
+
+    return {
+      F: hasFull,
+      M: hasModify,
+      R: hasRead,
+      W: hasWrite,
+      X: hasExecute,
+    };
+  }
+
+  private mapPayloadToTableItems(content: any[], label: string): any[] {
+    if (this.activeTabIndex === 2) {
+      return content.map((item: any) => ({
+        id: item.id,
+        firstName: item.firstName || '-',
+        lastName: item.lastName || '-',
+        email: item.email || '-',
+        manager: item.manager || '-',
+        assignedRoleSummary: item.assignedRoleSummary || '-',
+        lastModifiedDatetime: item.lastModifiedDatetime || '-',
+        riskScore:
+          item.riskScore !== null && item.riskScore !== undefined
+            ? item.riskScore
+            : '-',
+      }));
+    }
+
+    return content.map((item: any) => {
+      return {
+        id: item.id,
+        name: item.folderName || '-',
+        type: 'folder',
+        permissions: this.parsePermissions(item.fileSystemPermissions),
+        totalHitCount: item.totalHitCount || 0,
+        size: item.folderFileSize || '-',
+        classification: item.classification || '-',
+        category: item.classification || '-',
+        directory: label,
+        directoryname: item.folderName || '-',
+      };
+    });
+  }
+
+  private renderTableData(directoryLabel: string, fileRows: any[]): void {
+    this.currentDirectoryLabel = directoryLabel;
+    this.rawTableDataMaster = fileRows || [];
+    this.applyClientSideFilter();
+  }
+
+  onRightSideSearch(event: Event): void {
+    const inputElement = event.target as HTMLInputElement;
+    this.searchQuery = inputElement.value;
+    this.applyClientSideFilter();
+  }
+
+  private applyClientSideFilter(): void {
+    const query = this.searchQuery.toLowerCase().trim();
+
+    if (!this.rawTableDataMaster || this.rawTableDataMaster.length === 0) {
+      this.tableData = [];
+      this.generatePages();
+      return;
+    }
+
+    if (!query) {
+      if (this.activeTabIndex === 2) {
+        this.tableData = [...this.rawTableDataMaster];
+      } else {
+        const parentRow = this.createParentRow(this.currentDirectoryLabel);
+        this.tableData = [parentRow, ...this.rawTableDataMaster];
+      }
+      this.generatePages();
+      return;
+    }
+
+    let filtered = [];
+    if (this.activeTabIndex === 2) {
+      // Access view identity filters (matches against First Name, Last Name, and email values)
+      filtered = this.rawTableDataMaster.filter(
+        (item) =>
+          (item.firstName || '').toLowerCase().includes(query) ||
+          (item.lastName || '').toLowerCase().includes(query) ||
+          (item.email || '').toLowerCase().includes(query),
+      );
+      this.tableData = filtered;
+    } else {
+      // Groups (0) and Users (1) view files/folders filter routines
+      filtered = this.rawTableDataMaster.filter(
+        (item) =>
+          (item.name || '').toLowerCase().includes(query) ||
+          (item.size || '').toLowerCase().includes(query) ||
+          (item.classification || '').toLowerCase().includes(query) ||
+          (item.category || '').toLowerCase().includes(query),
+      );
+
+      if (filtered.length === 0) {
+        this.tableData = [];
+      } else {
+        const parentRow = this.createParentRow(this.currentDirectoryLabel);
+        this.tableData = [parentRow, ...filtered];
+      }
+    }
+    this.generatePages();
+  }
+
+  private createParentRow(directoryLabel: string): TableItem {
+    return {
       name: '',
       type: 'folder',
       permissions: { F: false, M: false, R: false, W: false, X: false },
@@ -530,16 +653,28 @@ export class AdministrativeControlComponent implements OnInit {
       size: '',
       classification: null,
       category: null,
-      directory: groupName,
-      directoryname: groupName,
+      directory: directoryLabel,
+      directoryname: directoryLabel,
     };
-    this.tableData = [parentRow, ...fileRows];
-    this.generatePages();
+  }
+
+  private clearSearchInputFields(): void {
+    this.searchQuery = '';
+    if (this.rightSearchInput) {
+      this.rightSearchInput.nativeElement.value = '';
+    }
+  }
+
+  private clearLeftSearchInputField(): void {
+    this.leftSearchQuery = '';
+    this.groupNameFilter = '';
+    if (this.leftSearchInput) {
+      this.leftSearchInput.nativeElement.value = '';
+    }
   }
 
   invalidateCacheAndRefresh(): void {
     this.globalFileCacheRegistry.clear();
-    this.activeFlightFetches.clear();
     this.refreshCurrentNodeFiles();
   }
 
@@ -569,22 +704,7 @@ export class AdministrativeControlComponent implements OnInit {
 
   private refreshCurrentNodeFiles(): void {
     if (this.selectedNode) {
-      let groupTargetName = '';
-      let userTargetName = '';
-
-      if (this.selectedNode.type === 'user') {
-        const groupsArray = (this.selectedNode.groupList || '').split(',');
-        groupTargetName = groupsArray[0].trim();
-        userTargetName = this.selectedNode.name;
-      } else if (
-        ['group', 'directory', 'groupList'].includes(this.selectedNode.type)
-      ) {
-        groupTargetName = this.selectedNode.name;
-      }
-
-      if (groupTargetName) {
-        this.loadFilesByGroup(groupTargetName, userTargetName);
-      }
+      this.loadRightSideTableData(this.selectedNode);
     }
   }
 
@@ -628,19 +748,9 @@ export class AdministrativeControlComponent implements OnInit {
   };
 
   clearTableWithHeader(groupName: string): void {
-    this.tableData = [
-      {
-        name: '',
-        type: 'folder',
-        permissions: { F: false, M: false, R: false, W: false, X: false },
-        totalHitCount: 0,
-        size: '',
-        classification: null,
-        category: null,
-        directory: groupName,
-        directoryname: groupName,
-      },
-    ];
+    this.tableData = [];
+    this.rawTableDataMaster = [];
+    this.resetPaginationProperties();
   }
 
   hasChild = (_: number, node: TreeNode) => node.type === 'group';
@@ -656,35 +766,44 @@ export class AdministrativeControlComponent implements OnInit {
 
     this.pageIndex = 0;
     this.resetPaginationProperties();
+    this.clearSearchInputFields();
 
-    let groupTargetName = '';
-    let userTargetName = '';
-
-    if (node.type === 'user') {
-      const groupsArray = (node.groupList || '').split(',');
-      groupTargetName = groupsArray[0].trim();
-      userTargetName = node.name;
-    } else if (['group', 'directory', 'groupList'].includes(node.type)) {
-      groupTargetName = node.name;
-    }
-
-    if (groupTargetName) {
-      this.loadFilesByGroup(groupTargetName, userTargetName);
+    if (this.activeTabIndex === 2) {
+      this.displayedColumns = [
+        'firstName',
+        'lastName',
+        'email',
+        'manager',
+        'assignedRoleSummary',
+        'lastModifiedDatetime',
+        'riskScore',
+      ];
     } else {
-      this.clearTableWithHeader('No Group Assigned');
+      this.displayedColumns = [
+        'directory',
+        'filesystempermissions',
+        'totalhitcount',
+        'size',
+        'classification',
+        'category',
+        'action',
+      ];
     }
+
+    this.loadRightSideTableData(node);
   }
 
   onTabChange(event: MatTabChangeEvent) {
     this.activeTabIndex = event.index;
-    if (this.activeTabIndex === 0 && this.dataSource.data.length) {
-      const first = this.dataSource.data[0];
-      this.treeControl.expand(first);
-      this.selectNode(first);
-    } else if (this.activeTabIndex === 1 && this.usersDataSource.data.length) {
-      this.selectNode(this.usersDataSource.data[0]);
-    } else if (this.activeTabIndex === 2 && this.accessDataSource.data.length) {
-      this.selectNode(this.accessDataSource.data[0]);
+    this.clearSearchInputFields();
+    this.clearLeftSearchInputField();
+
+    if (this.activeTabIndex === 0) {
+      this.loadGroupsData(false);
+    } else if (this.activeTabIndex === 1) {
+      this.loadIdentityVaultTree(false);
+    } else if (this.activeTabIndex === 2) {
+      this.loadAccessTreeData(false);
     }
   }
 
@@ -698,38 +817,69 @@ export class AdministrativeControlComponent implements OnInit {
     else if (this.activeTabIndex === 2) this.openAddAccessDialog();
   }
 
-  onDeleteClick(element: TableItem) {
-    let groupId = '1';
-    const groupNode = this.dataSource.data.find(
-      (g) => g.name === element.directory,
-    );
+  onDeleteClick(element: any) {
+    this.isLoading = true;
 
-    if (groupNode?.id) {
-      groupId = groupNode.id.toString();
-    } else if (this.activeSelectedGroupNode?.name === element.directory) {
-      groupId = this.activeSelectedGroupNode.id?.toString() || '1';
+    // 1. Contextually extract Group vs User information based on active tab
+    let groupId: number | null = null;
+    let groupName: string | null = null;
+    let userId: number | null = null;
+    let userName: string | null = null;
+
+    if (this.activeTabIndex === 0) {
+      // Groups Tab Context
+      const targetGroup = this.activeSelectedGroupNode || this.selectedNode;
+      if (targetGroup) {
+        groupId = targetGroup.id ? Number(targetGroup.id) : null;
+        groupName = targetGroup.name || null;
+      }
+    } else if (this.activeTabIndex === 1) {
+      // Users Tab Context
+      if (this.selectedNode && this.selectedNode.type === 'user') {
+        userId = this.selectedNode.id ? Number(this.selectedNode.id) : null;
+        userName = this.selectedNode.name || null;
+      }
     }
 
+    // 2. Map boolean permissions flags back into a clean comma-separated string
+    const permissionsArray: string[] = [];
+    if (element.permissions?.F) permissionsArray.push('Full Control');
+    if (element.permissions?.M) permissionsArray.push('Modify');
+    if (element.permissions?.R) permissionsArray.push('Read');
+    if (element.permissions?.W) permissionsArray.push('Write');
+    if (element.permissions?.X) permissionsArray.push('Execute');
+    const mappedPermissions = permissionsArray.join(', ') || 'Read';
+
+    // 3. Assemble the exact payload array tracking documentation specifications
     const payload = [
       {
+        id: element.id ? Number(element.id) : null,
         groupId: groupId,
-        groupName: element.directory,
-        folderId: element.id?.toString() || '',
-        folderName: element.name,
-        status: 'Delete',
+        groupName: groupName,
+        folderId: element.id ? Number(element.id) : null,
+        folderName: element.name || '',
+        userId: userId,
+        userName: userName,
+        fileSystemPermissions: mappedPermissions,
+        totalHitCount: element.totalHitCount
+          ? Number(element.totalHitCount)
+          : 0,
+        folderFileSize: element.size || '-',
+        classification: element.classification || '-',
+        accessAction: 'Delete', // Hardcoded value
+        status: 'New', // Hardcoded value
       },
     ];
 
-    this.isLoading = true;
-
-    this.api.addFolderToGroup(payload).subscribe({
+    // 4. Fire the PUT request stream
+    this.api.updatefolderorfiletothegrouporuser(payload).subscribe({
       next: () => {
         this.isLoading = false;
         this.showMessage('Access deleted successfully');
         this.invalidateCacheAndRefresh();
       },
-      error: (err) => {
-        console.error('❌ Delete failed', err);
+      error: (err: any) => {
+        console.error('❌ Delete access failed:', err);
         this.isLoading = false;
         this.showMessage('Failed to delete access');
       },
@@ -758,13 +908,30 @@ export class AdministrativeControlComponent implements OnInit {
     });
   }
 
-  openAddUserDialog() {
-    const activeGroup = this.activeSelectedGroupNode
+  openAddUserDialog(inlineGroupNode?: TreeNode) {
+    let targetGroup: TreeNode | null = null;
+
+    // 🌟 FIX: Determine context based on the active tab layout
+    if (this.activeTabIndex === 2) {
+      // Access Tab: Always use the currently selected tree row directory node
+      targetGroup = this.selectedNode;
+    } else {
+      // Groups/Users Tab: Use inline action item, active group layout, or row fallback
+      targetGroup =
+        inlineGroupNode || this.activeSelectedGroupNode || this.selectedNode;
+    }
+
+    const activeGroup = targetGroup
       ? {
-          id: this.activeSelectedGroupNode.id,
-          name: this.activeSelectedGroupNode.name,
+          id: targetGroup.id ? Number(targetGroup.id) : null,
+          name: targetGroup.name,
         }
       : null;
+
+    console.log(
+      'Selected Group Name Context:',
+      activeGroup ? activeGroup.name : 'None',
+    );
 
     const dialogRef = this.dialog.open(AdduserdpopupComponent, {
       width: '34.375rem',
@@ -776,43 +943,96 @@ export class AdministrativeControlComponent implements OnInit {
     dialogRef.afterClosed().subscribe((didUpdate) => {
       if (didUpdate) {
         this.invalidateCacheAndRefresh();
-        if (this.activeSelectedGroupNode) {
-          this.activeSelectedGroupNode.userData.currentPage = 0;
-          this.loadUsersForGroupNode(this.activeSelectedGroupNode, false);
+        if (targetGroup && targetGroup.userData) {
+          targetGroup.userData.currentPage = 0;
+          this.loadUsersForGroupNode(targetGroup, false);
+        }
+      }
+    });
+  }
+  openAddAccessDialog(inlineGroupNode?: TreeNode) {
+    const targetGroup = inlineGroupNode || this.activeSelectedGroupNode;
+
+    const activeGroup = targetGroup
+      ? {
+          id: targetGroup.id,
+          name: targetGroup.name,
+        }
+      : null;
+
+    // Checks if the active clicked or selected tree node is a user, passing details contextually
+    const activeUser =
+      this.selectedNode?.type === 'user'
+        ? {
+            id: this.selectedNode.id,
+            name: this.selectedNode.name,
+          }
+        : null;
+
+    console.log('activeGroup', activeGroup);
+    const dialogRef = this.dialog.open(AddaccessdpopupComponent, {
+      width: '60rem',
+      minWidth: '60rem',
+      maxWidth: '100%',
+      data: {
+        group: activeGroup,
+        user: activeUser,
+      },
+    });
+
+    dialogRef.afterClosed().subscribe((didUpdate) => {
+      if (didUpdate) {
+        this.invalidateCacheAndRefresh();
+        if (targetGroup) {
+          targetGroup.userData.currentPage = 0;
+          this.loadUsersForGroupNode(targetGroup, false);
         }
       }
     });
   }
 
-  openAddAccessDialog() {
-    const activeGroup = this.activeSelectedGroupNode
-      ? {
-          id: this.activeSelectedGroupNode.id,
-          name: this.activeSelectedGroupNode.name,
-        }
-      : null;
+  openResourceEditDialog(element?: any) {
+    let groupId: number | null = null;
+    let groupName: string | null = null;
+    let userId: number | null = null;
+    let userName: string | null = null;
+    let userGroupName: string | null = null;
 
-    const dialogRef = this.dialog.open(AddaccessdpopupComponent, {
-      width: '46rem',
-      minWidth: '46rem',
-      maxWidth: '100%',
-      data: { group: activeGroup },
-    });
+    if (this.activeTabIndex === 0) {
+      const targetGroup = this.activeSelectedGroupNode || this.selectedNode;
+      if (targetGroup) {
+        groupId = targetGroup.id ? Number(targetGroup.id) : null;
+        groupName = targetGroup.name || null;
+      }
+    } else if (this.activeTabIndex === 1) {
+      if (this.selectedNode && this.selectedNode.type === 'user') {
+        userId = this.selectedNode.id ? Number(this.selectedNode.id) : null;
+        userName = this.selectedNode.name || null;
 
-    dialogRef.afterClosed().subscribe((didUpdate) => {
-      if (didUpdate) this.invalidateCacheAndRefresh();
-    });
-  }
+        // 🌟 FIX: Added deep fallbacks checking fields on the node and embedded raw response payload
+        userGroupName =
+          this.selectedNode.groupName ||
+          this.selectedNode.groupList ||
+          this.selectedNode.userData?.groupName ||
+          this.selectedNode.userData?.groupsList ||
+          null;
+      }
+    }
 
-  openResourceEditDialog() {
     const dialogRef = this.dialog.open(ResourceeditdpopupComponent, {
       width: '58rem',
       minWidth: '58rem',
       maxWidth: '100%',
+      data: {
+        element: element || null,
+        context: { groupId, groupName, userId, userName, userGroupName },
+      },
     });
 
     dialogRef.afterClosed().subscribe((didUpdate) => {
-      if (didUpdate) this.invalidateCacheAndRefresh();
+      if (didUpdate) {
+        this.invalidateCacheAndRefresh();
+      }
     });
   }
 }

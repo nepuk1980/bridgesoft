@@ -1,43 +1,101 @@
 <mat-dialog-actions align="end" class="popupclose">
-  <img mat-dialog-close src="/svg/close.svg" />
+  <img
+    mat-dialog-close
+    src="/svg/close.svg"
+    alt="close"
+    class="cursor-pointer"
+  />
 </mat-dialog-actions>
-<div class="popup-content">
+
+<div class="popup-content" [style.opacity]="isLoading ? '0.6' : '1'">
   <h6 mat-dialog-title class="popup-title">Edit Permissions</h6>
+
   <mat-chip-set class="customChip">
     <mat-chip-row>
       <div class="chipsrow">
-        <img src="/svg/usertable.svg" width="18" height="18" />
-        Human Resources
+        <img
+          [src]="isGroup ? '/svg/multiuser.svg' : '/svg/singleuser.svg'"
+          width="18"
+          height="18"
+          alt="type-icon"
+        />
+        {{ displayName }}
       </div>
     </mat-chip-row>
   </mat-chip-set>
+
   <div>
     <div class="checkboxwrapper">
       <div>
-        <mat-checkbox class="customcheckbox"> Full Control </mat-checkbox>
+        <mat-checkbox
+          class="customcheckbox"
+          [(ngModel)]="permissionsModel.fullControl"
+          [disabled]="isLoading"
+        >
+          Full Control
+        </mat-checkbox>
       </div>
 
       <div>
-        <mat-checkbox class="customcheckbox"> Modify </mat-checkbox>
+        <mat-checkbox
+          class="customcheckbox"
+          [(ngModel)]="permissionsModel.modify"
+          [disabled]="isLoading"
+        >
+          Modify
+        </mat-checkbox>
       </div>
 
       <div>
-        <mat-checkbox class="customcheckbox"> Read & Execute </mat-checkbox>
+        <mat-checkbox
+          class="customcheckbox"
+          [(ngModel)]="permissionsModel.readExecute"
+          [disabled]="isLoading"
+        >
+          Read & Execute
+        </mat-checkbox>
       </div>
+
       <div>
-        <mat-checkbox class="customcheckbox">
+        <mat-checkbox
+          class="customcheckbox"
+          [(ngModel)]="permissionsModel.listContent"
+          [disabled]="isLoading"
+        >
           List Folder Content
         </mat-checkbox>
       </div>
+
       <div>
-        <mat-checkbox class="customcheckbox"> Read </mat-checkbox>
+        <mat-checkbox
+          class="customcheckbox"
+          [(ngModel)]="permissionsModel.read"
+          [disabled]="isLoading"
+        >
+          Read
+        </mat-checkbox>
       </div>
+
       <div>
-        <mat-checkbox class="customcheckbox"> Write </mat-checkbox>
+        <mat-checkbox
+          class="customcheckbox"
+          [(ngModel)]="permissionsModel.write"
+          [disabled]="isLoading"
+        >
+          Write
+        </mat-checkbox>
       </div>
     </div>
   </div>
+
   <mat-dialog-actions align="end" class="forwardbtn">
-    <button mat-dialog-close mat-flat-button class="btn-blue">Apply</button>
+    <button
+      mat-flat-button
+      class="btn-blue"
+      (click)="onApplyUpdate()"
+      [disabled]="isLoading"
+    >
+      {{ isLoading ? "Applying..." : "Apply" }}
+    </button>
   </mat-dialog-actions>
 </div>

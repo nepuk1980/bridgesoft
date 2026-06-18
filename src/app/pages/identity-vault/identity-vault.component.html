@@ -220,4 +220,98 @@
       </button>
     </div>
   </div>
+} @placeholder (minimum 1000ms) {
+  <div class="application-content-div">
+    <!-- Top Bar -->
+    <div class="application-tab-div">
+      <!-- 🔍 Search -->
+      <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+
+      <p><ngx-skeleton-loader animation="progress" class="skeleton-w-100" /></p>
+
+      <!-- 🔽 Filter -->
+      <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+    </div>
+
+    <!-- Table -->
+    <div class="solid-table table-wrapper">
+      <table mat-table [dataSource]="dataSource" matSort class="custom-table">
+        <!-- First Name -->
+        <ng-container matColumnDef="firstName">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </td>
+        </ng-container>
+
+        <!-- Last Name -->
+        <ng-container matColumnDef="lastName">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </td>
+        </ng-container>
+
+        <!-- Email -->
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </td>
+        </ng-container>
+
+        <!-- Manager -->
+        <ng-container matColumnDef="manager">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </td>
+        </ng-container>
+
+        <!-- Role Summary -->
+        <ng-container matColumnDef="roleSummary">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </td>
+        </ng-container>
+
+        <!-- Last Refresh -->
+        <ng-container matColumnDef="lastRefresh">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </td>
+        </ng-container>
+
+        <!-- Risk Score -->
+        <ng-container matColumnDef="riskScore">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </td>
+        </ng-container>
+
+        <!-- Header -->
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+
+        <!-- Data Rows -->
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+    </div>
+  </div>
 }

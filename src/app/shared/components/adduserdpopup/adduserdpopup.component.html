@@ -22,17 +22,30 @@
       />
       <img src="/svg/search.svg" class="search-icon" alt="search" />
     </div>
-    <div class="spinner" *ngIf="isFetchingUsers">
+
+    <div class="spinner" *ngIf="isFetchingUsers && pageIndex === 0">
       <mat-spinner [diameter]="50"></mat-spinner>
     </div>
-    <div class="checkboxwrapper mt-4 max-h-[300px] overflow-y-auto">
+
+    <div
+      class="checkboxwrapper mt-4 max-h-[300px] overflow-y-auto"
+      (scroll)="onScroll($event)"
+    >
       <div *ngFor="let user of filteredUsers" class="mb-2">
-        <mat-checkbox class="customcheckbox" [(ngModel)]="user.selected">
+        <mat-checkbox
+          class="customcheckbox"
+          [(ngModel)]="user.selected"
+          (change)="toggleUserSelection(user)"
+        >
           <span class="font-medium"
             >{{ user.firstName }} {{ user.lastName }}</span
           >
-          <span class="text-gray-500 text-sm ml-1">({{ user.email }})</span>
+          <span class="text-gray-500 text-sm ml-1">( {{ user.email }} )</span>
         </mat-checkbox>
+      </div>
+
+      <div class="text-center py-2" *ngIf="isFetchingUsers && pageIndex > 0">
+        <mat-spinner [diameter]="25" style="margin: 0 auto"></mat-spinner>
       </div>
 
       <div

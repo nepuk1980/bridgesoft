@@ -4,11 +4,17 @@ import { InnerheaderComponent } from '../../shared/components/innerheader/innerh
 import { RouterModule } from '@angular/router';
 import { ExecutiveAuditReportsInterface } from '../../models/type';
 import { ApiService } from '../../services/api.service';
+import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
 
 @Component({
   selector: 'app-report',
   standalone: true,
-  imports: [MatCardModule, InnerheaderComponent, RouterModule],
+  imports: [
+    MatCardModule,
+    InnerheaderComponent,
+    RouterModule,
+    NgxSkeletonLoaderModule,
+  ],
   templateUrl: './report.component.html',
   styleUrl: './report.component.css',
 })

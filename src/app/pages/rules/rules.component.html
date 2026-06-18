@@ -4,80 +4,102 @@
   btntitle="Back To Dashboard"
 ></app-innerheader>
 
-<div class="search-filter-div">
-  <!-- 🔍 Search -->
-  <div class="search-box">
-    <input
-      type="text"
-      placeholder="Search"
-      (input)="applyFilter($any($event.target).value)"
-    />
-    <img src="/svg/search.svg" class="search-icon" />
+@defer {
+  <div class="search-filter-div">
+    <!-- 🔍 Search -->
+    <div class="search-box">
+      <input
+        type="text"
+        placeholder="Search"
+        (input)="applyFilter($any($event.target).value)"
+      />
+      <img src="/svg/search.svg" class="search-icon" />
+    </div>
+
+    <!-- 🔢 Count -->
+    <p>Showing {{ filteredCount }} of {{ totalCount }}</p>
+
+    <div class="filter-grp-div">
+      <!-- 🔽 Sort -->
+      <div class="custom-filter date-filter">
+        <mat-form-field>
+          <mat-label>Sort by date</mat-label>
+          <mat-select
+            [(value)]="selectedSort"
+            (selectionChange)="onSortChange($event.value)"
+            panelClass="custom-filter-panel"
+          >
+            <mat-option value="latest">Latest</mat-option>
+            <mat-option value="oldest">Oldest</mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+
+      <!-- 🔽 Filter (DYNAMIC NOW) -->
+      <div class="custom-filter">
+        <mat-form-field>
+          <mat-label>Filter</mat-label>
+          <mat-select
+            [(value)]="selectedFilter"
+            (selectionChange)="filterData()"
+            panelClass="custom-filter-panel"
+          >
+            <mat-option value="">All</mat-option>
+
+            <!-- ✅ Dynamic categories -->
+            <mat-option *ngFor="let filter of filters" [value]="filter.value">
+              {{ filter.viewValue }}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </div>
   </div>
 
-  <!-- 🔢 Count -->
-  <p>Showing {{ filteredCount }} of {{ totalCount }}</p>
+  <!-- ✅ LIST UI -->
+  <div class="audit-card-wrapper">
+    <div class="audit-card" *ngFor="let item of dataSource">
+      <div class="content">
+        <h3>
+          {{ item.rule_name }} <span>{{ item.rule_category }}</span>
+        </h3>
 
-  <div class="filter-grp-div">
-    <!-- 🔽 Sort -->
-    <div class="custom-filter date-filter">
-      <mat-form-field>
-        <mat-label>Sort by date</mat-label>
-        <mat-select
-          [(value)]="selectedSort"
-          (selectionChange)="onSortChange($event.value)"
-          panelClass="custom-filter-panel"
+        <p>
+          {{ item.rule_desc }}
+        </p>
+      </div>
+
+      <div class="form-control">
+        <mat-slide-toggle
+          [(ngModel)]="item.active"
+          (change)="onToggleChange(item, $event.checked)"
+          class="customslide"
         >
-          <mat-option value="latest">Latest</mat-option>
-          <mat-option value="oldest">Oldest</mat-option>
-        </mat-select>
-      </mat-form-field>
+        </mat-slide-toggle>
+      </div>
     </div>
 
-    <!-- 🔽 Filter (DYNAMIC NOW) -->
-    <div class="custom-filter">
-      <mat-form-field>
-        <mat-label>Filter</mat-label>
-        <mat-select
-          [(value)]="selectedFilter"
-          (selectionChange)="filterData()"
-          panelClass="custom-filter-panel"
-        >
-          <mat-option value="">All</mat-option>
-
-          <!-- ✅ Dynamic categories -->
-          <mat-option *ngFor="let filter of filters" [value]="filter.value">
-            {{ filter.viewValue }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-    </div>
+    <!-- ✅ No Data -->
+    <div *ngIf="dataSource.length === 0" class="no-data">No data found</div>
   </div>
-</div>
+} @placeholder (minimum 1000ms) {
+  <div class="search-filter-div">
+    <!-- 🔍 Search -->
+    <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
 
-<!-- ✅ LIST UI -->
-<div class="audit-card-wrapper">
-  <div class="audit-card" *ngFor="let item of dataSource">
-    <div class="content">
-      <h3>
-        {{ item.rule_name }} <span>{{ item.rule_category }}</span>
-      </h3>
+    <p><ngx-skeleton-loader animation="progress" class="skeleton-w-100" /></p>
 
-      <p>
-        {{ item.rule_desc }}
-      </p>
-    </div>
-
-    <div class="form-control">
-      <mat-slide-toggle
-        [(ngModel)]="item.active"
-        (change)="onToggleChange(item, $event.checked)"
-        class="customslide"
-      >
-      </mat-slide-toggle>
-    </div>
+    <!-- 🔽 Filter -->
+    <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
   </div>
 
-  <!-- ✅ No Data -->
-  <div *ngIf="dataSource.length === 0" class="no-data">No data found</div>
-</div>
+  <!-- ✅ LIST UI -->
+  <div class="audit-card-wrapper">
+    <div class="audit-card" *ngFor="let item of dataSource">
+      <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+    </div>
+
+    <!-- ✅ No Data -->
+    <div *ngIf="dataSource.length === 0" class="no-data">No data found</div>
+  </div>
+}

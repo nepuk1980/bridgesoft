@@ -48,8 +48,16 @@ export const routes: Routes = [
         path: '',
         component: ApplicationsComponent,
       },
+      // {
+      //   path: 'file-share-permission',
+      //   component: FileSharePermissionsComponent,
+      //   data: {
+      //     breadcrumb: 'File Share Permissions',
+      //     animation: 'FileSharePermissionsPage',
+      //   },
+      // },
       {
-        path: 'file-share-permission',
+        path: ':id',
         component: FileSharePermissionsComponent,
         data: {
           breadcrumb: 'File Share Permissions',

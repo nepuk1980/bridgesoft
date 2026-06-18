@@ -8,11 +8,12 @@ import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { NgFor, NgIf } from '@angular/common';
 
-// Ensure the correct path to your service
 import { ApiService } from '../../../services/api.service';
 
 export interface DialogUserData {
@@ -31,6 +32,8 @@ export interface DialogUserData {
     MatButtonModule,
     MatCheckboxModule,
     MatFormFieldModule,
+    MatInputModule,
+    MatIconModule,
     MatSnackBarModule,
     MatProgressSpinnerModule,
     FormsModule,
@@ -44,12 +47,20 @@ export class AdduserdpopupComponent implements OnInit {
   private api = inject(ApiService);
   private snackBar = inject(MatSnackBar);
 
-  isLoading = false; // Controls the "Submit" button loader
-  isFetchingUsers = true; // Controls the data-fetching spinner overlay
+  isLoading = false;
+  isFetchingUsers = false;
   searchTerm = '';
 
   availableUsers: DialogUserData[] = [];
   filteredUsers: DialogUserData[] = [];
+
+  selectedUsersCache = new Map<string | number, DialogUserData>();
+
+  // --- Continuous Scroll State Tracking ---
+  pageIndex = 0;
+  pageSize = 10;
+  hasMoreData = true;
+  totalElements = 0;
 
   constructor(
     public dialogRef: MatDialogRef<AdduserdpopupComponent>,
@@ -57,92 +68,123 @@ export class AdduserdpopupComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.loadAllUsers();
+    this.loadUsersData(false);
+    console.log('Incoming Dialog Group Context:', this.data);
   }
 
-  loadAllUsers() {
-    this.isFetchingUsers = true; // Show initial loader
-
-    this.api.getlistofidentityvaults(0, 100, '', '').subscribe({
-      next: (res: any) => {
-        const users =
-          res.content || res.data || (Array.isArray(res) ? res : []);
-
-        const uniqueUsers: DialogUserData[] = [];
-        const seenIdentifiers = new Set(); // Used to prevent duplicates
-
-        users.forEach((u: any) => {
-          // Deduplicate by email (fallback to ID)
-          const uniqueKey = u.email || u.id;
-
-          if (!seenIdentifiers.has(uniqueKey)) {
-            seenIdentifiers.add(uniqueKey);
-            uniqueUsers.push({
-              id: u.id,
-              firstName: u.firstName,
-              lastName: u.lastName,
-              email: u.email || 'No Email',
-              selected: false,
-            });
-          }
-        });
-
-        this.availableUsers = uniqueUsers;
-        this.filteredUsers = [...this.availableUsers];
-        this.isFetchingUsers = false; // Hide loader
-      },
-      error: (err) => {
-        console.error('Failed to load users', err);
-        this.isFetchingUsers = false; // Hide loader on error
-      },
-    });
-  }
-
-  filterUsers() {
-    const term = this.searchTerm.toLowerCase().trim();
-    if (!term) {
-      this.filteredUsers = this.availableUsers;
-    } else {
-      this.filteredUsers = this.availableUsers.filter((u) =>
-        `${u.firstName} ${u.lastName} ${u.email}`.toLowerCase().includes(term),
-      );
+  // MAIN DATA LOADER
+  loadUsersData(append: boolean = false) {
+    if (!append) {
+      this.pageIndex = 0;
+      this.hasMoreData = true;
     }
+
+    this.isFetchingUsers = true;
+
+    // 🌟 FIX: Pass 'this.searchTerm' to the third parameter to enable server-side searching
+    this.api
+      .getlistofidentityvaults(
+        this.pageIndex,
+        this.pageSize,
+        this.searchTerm,
+        '',
+      )
+      .subscribe({
+        next: (res: any) => {
+          const users =
+            res.content || res.data || (Array.isArray(res) ? res : []);
+
+          this.totalElements = res.totalElements ?? users.length;
+          this.hasMoreData = users.length >= this.pageSize;
+
+          const mappedUsers: DialogUserData[] = users.map((u: any) => ({
+            id: u.id,
+            firstName: u.firstName,
+            lastName: u.lastName,
+            email: u.email || 'No Email',
+            selected: this.selectedUsersCache.has(u.id),
+          }));
+
+          if (append) {
+            this.availableUsers = [...this.availableUsers, ...mappedUsers];
+          } else {
+            this.availableUsers = mappedUsers;
+          }
+
+          // Render updates directly to the template view container
+          this.filteredUsers = this.availableUsers;
+          this.isFetchingUsers = false;
+        },
+        error: (err) => {
+          console.error('Failed to load users', err);
+          this.isFetchingUsers = false;
+        },
+      });
+  }
+
+  // INFINITE SCROLL TRIGGER
+  onScroll(event: any): void {
+    const element = event.target;
+    const atBottom =
+      element.scrollHeight - element.scrollTop <= element.clientHeight + 10;
+
+    if (atBottom && this.hasMoreData && !this.isFetchingUsers) {
+      this.pageIndex++;
+      this.loadUsersData(true);
+    }
+  }
+
+  toggleUserSelection(user: DialogUserData) {
+    if (user.selected) {
+      this.selectedUsersCache.set(user.id, user);
+    } else {
+      this.selectedUsersCache.delete(user.id);
+    }
+  }
+
+  // 🌟 FIX: Upgraded to trigger a clean backend fetch when users use the search input box
+  filterUsers() {
+    this.pageIndex = 0;
+    this.hasMoreData = true;
+    this.loadUsersData(false);
   }
 
   hasSelectedUsers(): boolean {
-    return this.availableUsers.some((u) => u.selected);
+    return this.selectedUsersCache.size > 0;
   }
 
   onSubmit() {
-    const selectedUsers = this.availableUsers.filter((u) => u.selected);
-
+    const selectedUsers = Array.from(this.selectedUsersCache.values());
     if (selectedUsers.length === 0) return;
 
-    if (!this.data?.group?.id) {
-      console.error('❌ No active group selected in the tree.');
+    // 🌟 FIX: Allow validation checking to pass if either a Group ID OR Group Name context exists
+    const hasGroupContext = !!this.data?.group?.id || !!this.data?.group?.name;
+
+    if (!hasGroupContext) {
+      this.showMessage('Error: No active group context found.');
+      console.error('❌ No active group selected in the tree structure.');
       return;
     }
 
-    this.isLoading = true; // Set button state to "Adding..."
+    this.isLoading = true;
 
-    // Build the payload expecting array of objects matching Postman format
+    // Assemble payload cleanly with safe-navigation fallback strings
     const payload = selectedUsers.map((user) => ({
-      groupId: this.data.group.id.toString(),
-      groupName: this.data.group.name,
-      userId: user.id.toString(),
-      userName: `${user.firstName} ${user.lastName}`.trim(),
+      groupId: this.data.group?.id ? this.data.group.id.toString() : '',
+      groupName: this.data.group?.groupName || this.data.group?.name || '',
+      userId: user.id ? user.id.toString() : '',
+      userName: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
       status: 'New',
     }));
 
-    this.api.addUserToGroup(payload).subscribe({
-      next: (res) => {
-        // Show success message
-        this.showMessage('User(s) added successfully');
+    console.log('Submitting Add User to Group Payload:', payload);
 
-        // Wait 1 second for the snackbar to be read, then close the dialog
+    this.api.addUserToGroup(payload).subscribe({
+      next: () => {
+        this.showMessage('User(s) added successfully');
         setTimeout(() => {
           this.isLoading = false;
-          this.dialogRef.close(true); // Tell parent to refresh
+          this.dialogRef.close(true); // Return true to trigger the structural layout view updates
         }, 1000);
       },
       error: (err) => {
@@ -158,7 +200,7 @@ export class AdduserdpopupComponent implements OnInit {
       duration: 1000,
       horizontalPosition: 'center',
       verticalPosition: 'bottom',
-      panelClass: ['success-snackbar'], // Make sure to define this in global styles.css!
+      panelClass: ['success-snackbar'],
     });
   }
 }

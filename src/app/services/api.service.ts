@@ -10,17 +10,21 @@ import {
   ApplicationResponseInterface,
   AuditResponseInterface,
   ExecutiveAuditReportsInterface,
+  ExternalResourcesGroupByResponse,
   FileSystemAccessSummaryInterface,
   FileSystemResponseInterface,
   GetADGroupInterface,
   GetAllFoldersResponse,
   GetUsersByGroupNameResponse,
+  GroupFolderPermissionResponse,
+  IdentityVaultCategoryResponse,
   IdentityVaultDetailResponseInterface,
   IdentityVaultResponseInterface,
   NotificationInterface,
   RequestAccessWorkflowInterface,
   ReviewAccessInterface,
   RuleResponseInterface,
+  UserFolderPermissionResponse,
 } from '../models/type';
 import { AuthService } from '../core/services/auth.service';
 
@@ -167,6 +171,13 @@ export class ApiService {
     return this.http.get<FileSystemResponseInterface>(
       `${environment.apiUrl}/getfilesystemaccesspermissiondetails`,
       { params },
+    );
+  }
+
+  // External Chart
+  getExternalResourcesGroupBy() {
+    return this.http.get<ExternalResourcesGroupByResponse>(
+      `${environment.apiUrl}/getExternalResourcesGroupBy`,
     );
   }
 
@@ -578,6 +589,44 @@ export class ApiService {
     );
   }
 
+  // Get Data Group Node
+  getgroupfoldersorfiles(
+    groupName: string,
+    page: number,
+    size: number,
+  ): Observable<GroupFolderPermissionResponse> {
+    const params = new HttpParams()
+      .set('groupName', groupName || '')
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    return this.http.get<GroupFolderPermissionResponse>(
+      `${environment.apiUrl}/getgroupfoldersorfiles`,
+      {
+        params,
+      },
+    );
+  }
+
+  // Get Data Group User
+  getuserfoldersorfiles(
+    userName: string,
+    page: number,
+    size: number,
+  ): Observable<UserFolderPermissionResponse> {
+    const params = new HttpParams()
+      .set('userName', userName || '')
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    return this.http.get<UserFolderPermissionResponse>(
+      `${environment.apiUrl}/getuserfoldersorfiles`,
+      {
+        params,
+      },
+    );
+  }
+
   // getusersbygroupname
   getusersbygroupname(
     groupName: string,
@@ -638,6 +687,20 @@ export class ApiService {
     );
   }
 
+  // getcategories
+  getcategories(
+    categoryType: string,
+  ): Observable<IdentityVaultCategoryResponse> {
+    const params = new HttpParams().set('categoryType', categoryType || '');
+
+    return this.http.get<IdentityVaultCategoryResponse>(
+      `${environment.apiUrl}/getcategories`,
+      {
+        params,
+      },
+    );
+  }
+
   // Get All Folders
   getAllFolders(page: number, size: number): Observable<GetAllFoldersResponse> {
     const params = new HttpParams()
@@ -692,5 +755,58 @@ export class ApiService {
       headers: headers,
       responseType: 'text', // ✅ ADD THIS: Tells Angular not to parse the successful response as JSON
     });
+  }
+
+  // Add Folder(s) to Group
+  addfolderorfiletothegrouporuser(data: any): Observable<any> {
+    const token = this.authService.getToken();
+
+    // 🛑 TEMPORARY DEBUG LOG
+    console.log('DEBUG TOKEN:', token);
+
+    if (!token) {
+      console.error('❌ No token found');
+      throw new Error('User not authenticated');
+    }
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    });
+
+    return this.http.post(
+      `${environment.apiUrl}/addfolderorfiletothegrouporuser`,
+      data,
+      {
+        headers: headers,
+        responseType: 'text',
+      },
+    );
+  }
+
+  updatefolderorfiletothegrouporuser(data: any[]): Observable<any> {
+    const token = this.authService.getToken();
+
+    // 🛑 TEMPORARY DEBUG LOG
+    console.log('DEBUG TOKEN:', token);
+
+    if (!token) {
+      console.error('❌ No token found');
+      throw new Error('User not authenticated');
+    }
+
+    const headers = new HttpHeaders({
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    });
+
+    return this.http.put(
+      `${environment.apiUrl}/updatefolderorfiletothegrouporuser`,
+      data,
+      {
+        headers: headers,
+        responseType: 'text',
+      },
+    );
   }
 }

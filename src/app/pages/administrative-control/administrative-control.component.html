@@ -34,7 +34,12 @@
       </div>
 
       <div class="search-box w-full">
-        <input #searchInput type="text" placeholder="Search" />
+        <input
+          #leftSearchInput
+          type="text"
+          placeholder="Search"
+          (input)="onLeftSearch($event)"
+        />
         <img src="/svg/search.svg" class="search-icon" alt="search" />
       </div>
     </div>
@@ -79,7 +84,7 @@
               <div class="children" *ngIf="treeControl.isExpanded(node)">
                 <ng-container matTreeNodeOutlet></ng-container>
                 <div class="add-user">
-                  <button class="normalbtn" (click)="openAddUserDialog()">
+                  <button class="normalbtn" (click)="openAddUserDialog(node)">
                     + Add User
                   </button>
                 </div>
@@ -182,34 +187,45 @@
         >
           Load More Users +
         </button>
-        <button
+
+        <!-- <button
           class="loadMoreBtn"
-          *ngIf="activeTabIndex === 2 && hasMoreAccessData"
+          *ngIf="activeTabIndex === 2 && hasMoreLeftData"
           (click)="loadMoreAccess()"
         >
           Load More Access Groups +
-        </button>
+        </button> -->
       </div>
     </div>
   </div>
 
-  <div class="rightContent relative" [style.opacity]="isLoading ? '0.6' : '1'">
-    <div
-      class="spinner-overlay absolute inset-0 flex justify-center items-center bg-white/40 z-10"
-      *ngIf="isLoading"
-    >
-      <mat-spinner [diameter]="50"></mat-spinner>
-    </div>
-
+  <div class="rightContent relative">
     <div class="search-filter-div">
       <div class="search-box">
-        <input #searchInput type="text" placeholder="Search" />
+        <input
+          #rightSearchInput
+          type="text"
+          placeholder="Search"
+          (input)="onRightSideSearch($event)"
+        />
         <img src="/svg/search.svg" class="search-icon" alt="search" />
       </div>
     </div>
 
     <div class="table-wrapper">
-      <table mat-table [dataSource]="tableData">
+      <div class="spinner" *ngIf="isLoading">
+        <mat-spinner [diameter]="50"></mat-spinner>
+      </div>
+      <table
+        *ngIf="!isLoading"
+        mat-table
+        [dataSource]="tableData"
+        [ngClass]="{
+          'groups-table-view': activeTabIndex === 0,
+          'users-table-view': activeTabIndex === 1,
+          'access-table-view': activeTabIndex === 2,
+        }"
+      >
         <ng-container matColumnDef="directory">
           <th mat-header-cell *matHeaderCellDef>Directory</th>
           <td mat-cell *matCellDef="let element; let i = index">
@@ -264,14 +280,16 @@
                   <span
                     *ngFor="let key of ['F', 'M', 'R', 'W', 'X']"
                     [ngClass]="{
-                      active: element.permissions[key],
-                      inactive: !element.permissions[key],
+                      active: element.permissions?.[key],
+                      inactive: !element.permissions?.[key],
                     }"
                   >
                     {{ key }}
                   </span>
                 </div>
-                <span class="table-link" (click)="openResourceEditDialog()"
+                <span
+                  class="table-link"
+                  (click)="openResourceEditDialog(element)"
                   >Edit</span
                 >
               </div>
@@ -322,6 +340,45 @@
           </td>
         </ng-container>
 
+        <ng-container matColumnDef="firstName">
+          <th mat-header-cell *matHeaderCellDef>First Name</th>
+          <td mat-cell *matCellDef="let element">{{ element.firstName }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="lastName">
+          <th mat-header-cell *matHeaderCellDef>Last Name</th>
+          <td mat-cell *matCellDef="let element">{{ element.lastName }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef>Email</th>
+          <td mat-cell *matCellDef="let element">{{ element.email }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="manager">
+          <th mat-header-cell *matHeaderCellDef>Manager</th>
+          <td mat-cell *matCellDef="let element">{{ element.manager }}</td>
+        </ng-container>
+
+        <ng-container matColumnDef="assignedRoleSummary">
+          <th mat-header-cell *matHeaderCellDef>Assigned Role Summary</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.assignedRoleSummary }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="lastModifiedDatetime">
+          <th mat-header-cell *matHeaderCellDef>Last Refresh</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.lastModifiedDatetime }}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="riskScore">
+          <th mat-header-cell *matHeaderCellDef>Risk</th>
+          <td mat-cell *matCellDef="let element">{{ element.riskScore }}</td>
+        </ng-container>
+
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
         <tr class="mat-row" *matNoDataRow>
@@ -332,12 +389,22 @@
 
     <div
       class="custom-pagination mt-[15px]"
-      *ngIf="tableData.length > 1 || totalElements > 0"
+      *ngIf="
+        (activeTabIndex === 2 ? tableData.length > 0 : tableData.length > 1) &&
+        totalElements > 0
+      "
     >
-      <span class="count"
-        >Showing {{ tableData.length > 0 ? tableData.length - 1 : 0 }} of
-        {{ totalElements }}</span
-      >
+      <span class="count">
+        Showing
+        {{
+          activeTabIndex === 2
+            ? tableData.length
+            : tableData.length > 0
+              ? tableData.length - 1
+              : 0
+        }}
+        of {{ totalElements }}
+      </span>
       <div class="pagination-buttons">
         <button (click)="firstPage()" [disabled]="pageIndex === 0 || isLoading">
           «
@@ -377,14 +444,20 @@
     </div>
 
     <div class="add-access">
-      <button class="normalbtn" (click)="onAddClick()">
-        {{
-          activeTabIndex === 1
-            ? "+ Add User"
-            : activeTabIndex === 2
-              ? "+ Add Access"
-              : "+ Add Resource"
-        }}
+      <button
+        *ngIf="activeTabIndex === 0 || activeTabIndex === 1"
+        class="normalbtn"
+        (click)="openAddAccessDialog()"
+      >
+        + Add Access
+      </button>
+
+      <button
+        *ngIf="activeTabIndex === 2"
+        class="normalbtn"
+        (click)="openAddUserDialog()"
+      >
+        + Add User/s
       </button>
     </div>
   </div>
