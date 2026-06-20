@@ -232,13 +232,21 @@ export class AdministrativeControlComponent implements OnInit {
           );
 
           this.dataSource.data = adGroupTreeNodes;
+
+          // Loads access layout structure seamlessly in the background context
           this.loadAccessTreeData(false);
 
           adGroupTreeNodes.forEach((node) => {
             this.loadUsersForGroupNode(node, false);
           });
 
-          if (adGroupTreeNodes.length && !this.selectedNode && !append) {
+          // 🌟 Guarded Auto-Selection for Groups Tab
+          if (
+            this.activeTabIndex === 0 &&
+            adGroupTreeNodes.length &&
+            !this.selectedNode &&
+            !append
+          ) {
             this.treeControl.expand(adGroupTreeNodes[0]);
             this.selectNode(adGroupTreeNodes[0]);
           }
@@ -270,7 +278,12 @@ export class AdministrativeControlComponent implements OnInit {
     const pageToFetch = node.userData?.currentPage || 0;
 
     this.api
-      .getusersbygroupname(node.name, pageToFetch, this.nestedUserPageSize)
+      .getusersbygroupname(
+        this.searchQuery,
+        node.name,
+        pageToFetch,
+        this.nestedUserPageSize,
+      )
       .subscribe({
         next: (res: any) => {
           const fetchedUsers =
@@ -403,6 +416,16 @@ export class AdministrativeControlComponent implements OnInit {
           this.usersDataSource.data = allUsers.sort((a, b) =>
             a.name.localeCompare(b.name),
           );
+
+          // 🌟 Guarded Auto-Selection for Users Tab
+          if (
+            this.activeTabIndex === 1 &&
+            this.usersDataSource.data.length &&
+            !this.selectedNode &&
+            !append
+          ) {
+            this.selectNode(this.usersDataSource.data[0]);
+          }
         },
         error: (err) => {
           console.error(err);
@@ -435,6 +458,16 @@ export class AdministrativeControlComponent implements OnInit {
       name: group,
       type: 'directory' as const,
     }));
+
+    // 🌟 Guarded Auto-Selection for Access Tab
+    if (
+      this.activeTabIndex === 2 &&
+      this.accessDataSource.data.length &&
+      !this.selectedNode &&
+      !append
+    ) {
+      this.selectNode(this.accessDataSource.data[0]);
+    }
   }
 
   loadMoreAccess(): void {
@@ -466,7 +499,11 @@ export class AdministrativeControlComponent implements OnInit {
     const normalizedTargetName = node.name.trim();
     const cacheKey = `${node.type}_${normalizedTargetName}_page_${this.pageIndex}`;
 
-    if (this.globalFileCacheRegistry.has(cacheKey)) {
+    // Bypass cache completely on server-side paginated queries (Tab 2)
+    if (
+      this.activeTabIndex !== 2 &&
+      this.globalFileCacheRegistry.has(cacheKey)
+    ) {
       const cachedMetadata = this.globalFileCacheRegistry.get(cacheKey)!;
       this.totalElements = cachedMetadata.totalElements;
       this.totalPages = cachedMetadata.totalPages;
@@ -479,6 +516,7 @@ export class AdministrativeControlComponent implements OnInit {
     const endpointObservable$ = (
       this.activeTabIndex === 2
         ? this.api.getusersbygroupname(
+            this.searchQuery, // dynamically bound server filter parameter
             normalizedTargetName,
             this.pageIndex,
             this.pageSize,
@@ -486,7 +524,6 @@ export class AdministrativeControlComponent implements OnInit {
         : node.type === 'user'
           ? this.api.getuserfoldersorfiles(
               normalizedTargetName,
-              // 'Christopher Williams',
               this.pageIndex,
               this.pageSize,
             )
@@ -510,11 +547,13 @@ export class AdministrativeControlComponent implements OnInit {
           normalizedTargetName,
         );
 
-        this.globalFileCacheRegistry.set(cacheKey, {
-          rows: mappedRows,
-          totalElements: this.totalElements,
-          totalPages: this.totalPages,
-        });
+        if (this.activeTabIndex !== 2) {
+          this.globalFileCacheRegistry.set(cacheKey, {
+            rows: mappedRows,
+            totalElements: this.totalElements,
+            totalPages: this.totalPages,
+          });
+        }
 
         this.renderTableData(normalizedTargetName, mappedRows);
         this.isLoading = false;
@@ -591,7 +630,15 @@ export class AdministrativeControlComponent implements OnInit {
   onRightSideSearch(event: Event): void {
     const inputElement = event.target as HTMLInputElement;
     this.searchQuery = inputElement.value;
-    this.applyClientSideFilter();
+
+    if (this.activeTabIndex === 2) {
+      this.pageIndex = 0;
+      if (this.selectedNode) {
+        this.loadRightSideTableData(this.selectedNode);
+      }
+    } else {
+      this.applyClientSideFilter();
+    }
   }
 
   private applyClientSideFilter(): void {
@@ -603,44 +650,35 @@ export class AdministrativeControlComponent implements OnInit {
       return;
     }
 
-    if (!query) {
-      if (this.activeTabIndex === 2) {
-        this.tableData = [...this.rawTableDataMaster];
-      } else {
-        const parentRow = this.createParentRow(this.currentDirectoryLabel);
-        this.tableData = [parentRow, ...this.rawTableDataMaster];
-      }
+    // Server handles filtering context directly on Tab index 2 without row-stripping down routines
+    if (this.activeTabIndex === 2) {
+      this.tableData = [...this.rawTableDataMaster];
       this.generatePages();
       return;
     }
 
-    let filtered = [];
-    if (this.activeTabIndex === 2) {
-      // Access view identity filters (matches against First Name, Last Name, and email values)
-      filtered = this.rawTableDataMaster.filter(
-        (item) =>
-          (item.firstName || '').toLowerCase().includes(query) ||
-          (item.lastName || '').toLowerCase().includes(query) ||
-          (item.email || '').toLowerCase().includes(query),
-      );
-      this.tableData = filtered;
-    } else {
-      // Groups (0) and Users (1) view files/folders filter routines
-      filtered = this.rawTableDataMaster.filter(
-        (item) =>
-          (item.name || '').toLowerCase().includes(query) ||
-          (item.size || '').toLowerCase().includes(query) ||
-          (item.classification || '').toLowerCase().includes(query) ||
-          (item.category || '').toLowerCase().includes(query),
-      );
-
-      if (filtered.length === 0) {
-        this.tableData = [];
-      } else {
-        const parentRow = this.createParentRow(this.currentDirectoryLabel);
-        this.tableData = [parentRow, ...filtered];
-      }
+    if (!query) {
+      const parentRow = this.createParentRow(this.currentDirectoryLabel);
+      this.tableData = [parentRow, ...this.rawTableDataMaster];
+      this.generatePages();
+      return;
     }
+
+    const filtered = this.rawTableDataMaster.filter(
+      (item) =>
+        (item.name || '').toLowerCase().includes(query) ||
+        (item.size || '').toLowerCase().includes(query) ||
+        (item.classification || '').toLowerCase().includes(query) ||
+        (item.category || '').toLowerCase().includes(query),
+    );
+
+    if (filtered.length === 0) {
+      this.tableData = [];
+    } else {
+      const parentRow = this.createParentRow(this.currentDirectoryLabel);
+      this.tableData = [parentRow, ...filtered];
+    }
+
     this.generatePages();
   }
 
@@ -798,6 +836,10 @@ export class AdministrativeControlComponent implements OnInit {
     this.clearSearchInputFields();
     this.clearLeftSearchInputField();
 
+    this.selectedNode = null;
+    this.selectedNodeType = null;
+    this.activeSelectedGroupNode = null;
+
     if (this.activeTabIndex === 0) {
       this.loadGroupsData(false);
     } else if (this.activeTabIndex === 1) {
@@ -820,28 +862,24 @@ export class AdministrativeControlComponent implements OnInit {
   onDeleteClick(element: any) {
     this.isLoading = true;
 
-    // 1. Contextually extract Group vs User information based on active tab
     let groupId: number | null = null;
     let groupName: string | null = null;
     let userId: number | null = null;
     let userName: string | null = null;
 
     if (this.activeTabIndex === 0) {
-      // Groups Tab Context
       const targetGroup = this.activeSelectedGroupNode || this.selectedNode;
       if (targetGroup) {
         groupId = targetGroup.id ? Number(targetGroup.id) : null;
         groupName = targetGroup.name || null;
       }
     } else if (this.activeTabIndex === 1) {
-      // Users Tab Context
       if (this.selectedNode && this.selectedNode.type === 'user') {
         userId = this.selectedNode.id ? Number(this.selectedNode.id) : null;
         userName = this.selectedNode.name || null;
       }
     }
 
-    // 2. Map boolean permissions flags back into a clean comma-separated string
     const permissionsArray: string[] = [];
     if (element.permissions?.F) permissionsArray.push('Full Control');
     if (element.permissions?.M) permissionsArray.push('Modify');
@@ -850,7 +888,6 @@ export class AdministrativeControlComponent implements OnInit {
     if (element.permissions?.X) permissionsArray.push('Execute');
     const mappedPermissions = permissionsArray.join(', ') || 'Read';
 
-    // 3. Assemble the exact payload array tracking documentation specifications
     const payload = [
       {
         id: element.id ? Number(element.id) : null,
@@ -866,12 +903,11 @@ export class AdministrativeControlComponent implements OnInit {
           : 0,
         folderFileSize: element.size || '-',
         classification: element.classification || '-',
-        accessAction: 'Delete', // Hardcoded value
-        status: 'New', // Hardcoded value
+        accessAction: 'Delete',
+        status: 'New',
       },
     ];
 
-    // 4. Fire the PUT request stream
     this.api.updatefolderorfiletothegrouporuser(payload).subscribe({
       next: () => {
         this.isLoading = false;
@@ -911,12 +947,9 @@ export class AdministrativeControlComponent implements OnInit {
   openAddUserDialog(inlineGroupNode?: TreeNode) {
     let targetGroup: TreeNode | null = null;
 
-    // 🌟 FIX: Determine context based on the active tab layout
     if (this.activeTabIndex === 2) {
-      // Access Tab: Always use the currently selected tree row directory node
       targetGroup = this.selectedNode;
     } else {
-      // Groups/Users Tab: Use inline action item, active group layout, or row fallback
       targetGroup =
         inlineGroupNode || this.activeSelectedGroupNode || this.selectedNode;
     }
@@ -960,7 +993,6 @@ export class AdministrativeControlComponent implements OnInit {
         }
       : null;
 
-    // Checks if the active clicked or selected tree node is a user, passing details contextually
     const activeUser =
       this.selectedNode?.type === 'user'
         ? {
@@ -1009,7 +1041,6 @@ export class AdministrativeControlComponent implements OnInit {
         userId = this.selectedNode.id ? Number(this.selectedNode.id) : null;
         userName = this.selectedNode.name || null;
 
-        // 🌟 FIX: Added deep fallbacks checking fields on the node and embedded raw response payload
         userGroupName =
           this.selectedNode.groupName ||
           this.selectedNode.groupList ||

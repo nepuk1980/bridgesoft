@@ -629,11 +629,13 @@ export class ApiService {
 
   // getusersbygroupname
   getusersbygroupname(
+    searchFirstNameOrLastName: string,
     groupName: string,
     page: number,
     size: number,
   ): Observable<GetUsersByGroupNameResponse> {
     const params = new HttpParams()
+      .set('searchFirstNameOrLastName', searchFirstNameOrLastName || '')
       .set('groupName', groupName || '')
       .set('page', page.toString())
       .set('size', size.toString());
