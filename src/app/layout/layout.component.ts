@@ -1,4 +1,4 @@
-import { Component, inject, ViewChild } from '@angular/core';
+import { Component, inject, ViewChild, OnInit } from '@angular/core';
 import {
   NavigationEnd,
   Router,
@@ -33,6 +33,7 @@ import { NotificationpopupComponent } from '../shared/components/notificationpop
 import { ApiService } from '../services/api.service';
 import { NotificationInterface } from '../models/type';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { PermissionService } from '../services/permission.service';
 
 @Component({
   selector: 'app-layout',
@@ -106,21 +107,20 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     ]),
   ],
 })
-export class LayoutComponent {
+export class LayoutComponent implements OnInit {
   private dialog = inject(MatDialog);
+  public permissionService = inject(PermissionService);
 
   @ViewChild('drawer') drawer!: MatSidenav;
 
   constructor(
     private api: ApiService,
     private router: Router,
-  ) {}
+  ) { }
 
   isDashboard = true;
-
   hidden = false;
 
-  // API DATA
   notifications: any[] = [];
   loadingNotifications = false;
 
@@ -162,11 +162,8 @@ export class LayoutComponent {
     this.api.getgetnotifications(this.page, this.size).subscribe({
       next: (res: NotificationInterface) => {
         const newNotifications = res.content ?? [];
-
         this.notifications = [...this.notifications, ...newNotifications];
-
         this.totalElements = res.totalElements ?? 0;
-
         this.loadingNotifications = false;
       },
       error: (err) => {

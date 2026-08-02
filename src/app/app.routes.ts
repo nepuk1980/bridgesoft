@@ -14,10 +14,7 @@ import { RequestReviewAccessComponent } from './pages/request-review-access/requ
 import { AudittrailLayoutComponent } from './layout/audittrail-layout/audittrail-layout.component';
 import { AuditTrailComponent } from './pages/audit-trail/audit-trail.component';
 import { AuditTrailDetailComponent } from './pages/audit-trail-detail/audit-trail-detail.component';
-import { ReviewaccessLayoutComponent } from './layout/reviewaccess-layout/reviewaccess-layout.component';
 import { ReviewAccessComponent } from './pages/review-access/review-access.component';
-import { ReviewAccessDetailComponent } from './pages/review-access-detail/review-access-detail.component';
-import { SodDetailComponent } from './pages/sod-detail/sod-detail.component';
 import { AdministrativecontrolsLayoutComponent } from './layout/administrativecontrols-layout/administrativecontrols-layout.component';
 import { AdministrativeControlComponent } from './pages/administrative-control/administrative-control.component';
 import { AlertLayoutComponent } from './layout/alert-layout/alert-layout.component';
@@ -32,227 +29,235 @@ import { ExecutiveAuditReportComponent } from './pages/executive-audit-report/ex
 import { AgentLayoutComponent } from './layout/agent-layout/agent-layout.component';
 import { AgentComponent } from './pages/agent/agent.component';
 import { ReportListComponent } from './pages/report-list/report-list.component';
+import { LoginComponent } from './login/login.component';
+import { LayoutComponent } from './layout/layout.component';
+
+import { authGuard } from './guard/auth.guard';
+import { permissionGuard } from './guard/permission.guard';
+import { sessionGuard } from './guard/session.guard';
 
 export const routes: Routes = [
   {
+    path: 'login',
+    component: LoginComponent,
+  },
+  {
     path: '',
-    component: DashboardComponent,
-    data: { breadcrumb: 'Dashboard', animation: 'DashboardPage' },
-  },
-  {
-    path: 'applications',
-    component: ApplicationsLayoutComponent,
-    data: { breadcrumb: 'Applications', animation: 'ApplicationsPage' },
+    component: LayoutComponent,
+    canActivate: [authGuard, sessionGuard],
     children: [
       {
         path: '',
-        component: ApplicationsComponent,
+        component: DashboardComponent,
+        canActivate: [authGuard, sessionGuard, permissionGuard('dashboard')],
+        data: { breadcrumb: 'Dashboard', animation: 'DashboardPage' }
       },
-      // {
-      //   path: 'file-share-permission',
-      //   component: FileSharePermissionsComponent,
-      //   data: {
-      //     breadcrumb: 'File Share Permissions',
-      //     animation: 'FileSharePermissionsPage',
-      //   },
-      // },
       {
-        path: ':id',
-        component: FileSharePermissionsComponent,
+        path: 'applications',
+        component: ApplicationsLayoutComponent,
+        canActivate: [authGuard, sessionGuard, permissionGuard('applications')],
+        data: { breadcrumb: 'Applications', animation: 'ApplicationsPage' },
+        children: [
+          {
+            path: '',
+            component: ApplicationsComponent
+          },
+          {
+            path: ':id',
+            component: FileSharePermissionsComponent,
+            data: {
+              breadcrumb: 'File Share Permissions',
+              animation: 'FileSharePermissionsPage',
+            }
+          },
+        ],
+      },
+      {
+        path: 'identity-vault',
+        component: IdentityvaultLayoutComponent,
+        canActivate: [authGuard, sessionGuard, permissionGuard('identityVault')],
+        data: { breadcrumb: 'Identity Vault', animation: 'IdentityvaultPage' },
+        children: [
+          {
+            path: '',
+            component: IdentityVaultComponent
+          },
+          {
+            path: ':id',
+            component: IdentityVaultDetailComponent,
+            data: {
+              breadcrumb: '',
+              animation: 'IdentityVaultDetailsPage',
+              dynamic: true,
+              showPrefix: false,
+            }
+          },
+        ],
+      },
+      {
+        path: 'request-access',
+        component: RequestaccessLayoutComponent,
+        canActivate: [authGuard, sessionGuard, permissionGuard('accessRequests')],
+        data: { breadcrumb: 'Request Access', animation: 'ReaquestAccessPage' },
+        children: [
+          {
+            path: '',
+            component: RequestAccessComponent
+          },
+          {
+            path: 'request-access-workflow',
+            component: RequestWorkflowComponent,
+            data: {
+              breadcrumb: 'Request Access workflow',
+              animation: 'RequestAccessworkflowPage',
+            }
+          },
+          {
+            path: 'request-access-detail',
+            component: RequestAccessDetailComponent,
+            data: {
+              breadcrumb: 'Request Access Detail',
+              animation: 'RequestAccessDetailPage',
+            }
+          },
+          {
+            path: 'request-review-access',
+            component: RequestReviewAccessComponent,
+            data: {
+              breadcrumb: 'Request Review Access',
+              animation: 'RequestReviewAccessPage',
+            }
+          },
+        ],
+      },
+      {
+        path: 'audit-trail',
+        component: AudittrailLayoutComponent,
+        canActivate: [authGuard, sessionGuard, permissionGuard('governance')],
+        data: { breadcrumb: 'Audit Trail', animation: 'AudittrailPage' },
+        children: [
+          {
+            path: '',
+            component: AuditTrailComponent
+          },
+          {
+            path: ':id',
+            component: AuditTrailDetailComponent,
+            data: {
+              breadcrumb: 'Request Access',
+              dynamic: true,
+              animation: 'AuditDetailPage',
+              showPrefix: true,
+            }
+          },
+        ],
+      },
+      {
+        path: 'review-access',
+        component: RequestaccessLayoutComponent,
+        canActivate: [authGuard, sessionGuard, permissionGuard('attestations')],
+        data: { breadcrumb: 'Review Access', animation: 'ReviewAccessPage' },
+        children: [
+          {
+            path: '',
+            component: ReviewAccessComponent
+          }
+        ],
+      },
+      {
+        path: 'administrative-control',
+        component: AdministrativecontrolsLayoutComponent,
+        canActivate: [authGuard, sessionGuard, permissionGuard('RBAC')],
         data: {
-          breadcrumb: 'File Share Permissions',
-          animation: 'FileSharePermissionsPage',
+          breadcrumb: 'Administrative Control',
+          animation: 'AdministrativeControlPage',
         },
-      },
-    ],
-  },
-  {
-    path: 'identity-vault',
-    component: IdentityvaultLayoutComponent,
-    data: { breadcrumb: 'Identity Vault', animation: 'IdentityvaultPage' },
-    children: [
-      {
-        path: '',
-        component: IdentityVaultComponent,
+        children: [
+          {
+            path: '',
+            component: AdministrativeControlComponent
+          },
+        ],
       },
       {
-        path: ':id', // ✅ ADD PARAM
-        component: IdentityVaultDetailComponent,
+        path: 'alerts',
+        component: AlertLayoutComponent,
+        canActivate: [authGuard, sessionGuard, permissionGuard('policies')],
+        data: { breadcrumb: 'Alert', animation: 'AlertPage' },
+        children: [
+          {
+            path: '',
+            component: AlertComponent
+          },
+          {
+            path: 'alerts-configuration',
+            component: AlertConfigurationComponent,
+            data: {
+              breadcrumb: 'Alert',
+              animation: 'AlertConfigurationPage',
+            }
+          },
+        ],
+      },
+      {
+        path: 'rules',
+        component: RulesLayoutComponent,
+        canActivate: [authGuard, sessionGuard, permissionGuard('policies')],
         data: {
-          breadcrumb: '',
-          animation: 'IdentityVaultDetailsPage',
-          dynamic: true,
-          showPrefix: false,
+          breadcrumb: 'Rules Control',
+          animation: 'RulesPage',
         },
+        children: [
+          {
+            path: '',
+            component: RulesComponent
+          },
+        ],
       },
-    ],
+      {
+        path: 'reports',
+        component: ReportsLayoutComponent,
+        canActivate: [authGuard, sessionGuard, permissionGuard('reports')],
+        data: { breadcrumb: 'Reports', animation: 'ReportPage' },
+        children: [
+          {
+            path: '',
+            component: ReportComponent
+          },
+          {
+            path: 'executive-audit-report-list',
+            component: ReportListComponent,
+            data: {
+              breadcrumb: 'Executive Audit Report',
+              animation: 'ReportListPage',
+            }
+          },
+          {
+            path: 'executive-audit-report',
+            component: ExecutiveAuditReportComponent,
+            data: {
+              breadcrumb: 'Executive Audit Report',
+              animation: 'ExecutiveAuditReportPage',
+            }
+          },
+        ],
+      },
+      {
+        path: 'agent',
+        component: AgentLayoutComponent,
+        canActivate: [authGuard, sessionGuard, permissionGuard('agent')],
+        data: { breadcrumb: 'Agent', animation: 'AgentPage' },
+        children: [
+          {
+            path: '',
+            component: AgentComponent
+          },
+        ],
+      },
+    ]
   },
   {
-    path: 'request-access',
-    component: RequestaccessLayoutComponent,
-    data: { breadcrumb: 'Request Access', animation: 'ReaquestAccessPage' },
-    children: [
-      {
-        path: '',
-        component: RequestAccessComponent,
-      },
-      {
-        path: 'request-access-workflow',
-        component: RequestWorkflowComponent,
-        data: {
-          breadcrumb: 'Request Access workflow',
-          animation: 'RequestAccessworkflowPage',
-        },
-      },
-      {
-        path: 'request-access-detail',
-        component: RequestAccessDetailComponent,
-        data: {
-          breadcrumb: 'Request Access Detail',
-          animation: 'RequestAccessDetailPage',
-        },
-      },
-      {
-        path: 'request-review-access',
-        component: RequestReviewAccessComponent,
-        data: {
-          breadcrumb: 'Request Review Access',
-          animation: 'RequestReviewAccessPage',
-        },
-      },
-    ],
-  },
-  {
-    path: 'audit-trail',
-    component: AudittrailLayoutComponent,
-    data: { breadcrumb: 'Audit Trail', animation: 'AudittrailPage' },
-    children: [
-      {
-        path: '',
-        component: AuditTrailComponent,
-      },
-      {
-        path: ':id', // ✅ ADD PARAM
-        component: AuditTrailDetailComponent,
-        data: {
-          breadcrumb: 'Request Access',
-          dynamic: true,
-          animation: 'AuditDetailPage',
-          showPrefix: true,
-        },
-      },
-    ],
-  },
-  {
-    path: 'review-access',
-    component: RequestaccessLayoutComponent,
-    data: { breadcrumb: 'Review Access', animation: 'ReviewAccessPage' },
-    children: [
-      {
-        path: '',
-        component: ReviewAccessComponent,
-      },
-      // {
-      //   path: 'review-access-detail',
-      //   component: ReviewAccessDetailComponent,
-      //   data: {
-      //     breadcrumb: 'Review Access',
-      //     animation: 'ReviewAccessDetailPage',
-      //   },
-      // },
-      // {
-      //   path: 'sod-detail',
-      //   component: SodDetailComponent,
-      //   data: {
-      //     breadcrumb: 'Review Access',
-      //     animation: 'SodDetailPage',
-      //   },
-      // },
-    ],
-  },
-  {
-    path: 'administrative-control',
-    component: AdministrativecontrolsLayoutComponent,
-    data: {
-      breadcrumb: 'Administrative Control',
-      animation: 'AdministrativeControlPage',
-    },
-    children: [
-      {
-        path: '',
-        component: AdministrativeControlComponent,
-      },
-    ],
-  },
-  {
-    path: 'alerts',
-    component: AlertLayoutComponent,
-    data: { breadcrumb: 'Alert', animation: 'AlertPage' },
-    children: [
-      {
-        path: '',
-        component: AlertComponent,
-      },
-      {
-        path: 'alerts-configuration',
-        component: AlertConfigurationComponent,
-        data: {
-          breadcrumb: 'Alert',
-          animation: 'AlertConfigurationPage',
-        },
-      },
-    ],
-  },
-  {
-    path: 'rules',
-    component: RulesLayoutComponent,
-    data: {
-      breadcrumb: 'Rules Control',
-      animation: 'RulesPage',
-    },
-    children: [
-      {
-        path: '',
-        component: RulesComponent,
-      },
-    ],
-  },
-  {
-    path: 'reports',
-    component: ReportsLayoutComponent,
-    data: { breadcrumb: 'Reports', animation: 'ReportPage' },
-    children: [
-      {
-        path: '',
-        component: ReportComponent,
-      },
-      {
-        path: 'executive-audit-report-list',
-        component: ReportListComponent,
-        data: {
-          breadcrumb: 'Executive Audit Report',
-          animation: 'ReportListPage',
-        },
-      },
-      {
-        path: 'executive-audit-report',
-        component: ExecutiveAuditReportComponent,
-        data: {
-          breadcrumb: 'Executive Audit Report',
-          animation: 'ExecutiveAuditReportPage',
-        },
-      },
-    ],
-  },
-  {
-    path: 'agent',
-    component: AgentLayoutComponent,
-    data: { breadcrumb: 'Agent', animation: 'AgentPage' },
-    children: [
-      {
-        path: '',
-        component: AgentComponent,
-      },
-    ],
-  },
+    path: '**',
+    redirectTo: 'login'
+  }
 ];

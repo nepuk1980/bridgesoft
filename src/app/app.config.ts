@@ -4,13 +4,15 @@ import { provideNgxSkeletonLoader } from 'ngx-skeleton-loader';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { CookieService } from 'ngx-cookie-service';
 
 import { routes } from './app.routes';
 import { authInterceptor } from './interceptors/auth.interceptor';
+import { igtokenInterceptor } from './interceptors/igtoken.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideHttpClient(withInterceptors([authInterceptor])),
+    provideHttpClient(withInterceptors([igtokenInterceptor, authInterceptor])),
     provideAnimations(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
@@ -21,5 +23,8 @@ export const appConfig: ApplicationConfig = {
         height: '1.875rem',
       },
     }),
+
+    // Add this
+    CookieService
   ],
 };
