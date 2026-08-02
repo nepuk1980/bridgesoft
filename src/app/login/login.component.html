@@ -1,0 +1,55 @@
+<div class="login-container">
+  <div class="login-box">
+    <div class="logo-container">
+      <!-- Recreating the BridgeSoft text-based logo -->
+      <div class="logo-text">
+        <img src="/svg/logo.svg" />
+      </div>
+    </div>
+
+    <h2>Login</h2>
+    <p class="subtitle">Enter your credentials below</p>
+
+    <form>
+      <div class="input-group">
+        <label for="username">Username </label>
+        <div class="input-wrapper">
+          <!-- Simple User Icon (could use FontAwesome for better quality) -->
+
+          <input
+            [(ngModel)]="loginObj.username"
+            type="text"
+            id="username"
+            name="username"
+            placeholder="e.g. administrator"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="input-group">
+        <div class="label-row">
+          <label for="password">Password</label>
+        </div>
+        <div class="input-wrapper">
+          <!-- Simple Lock Icon -->
+
+          <input
+            [(ngModel)]="loginObj.password"
+            type="password"
+            id="password"
+            name="password"
+            placeholder="••••••••••••"
+            required
+          />
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button (click)="onLogin()" type="submit" class="btn-primary">
+          Sign In
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

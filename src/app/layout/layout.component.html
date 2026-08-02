@@ -10,8 +10,20 @@
     </a>
     <a routerLink="/"> Home </a>
     <a routerLink="/" class="hasSubmenu"> My Work </a>
-    <a routerLink="/" class="hasSubmenu"> Applications </a>
-    <a routerLink="/" class="hasSubmenu"> Intelligence </a>
+    <a
+      routerLink="/applications"
+      class="hasSubmenu"
+      *ngIf="permissionService.hasPermission('applications')"
+    >
+      Applications
+    </a>
+    <a
+      routerLink="/"
+      class="hasSubmenu"
+      *ngIf="permissionService.hasPermission('insights')"
+    >
+      Intelligence
+    </a>
     <a routerLink="/" class="hasSubmenu"> Setup </a>
     <a routerLink="/" class="hasSubmenu"> File Access Manager </a>
   </div>
@@ -63,8 +75,10 @@
   <!-- Sidebar -->
   <mat-sidenav #drawer mode="side" [opened]="isDashboard" class="sidebar">
     <mat-nav-list>
+      <!-- Dashboard -->
       @defer {
         <a
+          *ngIf="permissionService.hasPermission('dashboard')"
           mat-list-item
           routerLink="/"
           routerLinkActive="mat-active"
@@ -77,12 +91,13 @@
         <ngx-skeleton-loader animation="progress" />
       }
 
+      <!-- Applications -->
       @defer {
         <a
+          *ngIf="permissionService.hasPermission('applications')"
           mat-list-item
           routerLink="/applications"
           routerLinkActive="mat-active"
-          [routerLinkActiveOptions]="{ exact: true }"
         >
           <img src="/svg/applications.svg" />
           <span>Applications</span>
@@ -91,12 +106,13 @@
         <ngx-skeleton-loader animation="progress" />
       }
 
+      <!-- Identity Vault -->
       @defer {
         <a
+          *ngIf="permissionService.hasPermission('identityVault')"
           mat-list-item
           routerLink="/identity-vault"
           routerLinkActive="mat-active"
-          [routerLinkActiveOptions]="{ exact: true }"
         >
           <img src="/svg/identity.svg" />
           <span>Identity Vault</span>
@@ -105,12 +121,13 @@
         <ngx-skeleton-loader animation="progress" />
       }
 
+      <!-- Request Access -->
       @defer {
         <a
+          *ngIf="permissionService.hasPermission('accessRequests')"
           mat-list-item
           routerLink="/request-access"
           routerLinkActive="mat-active"
-          [routerLinkActiveOptions]="{ exact: true }"
         >
           <img src="/svg/request.svg" />
           <span>Request Access</span>
@@ -119,12 +136,13 @@
         <ngx-skeleton-loader animation="progress" />
       }
 
+      <!-- Audit Trail -->
       @defer {
         <a
+          *ngIf="permissionService.hasPermission('governance')"
           mat-list-item
           routerLink="/audit-trail"
           routerLinkActive="mat-active"
-          [routerLinkActiveOptions]="{ exact: true }"
         >
           <img src="/svg/audit.svg" />
           <span>Audit Trail</span>
@@ -133,12 +151,13 @@
         <ngx-skeleton-loader animation="progress" />
       }
 
+      <!-- Review Access -->
       @defer {
         <a
+          *ngIf="permissionService.hasPermission('attestations')"
           mat-list-item
           routerLink="/review-access"
           routerLinkActive="mat-active"
-          [routerLinkActiveOptions]="{ exact: true }"
         >
           <img src="/svg/review.svg" />
           <span>Review Access</span>
@@ -147,12 +166,13 @@
         <ngx-skeleton-loader animation="progress" />
       }
 
+      <!-- Administrative Control -->
       @defer {
         <a
+          *ngIf="permissionService.hasPermission('RBAC')"
           mat-list-item
           routerLink="/administrative-control"
           routerLinkActive="mat-active"
-          [routerLinkActiveOptions]="{ exact: true }"
         >
           <img src="/svg/control.svg" />
           <span>Administrative Control</span>
@@ -161,12 +181,13 @@
         <ngx-skeleton-loader animation="progress" />
       }
 
+      <!-- Alerts -->
       @defer {
         <a
+          *ngIf="permissionService.hasPermission('policies')"
           mat-list-item
           routerLink="/alerts"
           routerLinkActive="mat-active"
-          [routerLinkActiveOptions]="{ exact: true }"
         >
           <img src="/svg/alerts.svg" />
           <span>Alerts</span>
@@ -175,12 +196,13 @@
         <ngx-skeleton-loader animation="progress" />
       }
 
+      <!-- Rules -->
       @defer {
         <a
+          *ngIf="permissionService.hasPermission('policies')"
           mat-list-item
           routerLink="/rules"
           routerLinkActive="mat-active"
-          [routerLinkActiveOptions]="{ exact: true }"
         >
           <img src="/svg/rules.svg" />
           <span>Rules</span>
@@ -189,12 +211,13 @@
         <ngx-skeleton-loader animation="progress" />
       }
 
+      <!-- Report -->
       @defer {
         <a
+          *ngIf="permissionService.hasPermission('reports')"
           mat-list-item
           routerLink="/reports"
           routerLinkActive="mat-active"
-          [routerLinkActiveOptions]="{ exact: true }"
         >
           <img src="/svg/report.svg" />
           <span>Report</span>
@@ -204,12 +227,13 @@
         <ngx-skeleton-loader animation="progress" />
       }
 
-      <!-- @defer {
+      <!-- Agent -->
+      @defer {
         <a
+          *ngIf="permissionService.hasPermission('agent')"
           mat-list-item
           routerLink="/agent"
           routerLinkActive="mat-active"
-          [routerLinkActiveOptions]="{ exact: true }"
         >
           <img src="/images/chat-bot.png" />
           <span>Agent</span>
@@ -217,7 +241,7 @@
       } @placeholder (minimum 1000ms) {
         <ngx-skeleton-loader animation="progress" />
         <ngx-skeleton-loader animation="progress" />
-      } -->
+      }
     </mat-nav-list>
   </mat-sidenav>
 

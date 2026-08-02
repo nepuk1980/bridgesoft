@@ -1,14 +1,6 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import {
-  BehaviorSubject,
-  Observable,
-  filter,
-  take,
-  tap,
-  catchError,
-  throwError,
-} from 'rxjs';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { BehaviorSubject, Observable, filter, take, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
 @Injectable({
@@ -21,17 +13,16 @@ export class AuthService {
   private username = environment.username;
   private password = environment.password;
 
-  // ✅ ADDED (in-memory token)
-  private token: string | null = null;
+  // Auto-load token from localStorage on app startup
+  private token: string | null = localStorage.getItem('logitoken');
+  private tokenSubject = new BehaviorSubject<string | null>(this.token);
 
-  // ✅ ADDED (for waiting requests)
-  private tokenSubject = new BehaviorSubject<string | null>(null);
-
-  private isRefreshing = false;
-  private refreshTokenSubject = new BehaviorSubject<string | null>(null);
-
-  // 🔐 LOGIN
+  // 🔐 Secondary LOGIN (Clean request - NO Authorization header sent)
   login(): Observable<string> {
+    const headers = new HttpHeaders({
+      'X-Requested-With': 'XMLHttpRequest',
+    });
+
     return this.http
       .post(
         `${this.API}/auth/login`,
@@ -40,62 +31,38 @@ export class AuthService {
           password: this.password,
         },
         {
+          headers: headers,
           responseType: 'text',
         },
       )
       .pipe(
-        tap((token: string) => {
-          this.setSession(token); // ✅ IMPORTANT FIX
+        tap((newToken: string) => {
+          // 💾 Save new token as 'logitoken'
+          this.setSession(newToken);
+          localStorage.setItem('logitoken', newToken);
         }),
       );
   }
 
-  // 💾 Save token
-  setSession(token: string) {
+  // Save token into memory and localStorage, then notify listeners
+  setSession(token: string): void {
     this.token = token;
-
-    // ✅ notify waiting requests
+    localStorage.setItem('logitoken', token);
     this.tokenSubject.next(token);
   }
 
-  // ✅ ADDED
+  // Retrieve current token
   getToken(): string | null {
-    return this.token;
+    return this.token || localStorage.getItem('logitoken');
   }
 
-  // ⏱ Expiry check (keep if you want)
-  isTokenExpired(): boolean {
-    return false; // optional (you can customize)
-  }
+  // Clear session on logout
+  // clearSession(): void {
+  //   this.token = null;
+  //   localStorage.removeItem('logitoken');
+  //   this.tokenSubject.next(null);
+  // }
 
-  // 🔁 Refresh token
-  refreshToken(): Observable<string> {
-    if (!this.isRefreshing) {
-      this.isRefreshing = true;
-      this.refreshTokenSubject.next(null);
-
-      return this.login().pipe(
-        tap((token: string) => {
-          this.isRefreshing = false;
-
-          this.setSession(token);
-          this.refreshTokenSubject.next(token);
-        }),
-        catchError((err) => {
-          this.isRefreshing = false;
-          this.refreshTokenSubject.next(null);
-          return throwError(() => err);
-        }),
-      );
-    } else {
-      return this.refreshTokenSubject.pipe(
-        filter((token) => token !== null),
-        take(1),
-      ) as Observable<string>;
-    }
-  }
-
-  // ✅ ADDED (fix for interceptor)
   waitForToken(): Observable<string> {
     return this.tokenSubject.pipe(
       filter((t) => t !== null),

@@ -32,7 +32,7 @@ import { AuthService } from '../core/services/auth.service';
   providedIn: 'root',
 })
 export class ApiService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
   private authService = inject(AuthService);
 
   // ✅ Summary API
