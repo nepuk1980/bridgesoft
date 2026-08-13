@@ -194,6 +194,10 @@ export class LaunchComponent implements OnInit, OnDestroy {
           this.authService.setTokensFromValidateResponse(res);
           this.authService.syncTokensFromCookies();
 
+          // Mark the session as validated so the route guard won't re-hit
+          // validateTokens on the immediate navigation to the dashboard.
+          this.sessionService.markTokenValidated();
+
           this.finishLogin();
         } else {
           this.loading = false;
