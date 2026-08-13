@@ -5,7 +5,7 @@ import { permissionGuard } from './permission.guard';
 
 describe('permissionGuard', () => {
   const executeGuard: CanActivateFn = (...guardParameters) => 
-      TestBed.runInInjectionContext(() => permissionGuard(...guardParameters));
+      TestBed.runInInjectionContext(() => permissionGuard('dashboard')(...guardParameters));
 
   beforeEach(() => {
     TestBed.configureTestingModule({});

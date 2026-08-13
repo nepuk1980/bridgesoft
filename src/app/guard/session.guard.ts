@@ -6,6 +6,6 @@ import { SessionService } from '../services/session.service';
 export const sessionGuard: CanActivateFn = (route, state) => {
   const sessionService = inject(SessionService);
 
-  // Calls token/checkTokens API on every page transition
+  // Calls /api/tokens/validateTokens API on every page transition
   return sessionService.validateTokenOnRouteChange();
 };

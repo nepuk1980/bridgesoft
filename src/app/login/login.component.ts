@@ -1,15 +1,21 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
-import { CookieService } from 'ngx-cookie-service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { CommonModule } from '@angular/common';
 import { IgapiService } from '../services/igapi.service';
 import { AuthService } from '../core/services/auth.service';
 import { SessionService } from '../services/session.service';
-import { PermissionService } from '../services/permission.service';
 
 export interface PagePermissionGroup {
   permission: string;
   pagePermissions: string[];
+}
+
+export interface ValidateUserResponse {
+  success: boolean;
+  authenticated?: boolean;
+  message?: string;
+  IG_URL?: string;
 }
 
 export interface CheckTokensResponse {
@@ -23,27 +29,102 @@ export interface CheckTokensResponse {
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [FormsModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
 
   loginObj = {
     username: '',
     password: ''
   };
 
+  // True while authenticating (SSO launch / post-login redirect) -> spinner
+  loading = false;
+  errorMessage = '';
+
+  private route = inject(ActivatedRoute);
   private router = inject(Router);
   private api = inject(IgapiService);
-  private cookie = inject(CookieService);
   private authService = inject(AuthService);
   private sessionService = inject(SessionService);
-  private permissionService = inject(PermissionService);
 
-  private setCookie(name: string, value: string, expiresDays = 1, path = '/'): void {
-    // ngx-cookie-service uses positional args: name, value, expires, path, domain, secure, sameSite
-    this.cookie.set(name, value, expiresDays, path, undefined, false, 'Lax');
+  ngOnInit(): void {
+    // SSO entry: collect launch_code / fasm_session_id + user from the route and
+    // authenticate against FASM via POST /api/auth/validate-user (per the flow
+    // "Login: UI -> /validate-user -> ... -> cookies -> UI").
+    this.route.queryParamMap.subscribe((params) => {
+      const launchCode = params.get('launch_code') || '';
+      const sessionId = params.get('fasm_session_id') || '';
+      const user = params.get('user') || '';
+
+      if ((!launchCode && !sessionId) || !user) {
+        // No SSO params -> fall back to the manual credential form.
+        return;
+      }
+
+      // Persist the values for later validate-token payloads.
+      localStorage.setItem('user', user);
+      if (launchCode) {
+        localStorage.setItem('launchCode', launchCode);
+        localStorage.removeItem('fasmSessionId');
+      } else if (sessionId) {
+        localStorage.setItem('fasmSessionId', sessionId);
+        localStorage.removeItem('launchCode');
+      }
+
+      const payload: any = { user };
+      if (sessionId) {
+        payload.fasm_session_id = sessionId;
+      } else if (launchCode) {
+        payload.launch_code = launchCode;
+      }
+
+      this.validateUser(payload);
+    });
+  }
+
+  /**
+   * Flow: UI -> POST /api/auth/validate-user -> FASM (IG introspect + DB) -> cookies -> UI.
+   * Success -> straight to the dashboard (route guard runs /validateTokens).
+   * Failure -> navigate to the internal /login page (no external redirect).
+   */
+  private validateUser(payload: any): void {
+    this.loading = true;
+    this.errorMessage = '';
+
+    // Cookie-only authentication - no Authorization header.
+    this.api.post<ValidateUserResponse>('auth/validate-user', payload).subscribe({
+      next: (res) => {
+        this.loading = false;
+
+        if (res && this.authService.isSuccess(res.success) && this.authService.isSuccess(res.authenticated)) {
+          // Store IG_URL as backup for any later backend failure fallbacks
+          this.authService.setIgUrl(res.IG_URL);
+
+          // Store the login response into browser storage (backup data)
+          this.authService.persistSessionData(res);
+
+          // Persist tokens + capture the session cookies the server just set
+          this.authService.persistAuthResponse(res);
+          this.authService.syncTokensFromCookies();
+
+          this.router.navigate(['/'], { replaceUrl: true });
+        } else {
+          // Authentication failed (expired / consumed / invalid launch code) -
+          // stay inside the SPA, store IG_URL as backup and show the message.
+          console.warn('⛔ User authentication failed:', res?.message);
+          this.authService.setIgUrl(res?.IG_URL);
+          this.errorMessage = res?.message || 'Authentication failed.';
+        }
+      },
+      error: (err) => {
+        console.error('❌ validate-user API error:', err);
+        this.loading = false;
+        this.errorMessage = 'Unable to verify your session. Please try again.';
+      }
+    });
   }
 
   onLogin(): void {
@@ -54,63 +135,19 @@ export class LoginComponent {
 
     this.api.post<any>('auth/login', this.loginObj).subscribe({
       next: (res) => {
-        // 1. Save refresh token received from login API in cookies
-        if (res?.refreshToken) {
-          this.setCookie('refreshToken', res.refreshToken, 7, '/');
-        }
+        console.log('✅ Login response received:', res);
+        this.authService.persistAuthResponse(res);
 
-        if (res?.accessToken) {
-          this.setCookie('accessToken', res.accessToken, 1);
-        }
-
-        if (res?.idToken) {
-          this.setCookie('idToken', res.idToken, 1);
-        }
-
-        // 2. Keep basicAuth in localStorage only until token-based session is established.
-
-        // 3. Perform checkTokens validation
-        this.getcheckTokens();
+        // After login show the spinner launch screen, which fetches the
+        // launch_code / fasm_session_id + user and adds them into the route.
+        this.router.navigate(['/launch'], {
+          queryParams: { user: this.loginObj.username },
+          replaceUrl: true,
+        });
       },
       error: (err) => {
-        console.error('Login Error:', err);
+        console.error('❌ Login Error:', err);
         alert('Invalid credentials or server error.');
-      }
-    });
-  }
-
-  getcheckTokens(): void {
-    this.api.get<any>('token/checkTokens').subscribe({
-      next: (res) => {
-        if (res && res.success) {
-
-          // Store permissions List
-          if (res.permissionsList) {
-            this.permissionService.setPermissions(res.permissionsList);
-          }
-
-          // Trigger secondary authentication phase
-          this.authService.login().subscribe({
-            next: (newToken: string) => {
-              if (newToken) {
-                localStorage.setItem('logitoken', newToken);
-                this.authService.setSession(newToken);
-              }
-              this.sessionService.startSessionTimer();
-              this.router.navigate(['/'], { replaceUrl: true });
-            },
-            error: (err) => {
-              console.error('Secondary login error:', err);
-              this.sessionService.logoutAndRedirect();
-            }
-          });
-        } else {
-          this.sessionService.logoutAndRedirect();
-        }
-      },
-      error: (err) => {
-        console.error('checkTokens API error:', err);
-        this.sessionService.logoutAndRedirect();
       }
     });
   }

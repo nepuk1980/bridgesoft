@@ -1,0 +1,16 @@
+<ng-content></ng-content>
+
+<div *ngIf="showWarning" class="overlay">
+  <div class="warning-dialog">
+    <div class="dialog-header">Session Timeout Warning</div>
+    <div class="dialog-body">
+      <p class="primary-text"><strong>Your session is about to expire in five minutes due to inactivity.</strong></p>
+      <p class="secondary-text">To continue working securely, please extend your session.</p>
+      <div class="dialog-footer">
+        <button mat-raised-button class="download-btn" (click)="staySignedIn()" [disabled]="isRefreshing">
+          <span class="btn-text">{{ isRefreshing ? 'Continuing…' : 'Continue Session' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
