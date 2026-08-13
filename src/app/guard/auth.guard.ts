@@ -31,19 +31,25 @@
 
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
+import { CookieService } from 'ngx-cookie-service';
 
 export const authGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
+  const cookieService = inject(CookieService);
 
-  const token = localStorage.getItem('logitoken');
+  // Fast local gate. Authentication is cookie/JWT based (FASM sets cookies in
+  // the /validate-user response), so accept either the stored accessToken or the
+  // server-set accessToken cookie. The real check happens in the session guard
+  // (GET /api/tokens/validateTokens).
+  const token = localStorage.getItem('accessToken');
+  const cookieToken = cookieService.get('accessToken');
 
-  console.log('🔍 authGuard checking path:', state.url);
-  console.log('🔑 Stored logitoken:', token);
+  const hasAuth =
+    (token && token !== 'null' && token !== 'undefined' && token.trim() !== '') ||
+    (cookieToken && cookieToken !== 'null' && cookieToken !== 'undefined' && cookieToken.trim() !== '');
 
-  if (token && token !== 'null' && token !== 'undefined' && token.trim() !== '') {
-    return true; // Token exists -> Allow access
-  }
+  if (hasAuth) return true; // Auth signal present -> allow access (session guard validates)
 
-  console.warn('⛔ Access denied: logitoken missing! Redirecting to /login');
+  console.warn('⛔ Access denied: no accessToken / accessToken cookie! Redirecting to /login');
   return router.createUrlTree(['/login']);
 };

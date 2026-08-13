@@ -67,6 +67,23 @@
       <img src="/images/profile.png" class="profileImg" />
       <span>Administrator</span>
     </button>
+
+    <button
+      mat-icon-button
+      class="logoutBtn"
+      type="button"
+      [matMenuTriggerFor]="userMenu"
+      aria-label="User menu"
+    >
+      <img src="/svg/logout.svg" class="logout" />
+    </button>
+
+    <mat-menu #userMenu="matMenu" xPosition="before">
+      <button mat-menu-item class="logoutMenuItem" (click)="logout()">
+        <img src="/svg/logout.svg" class="logout" />
+        <span>Logout</span>
+      </button>
+    </mat-menu>
   </div>
 </mat-toolbar>
 

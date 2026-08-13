@@ -1,0 +1,13 @@
+<div class="overlay">
+    <div class="session-expired-dialog">
+        <div class="dialog-header">Your session has expired</div>
+        <div class="dialog-body">
+            <p class="secondary-text">Your session has expired due to inactivity. Please login again.</p>
+            <div class="dialog-footer">
+                <button mat-raised-button class='download-btn' (click)="onLogin()" [disabled]="checking">
+                    <span class="btn-text">{{ checking ? 'Checking…' : 'Login' }}</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

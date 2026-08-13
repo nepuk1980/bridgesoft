@@ -1,0 +1,68 @@
+:host {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  z-index: 999;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  z-index: 999;
+}
+
+.session-expired-dialog {
+  background: #ffffff;
+  border-radius: 6px;
+  width: 600px;
+  margin-top: -60px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  font-family: 'Segoe UI', sans-serif;
+  text-align: center;
+}
+
+.dialog-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.5;
+  border-bottom: 1px solid #e0e0e0;
+  background-color: #f5f5f5;
+  color: #1176bd !important;
+}
+
+.dialog-body {
+  margin: 15px 20px 10px;
+  text-align: center;
+  font-size: 16px;
+  color: #424242;
+
+  .primary-text {
+    font-size: 18px;
+  }
+  .secondary-text {
+    font-size: 18px;
+    margin: 6px 0;
+  }
+  .dialog-footer {
+    display: flex;
+    justify-content: center;
+    padding: 12px;
+    gap: 10px;
+  }
+}

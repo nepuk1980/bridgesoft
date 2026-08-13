@@ -31,12 +31,18 @@ import { AgentComponent } from './pages/agent/agent.component';
 import { ReportListComponent } from './pages/report-list/report-list.component';
 import { LoginComponent } from './login/login.component';
 import { LayoutComponent } from './layout/layout.component';
+import { LaunchComponent } from './pages/launch/launch.component';
 
 import { authGuard } from './guard/auth.guard';
 import { permissionGuard } from './guard/permission.guard';
 import { sessionGuard } from './guard/session.guard';
 
 export const routes: Routes = [
+  {
+    path: 'launch',
+    component: LaunchComponent,
+    data: { noLayout: true },
+  },
   {
     path: 'login',
     component: LoginComponent,

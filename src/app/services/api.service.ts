@@ -38,7 +38,7 @@ export class ApiService {
   // ✅ Summary API
   getfilesystemaccesspermissionsummary(): Observable<FileSystemAccessSummaryInterface> {
     return this.http.get<FileSystemAccessSummaryInterface>(
-      `${environment.apiUrl}/getfilesystemaccesspermissionsummary`,
+      `${environment.fasmUrl}/getfilesystemaccesspermissionsummary`,
     );
   }
   // windows file
@@ -55,7 +55,7 @@ export class ApiService {
       .set('searchFileOrFolderName', searchFileOrFolderName);
 
     return this.http.get<FileSystemResponseInterface>(
-      `${environment.apiUrl}/getfilesharefiledetails`,
+      `${environment.fasmUrl}/getfilesharefiledetails`,
       { params },
     );
   }
@@ -74,7 +74,7 @@ export class ApiService {
       .set('searchFileOrFolderName', searchFileOrFolderName);
 
     return this.http.get<FileSystemResponseInterface>(
-      `${environment.apiUrl}/getfilesharefolderdetails`,
+      `${environment.fasmUrl}/getfilesharefolderdetails`,
       { params },
     );
   }
@@ -93,7 +93,7 @@ export class ApiService {
       .set('searchFileOrFolderName', searchFileOrFolderName);
 
     return this.http.get<FileSystemResponseInterface>(
-      `${environment.apiUrl}/getfilesharetotaldetails`,
+      `${environment.fasmUrl}/getfilesharetotaldetails`,
       { params },
     );
   }
@@ -112,7 +112,7 @@ export class ApiService {
       .set('searchFileOrFolderName', searchFileOrFolderName);
 
     return this.http.get<FileSystemResponseInterface>(
-      `${environment.apiUrl}/getsharepointfiledetails`,
+      `${environment.fasmUrl}/getsharepointfiledetails`,
       { params },
     );
   }
@@ -131,7 +131,7 @@ export class ApiService {
       .set('searchFileOrFolderName', searchFileOrFolderName);
 
     return this.http.get<FileSystemResponseInterface>(
-      `${environment.apiUrl}/getsharepointfolderdetails`,
+      `${environment.fasmUrl}/getsharepointfolderdetails`,
       { params },
     );
   }
@@ -150,7 +150,7 @@ export class ApiService {
       .set('searchFileOrFolderName', searchFileOrFolderName);
 
     return this.http.get<FileSystemResponseInterface>(
-      `${environment.apiUrl}/getsharepointtotaldetails`,
+      `${environment.fasmUrl}/getsharepointtotaldetails`,
       { params },
     );
   }
@@ -169,7 +169,7 @@ export class ApiService {
       .set('searchFileOrFolderName', searchFileOrFolderName);
 
     return this.http.get<FileSystemResponseInterface>(
-      `${environment.apiUrl}/getfilesystemaccesspermissiondetails`,
+      `${environment.fasmUrl}/getfilesystemaccesspermissiondetails`,
       { params },
     );
   }
@@ -177,7 +177,7 @@ export class ApiService {
   // External Chart
   getExternalResourcesGroupBy() {
     return this.http.get<ExternalResourcesGroupByResponse>(
-      `${environment.apiUrl}/getExternalResourcesGroupBy`,
+      `${environment.fasmUrl}/getExternalResourcesGroupBy`,
     );
   }
 
@@ -189,7 +189,7 @@ export class ApiService {
     const params = new HttpParams().set('page', page).set('size', size);
 
     return this.http.get<ApplicationResponseInterface>(
-      `${environment.apiUrl}/getlistofapplications`,
+      `${environment.fasmUrl}/getlistofapplications`,
       { params },
     );
   }
@@ -198,7 +198,7 @@ export class ApiService {
   getapplicationdetails(appId: number): Observable<any> {
     const params = new HttpParams().set('appId', appId);
 
-    return this.http.get<any>(`${environment.apiUrl}/getapplicationdetails`, {
+    return this.http.get<any>(`${environment.fasmUrl}/getapplicationdetails`, {
       params,
     });
   }
@@ -210,7 +210,7 @@ export class ApiService {
     const params = new HttpParams().set('id', id);
 
     return this.http.get<IdentityVaultDetailResponseInterface>(
-      `${environment.apiUrl}/getidentityvaultdetails`,
+      `${environment.fasmUrl}/getidentityvaultdetails`,
       { params },
     );
   }
@@ -221,7 +221,7 @@ export class ApiService {
     const params = new HttpParams().set('vaultId', id);
 
     return this.http.get<ApplicationAccountsResponseInterface>(
-      `${environment.apiUrl}/getidentityapplicationaccountlist`,
+      `${environment.fasmUrl}/getidentityapplicationaccountlist`,
       { params },
     );
   }
@@ -242,7 +242,7 @@ export class ApiService {
       .set('size', size);
 
     return this.http.get<RequestAccessWorkflowInterface>(
-      `${environment.apiUrl}/getallfilesandfoldersdetails`,
+      `${environment.fasmUrl}/getallfilesandfoldersdetails`,
       { params },
     );
   }
@@ -265,7 +265,7 @@ export class ApiService {
     console.log('🚀 FINAL PAYLOAD:', data);
 
     return this.http.post(
-      `${environment.apiUrl}/saveaccessrequestdetails`,
+      `${environment.fasmUrl}/saveaccessrequestdetails`,
       data, // ✅ direct object
       { headers },
     );
@@ -278,7 +278,7 @@ export class ApiService {
     const params = new HttpParams().set('vaultId', id);
 
     return this.http.get<ApplicationAccountsResponseInterface>(
-      `${environment.apiUrl}/getidentityentitlementlist`,
+      `${environment.fasmUrl}/getidentityentitlementlist`,
       { params },
     );
   }
@@ -306,7 +306,7 @@ export class ApiService {
     console.log('🚀 FINAL PAYLOAD:', payload);
 
     return this.http.put(
-      `${environment.apiUrl}/updateapplicationdetails`,
+      `${environment.fasmUrl}/updateapplicationdetails`,
       payload,
       { headers },
     );
@@ -322,7 +322,7 @@ export class ApiService {
       .set('sortByDate', sortByDate);
 
     return this.http.get<RuleResponseInterface[]>(
-      `${environment.apiUrl}/getrules`,
+      `${environment.fasmUrl}/getrules`,
       { params },
     );
   }
@@ -349,7 +349,7 @@ export class ApiService {
 
     console.log('🚀 FINAL PAYLOAD:', payload);
 
-    return this.http.put(`${environment.apiUrl}/updaterule`, payload, {
+    return this.http.put(`${environment.fasmUrl}/updaterule`, payload, {
       headers,
     });
   }
@@ -364,7 +364,7 @@ export class ApiService {
       .set('filter', filter);
 
     return this.http.get<ReviewAccessInterface[]>(
-      `${environment.apiUrl}/getlistofimportantaccessrequests`,
+      `${environment.fasmUrl}/getlistofimportantaccessrequests`,
       { params },
     );
   }
@@ -379,7 +379,7 @@ export class ApiService {
       .set('filter', filter);
 
     return this.http.get<ReviewAccessInterface[]>(
-      `${environment.apiUrl}/getlistofopenaccessrequests`,
+      `${environment.fasmUrl}/getlistofopenaccessrequests`,
       { params },
     );
   }
@@ -394,7 +394,7 @@ export class ApiService {
       .set('filter', filter);
 
     return this.http.get<ReviewAccessInterface[]>(
-      `${environment.apiUrl}/getlistofreviewaccessrequests`,
+      `${environment.fasmUrl}/getlistofreviewaccessrequests`,
       { params },
     );
   }
@@ -424,7 +424,7 @@ export class ApiService {
     console.log('🚀 BULK PAYLOAD:', payload);
 
     return this.http.put(
-      `${environment.apiUrl}/updateaccessrequestdetails`,
+      `${environment.fasmUrl}/updateaccessrequestdetails`,
       payload,
       { headers },
     );
@@ -444,7 +444,7 @@ export class ApiService {
       .set('size', size.toString());
 
     return this.http.get<AuditResponseInterface>(
-      `${environment.apiUrl}/getaudittrail`,
+      `${environment.fasmUrl}/getaudittrail`,
       { params },
     );
   }
@@ -465,7 +465,7 @@ export class ApiService {
       .set('size', size.toString());
 
     return this.http.get<ExecutiveAuditReportsInterface>(
-      `${environment.apiUrl}/getexecutiveauditreport`,
+      `${environment.fasmUrl}/getexecutiveauditreport`,
       { params },
     );
   }
@@ -480,7 +480,7 @@ export class ApiService {
       .set('size', size.toString());
 
     return this.http.get<NotificationInterface>(
-      `${environment.apiUrl}/getnotifications`,
+      `${environment.fasmUrl}/getnotifications`,
       { params },
     );
   }
@@ -491,7 +491,7 @@ export class ApiService {
       .set('page', page.toString())
       .set('size', size.toString());
 
-    return this.http.get<AlertInterface>(`${environment.apiUrl}/getalerts`, {
+    return this.http.get<AlertInterface>(`${environment.fasmUrl}/getalerts`, {
       params,
     });
   }
@@ -514,7 +514,7 @@ export class ApiService {
 
     // By setting responseType to 'text', HttpClient will treat the
     // response as a string instead of trying to parse it as JSON.
-    return this.http.post(`${environment.apiUrl}/savealert`, data, {
+    return this.http.post(`${environment.fasmUrl}/savealert`, data, {
       headers,
       responseType: 'text',
     });
@@ -538,7 +538,7 @@ export class ApiService {
 
     // Using .put() to match the Postman request, sending the full object
     // as the request body.
-    return this.http.put(`${environment.apiUrl}/updatealert`, data, {
+    return this.http.put(`${environment.fasmUrl}/updatealert`, data, {
       headers,
       responseType: 'text',
     });
@@ -562,7 +562,7 @@ export class ApiService {
     // Using .put() to match your Postman request requirements
     // Note: If the backend expects a body for this DELETE/PUT,
     // pass it as the 3rd argument, otherwise null is sufficient.
-    return this.http.put(`${environment.apiUrl}/deletealert/${alertId}`, null, {
+    return this.http.put(`${environment.fasmUrl}/deletealert/${alertId}`, null, {
       headers,
       responseType: 'text',
     });
@@ -582,7 +582,7 @@ export class ApiService {
       .set('size', size.toString());
 
     return this.http.get<GetADGroupInterface>(
-      `${environment.apiUrl}/getadgroups`,
+      `${environment.fasmUrl}/getadgroups`,
       {
         params,
       },
@@ -601,7 +601,7 @@ export class ApiService {
       .set('size', size.toString());
 
     return this.http.get<GroupFolderPermissionResponse>(
-      `${environment.apiUrl}/getgroupfoldersorfiles`,
+      `${environment.fasmUrl}/getgroupfoldersorfiles`,
       {
         params,
       },
@@ -620,7 +620,7 @@ export class ApiService {
       .set('size', size.toString());
 
     return this.http.get<UserFolderPermissionResponse>(
-      `${environment.apiUrl}/getuserfoldersorfiles`,
+      `${environment.fasmUrl}/getuserfoldersorfiles`,
       {
         params,
       },
@@ -641,7 +641,7 @@ export class ApiService {
       .set('size', size.toString());
 
     return this.http.get<GetUsersByGroupNameResponse>(
-      `${environment.apiUrl}/getusersbygroupname`,
+      `${environment.fasmUrl}/getusersbygroupname`,
       {
         params,
       },
@@ -665,7 +665,7 @@ export class ApiService {
       .set('size', size.toString());
 
     return this.http.get<IdentityVaultResponseInterface>(
-      `${environment.apiUrl}/getlistofidentityvaults`,
+      `${environment.fasmUrl}/getlistofidentityvaults`,
       { params },
     );
   }
@@ -682,7 +682,7 @@ export class ApiService {
       .set('size', size.toString());
 
     return this.http.get<AllFilesByGroupResponse>(
-      `${environment.apiUrl}/getallfilesbygroup`,
+      `${environment.fasmUrl}/getallfilesbygroup`,
       {
         params,
       },
@@ -696,7 +696,7 @@ export class ApiService {
     const params = new HttpParams().set('categoryType', categoryType || '');
 
     return this.http.get<IdentityVaultCategoryResponse>(
-      `${environment.apiUrl}/getcategories`,
+      `${environment.fasmUrl}/getcategories`,
       {
         params,
       },
@@ -710,7 +710,7 @@ export class ApiService {
       .set('size', size.toString());
 
     return this.http.get<GetAllFoldersResponse>(
-      `${environment.apiUrl}/getallfolders`,
+      `${environment.fasmUrl}/getallfolders`,
       {
         params,
       },
@@ -731,7 +731,7 @@ export class ApiService {
       'Content-Type': 'application/json',
     });
 
-    return this.http.post(`${environment.apiUrl}/addusertothegroup`, payload, {
+    return this.http.post(`${environment.fasmUrl}/addusertothegroup`, payload, {
       headers: headers,
       responseType: 'text', // ✅ ADD THIS LINE: Tells Angular not to parse the response as JSON
     });
@@ -753,7 +753,7 @@ export class ApiService {
 
     console.log('🚀 FINAL PAYLOAD:', data);
 
-    return this.http.post(`${environment.apiUrl}/addfoldertothegroup`, data, {
+    return this.http.post(`${environment.fasmUrl}/addfoldertothegroup`, data, {
       headers: headers,
       responseType: 'text', // ✅ ADD THIS: Tells Angular not to parse the successful response as JSON
     });
@@ -777,7 +777,7 @@ export class ApiService {
     });
 
     return this.http.post(
-      `${environment.apiUrl}/addfolderorfiletothegrouporuser`,
+      `${environment.fasmUrl}/addfolderorfiletothegrouporuser`,
       data,
       {
         headers: headers,
@@ -803,7 +803,7 @@ export class ApiService {
     });
 
     return this.http.put(
-      `${environment.apiUrl}/updatefolderorfiletothegrouporuser`,
+      `${environment.fasmUrl}/updatefolderorfiletothegrouporuser`,
       data,
       {
         headers: headers,

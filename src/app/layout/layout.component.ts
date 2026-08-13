@@ -15,6 +15,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatListModule } from '@angular/material/list';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatDialog } from '@angular/material/dialog';
 
 import {
@@ -34,6 +35,7 @@ import { ApiService } from '../services/api.service';
 import { NotificationInterface } from '../models/type';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { PermissionService } from '../services/permission.service';
+import { SessionService } from '../services/session.service';
 
 @Component({
   selector: 'app-layout',
@@ -49,6 +51,7 @@ import { PermissionService } from '../services/permission.service';
     MatButtonModule,
     MatListModule,
     MatDividerModule,
+    MatMenuModule,
     NgxSkeletonLoaderComponent,
     MatProgressSpinnerModule,
     NgFor,
@@ -110,6 +113,7 @@ import { PermissionService } from '../services/permission.service';
 export class LayoutComponent implements OnInit {
   private dialog = inject(MatDialog);
   public permissionService = inject(PermissionService);
+  private sessionService = inject(SessionService);
 
   @ViewChild('drawer') drawer!: MatSidenav;
 
@@ -141,6 +145,7 @@ export class LayoutComponent implements OnInit {
 
     this.getNotifications();
   }
+
 
   prepareRoute(outlet: RouterOutlet) {
     return outlet?.activatedRouteData?.['animation'];
@@ -206,5 +211,9 @@ export class LayoutComponent implements OnInit {
   handleNotificationClick() {
     this.toggleBadgeVisibility();
     this.openNotificationDialog();
+  }
+
+  logout(): void {
+    this.sessionService.logoutAndRedirect();
   }
 }
