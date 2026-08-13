@@ -24,6 +24,21 @@ export class SessionService implements OnDestroy {
   private isLoggingOut = false; // 🔒 Guard flag to prevent duplicate logout calls
   private isPromptingExpiry = false; // 🔒 Guard flag to prevent duplicate expiry prompts
 
+  // Once /api/tokens/validateTokens returns success:true, the session is known
+  // valid. The launch flow already validated it, so the route guard can skip
+  // re-hitting the endpoint on the immediate navigation to the dashboard.
+  private tokenValidated = false;
+
+  /** Mark the session as validated (success:true from /validateTokens). */
+  public markTokenValidated(): void {
+    this.tokenValidated = true;
+  }
+
+  /** Clear the validation flag (logout / session expiry). */
+  public resetTokenValidation(): void {
+    this.tokenValidated = false;
+  }
+
   constructor() {
     // When the refresh loop reports a dead/expired session, ask the user if
     // they want to continue (refresh) or cancel (go to login page).
@@ -89,6 +104,12 @@ export class SessionService implements OnDestroy {
    *                  prompt the user: continue (refresh) or cancel (login page)
    */
   public validateTokenOnRouteChange(): Observable<boolean> {
+    // Already validated by the launch flow / a previous success - don't re-hit
+    // the validateTokens endpoint on every page transition.
+    if (this.tokenValidated) {
+      return of(true);
+    }
+
     return this.validateTokens().pipe(
       switchMap((res) => {
         if (res && this.authService.isSuccess(res.success)) {
@@ -99,6 +120,7 @@ export class SessionService implements OnDestroy {
           this.authService.persistSessionData(res);
           this.authService.setTokensFromValidateResponse(res);
           this.authService.syncTokensFromCookies();
+          this.tokenValidated = true;
           return of(true);
         }
         console.warn('⛔ Session is not active. Attempting token refresh...');
@@ -169,6 +191,7 @@ export class SessionService implements OnDestroy {
           this.authService.syncAuthCookies();
           this.authService.syncTokensFromCookies();
           this.sessionManager.resume();
+          this.tokenValidated = true;
           return of(true);
         }
         console.warn('⛔ Token refresh rejected. Logging out the session...', res?.message);
@@ -185,6 +208,7 @@ export class SessionService implements OnDestroy {
 
   /** Navigate the browser to the IG page (fallback to stored / env IG_URL). */
   private redirectToIg(igUrl?: string): void {
+    this.tokenValidated = false;
     this.sessionManager.clearSession();
     this.authService.clearSession();
     localStorage.removeItem('basicAuth');
@@ -262,6 +286,7 @@ export class SessionService implements OnDestroy {
 
   /** Clear the local session and navigate to the login page. */
   public redirectToLoginPage(): void {
+    this.tokenValidated = false;
     this.sessionManager.clearSession();
     this.authService.clearSession();
     localStorage.removeItem('basicAuth');
@@ -277,6 +302,7 @@ export class SessionService implements OnDestroy {
   public logoutAndRedirect(): void {
     if (this.isLoggingOut) return; // Prevent duplicate logout calls
     this.isLoggingOut = true;
+    this.tokenValidated = false;
 
     // Fire both logouts in parallel; finish once both settle. Each call is
     // guarded so one backend failing still lets the other one log out.
