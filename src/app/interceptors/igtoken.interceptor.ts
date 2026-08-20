@@ -5,7 +5,7 @@ import { SessionService } from '../services/session.service';
 import { catchError, throwError } from 'rxjs';
 
 // Guard against re-entrancy: if the session is being re-verified we don't want
-// the fallback to trigger itself again while checkTokens is in flight.
+// the fallback to trigger itself again while validateTokens is in flight.
 let sessionCheckInFlight = false;
 
 export const igtokenInterceptor: HttpInterceptorFn = (req, next) => {
@@ -31,7 +31,7 @@ export const igtokenInterceptor: HttpInterceptorFn = (req, next) => {
 
   // 🍪 validateTokens authenticates via the session cookies only - the cookie is
   // attached by the browser (withCredentials) and no Authorization header is used.
-  const isValidateTokensEndpoint = req.url.includes('tokens/validateTokens') || req.url.includes('token/checkTokens');
+  const isValidateTokensEndpoint = req.url.includes('tokens/validateTokens');
 
   // Respect an explicitly supplied Authorization header (e.g. the access token
   // passed on validate-user) instead of overriding it.
@@ -87,7 +87,6 @@ export const igtokenInterceptor: HttpInterceptorFn = (req, next) => {
 
       // 🔒 Skip fallback for endpoints that manage their own session flow
       const isAuthFlowEndpoint =
-        url.includes('token/checkTokens') ||
         url.includes('tokens/validateTokens') ||
         url.includes('auth/login') ||
         url.includes('auth/logout') ||

@@ -1,7 +1,6 @@
 import { Injectable, NgZone, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { BehaviorSubject, Subject } from 'rxjs';
-import { Router } from '@angular/router';
 
 import { MatDialog } from '@angular/material/dialog';
 
@@ -17,7 +16,6 @@ interface RefreshResult {
 export class SessionManagerService {
   private api = inject(IgapiService);
   private authService = inject(AuthService);
-  private router = inject(Router);
   private ngZone = inject(NgZone);
   private dialog = inject(MatDialog);
 
@@ -201,8 +199,6 @@ export class SessionManagerService {
       const resp: any = await firstValueFrom(this.api.get<any>(`tokens/refresh`));
 
       if (!resp || !this.authService.isSuccess(resp.success)) {
-        // Backend explicitly reports a dead/expired session -> capture IG_URL
-        if (resp) this.authService.setIgUrl(resp.IG_URL);
         return { rotated: false, stillValid: false };
       }
 
@@ -234,21 +230,27 @@ export class SessionManagerService {
     }
   }
 
-  /** Logout flow: calls API, clears local session, then navigates to /login */
+  /** Logout flow: calls API, clears local session, then redirects to IG_URL. */
   public async performLogout(): Promise<void> {
     this.dialog.closeAll();
+    // Capture the IG URL from localStorage before clearing anything.
+    const igUrl = this.authService.getIgUrl();
     this.clearSession();
     this.ngZone.run(async () => {
       try {
-        // Log out of both backends so the fasm and IG sessions both die.
-        const fasmLogout = firstValueFrom(this.api.get('auth/logout'));
-        const igLogout = firstValueFrom(this.api.igLogout());
-        await Promise.all([fasmLogout, igLogout]);
+        // Log out of the IG backend. The fasm /api/auth/logout call is
+        // intentionally not made.
+        await firstValueFrom(this.api.igLogout());
       } catch (error) {
         console.error('Logout API error:', error);
       }
-      this.router.navigate(['/login']);
-      this.dialog.closeAll();
+      // After logout, redirect the browser to the IG URL stored in localStorage.
+      if (igUrl) {
+        console.log('🚪 Logged out. Redirecting to IG URL:', igUrl);
+        window.location.href = igUrl;
+        return;
+      }
+      console.log('🚪 Logged out. No IG URL in localStorage - staying on the current URL.');
     });
   }
 

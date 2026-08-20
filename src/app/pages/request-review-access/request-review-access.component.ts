@@ -138,7 +138,7 @@ export class RequestReviewAccessComponent {
   ) {}
 
   submit() {
-    // Redirect to home
+    // Redirect to dashboard (root)
     this.router.navigate(['/']).then(() => {
       // Show success message AFTER navigation
       this.snackBar.open('Request Submitted Successfully', '', {
