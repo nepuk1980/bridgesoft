@@ -63,12 +63,11 @@
       [matMenuTriggerFor]="userMenu"
       aria-label="User menu"
     >
-      <img src="/svg/logout.svg" class="logout" />
+      <img src="/images/setting2.png" width="24" height="24" class="logout" />
     </button>
 
-    <mat-menu #userMenu="matMenu" xPosition="before">
+    <mat-menu #userMenu="matMenu" xPosition="before" class="logoutMenu">
       <button mat-menu-item class="logoutMenuItem" (click)="logout()">
-        <!-- <img src="/svg/logout.svg" class="logout" /> -->
         <span>Logout</span>
       </button>
     </mat-menu>
