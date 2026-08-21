@@ -300,7 +300,7 @@ export class SessionService implements OnDestroy {
 
     igLogout.subscribe({
       next: (igRes) => {
-        console.log('✅ Logged out from IG.');
+        console.log('✅ Logged out from Fasm.');
         this.finishLogout();
       },
       error: (err) => {

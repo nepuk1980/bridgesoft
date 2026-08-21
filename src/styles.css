@@ -1219,3 +1219,6 @@ hr {
   bottom: 1rem;
   z-index: 9;
 }
+.logoutMenu {
+  background: #fff !important;
+}

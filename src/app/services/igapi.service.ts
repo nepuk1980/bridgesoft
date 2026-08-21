@@ -29,9 +29,9 @@ export class IgapiService {
     });
   }
 
-  /** Logout: POST {igUrl}/api/auth/logout - the base URL is igUrl, not fasm. */
+  /** Logout: GET {fasmUrl}/api/auth/logout - the base URL is igUrl, not fasm. */
   igLogout(): Observable<any> {
-    const url = `${environment.igUrl}/api/auth/logout`;
+    const url = `${environment.fasmUrl}/api/auth/logout`;
 
     // Pass the session cookie along in the request header. The browser cookie
     // (e.g. basicAuth / accessToken set by the IG backend) is read from the
@@ -44,8 +44,8 @@ export class IgapiService {
       ...(accessToken ? { 'X-Access-Token': accessToken } : {}),
     });
 
-    console.log('IG API POST ->', url);
-    return this.http.post<any>(url, {}, {
+    console.log('IG API GET ->', url);
+    return this.http.get<any>(url, {
       headers,
       withCredentials: true
     });
