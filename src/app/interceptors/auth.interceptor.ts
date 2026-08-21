@@ -11,7 +11,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   // 🍪 validateTokens authenticates via the session cookies only - the cookie is
   // attached by the browser (withCredentials) and no Authorization header is used.
-  const isValidateTokensRoute = req.url.includes('tokens/validateTokens') || req.url.includes('token/checkTokens');
+  const isValidateTokensRoute = req.url.includes('tokens/validateTokens');
 
   if (isValidateUserRoute) {
     const cleanHeaders = req.headers

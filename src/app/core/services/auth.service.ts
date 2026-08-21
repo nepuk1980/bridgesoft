@@ -1,9 +1,8 @@
 import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, filter, take, tap } from 'rxjs';
+import { BehaviorSubject, Observable, filter, take } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
-import { environment } from '../../../environments/environment';
 
 export interface AuthTokens {
   accessToken: string | null;
@@ -18,10 +17,6 @@ export class AuthService {
   private http = inject(HttpClient);
   private cookie = inject(CookieService);
   private router = inject(Router);
-
-  private API = environment.fasmUrl;
-  private username = environment.username;
-  private password = environment.password;
 
   private token: string | null = this.getStoredToken();
   private tokenSubject = new BehaviorSubject<string | null>(this.token);
@@ -146,30 +141,6 @@ export class AuthService {
     // Ensure all 3 cookies exist. Any token missing from this response falls
     // back to the currently stored (localStorage / existing cookie) value.
     this.syncAuthCookies();
-  }
-
-  login(): Observable<any> {
-    const headers = new HttpHeaders({
-      'X-Requested-With': 'XMLHttpRequest',
-    });
-
-    return this.http
-      .post(
-        `${this.API}/auth/login`,
-        {
-          username: this.username,
-          password: this.password,
-        },
-        {
-          headers,
-          responseType: 'text',
-        },
-      )
-      .pipe(
-        tap((response: any) => {
-          this.persistAuthResponse(response);
-        }),
-      );
   }
 
   /**
@@ -343,16 +314,17 @@ export class AuthService {
     }
   }
 
+  /**
+   * igUrl is only ever written from the validateTokens API response
+   * (setIgUrl is only called with validateTokens res.IG_URL). No env fallback
+   * is injected from our code - return exactly what the API provided.
+   */
   getIgUrl(): string {
-    let stored = localStorage.getItem(this.IG_URL_KEY);
-    if (!stored || stored.trim() === '' || stored === 'null' || stored === 'undefined') {
-      stored = this.cookie.get(this.IG_URL_KEY);
-    }
+    const stored = localStorage.getItem(this.IG_URL_KEY);
     if (stored && stored.trim() !== '' && stored !== 'null' && stored !== 'undefined') {
       return stored.trim();
     }
-    // First login / nothing stored yet -> fall back to the env-configured IG URL
-    return environment.igUrl || '';
+    return '';
   }
 
   clearIgUrl(): void {
@@ -363,13 +335,13 @@ export class AuthService {
   /**
    * Failure fallback. IG_URL is still captured as a backup variable (setIgUrl),
    * but the app never navigates to an external URL - it stays inside the SPA
-   * and routes the user to the internal /login page instead.
+   * and routes the user back to the loading screen (which hits validate-user).
    */
   redirectToIgUrl(url?: string | null): void {
     if (url && url.trim()) {
-      console.warn(`⛔ Authentication/session failed (IG_URL was: ${url.trim()}). Navigating to /login instead.`);
+      console.warn(`⛔ Authentication/session failed (IG_URL was: ${url.trim()}). Restarting validation.`);
     }
-    this.router.navigate(['/login']);
+    this.router.navigate(['/']);
   }
 
   // --- Browser-storage backup for the login response ---
@@ -401,6 +373,13 @@ export class AuthService {
     } catch {
       return null;
     }
+  }
+
+  // --- User helpers ---
+
+  getUser(): string | null {
+    const user = localStorage.getItem('user');
+    return user && user !== 'null' && user !== 'undefined' && user.trim() !== '' ? user.trim() : null;
   }
 
   // --- Cleanup ---

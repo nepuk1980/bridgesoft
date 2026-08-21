@@ -10,20 +10,8 @@
     </a>
     <a routerLink="/"> Home </a>
     <a routerLink="/" class="hasSubmenu"> My Work </a>
-    <a
-      routerLink="/applications"
-      class="hasSubmenu"
-      *ngIf="permissionService.hasPermission('applications')"
-    >
-      Applications
-    </a>
-    <a
-      routerLink="/"
-      class="hasSubmenu"
-      *ngIf="permissionService.hasPermission('insights')"
-    >
-      Intelligence
-    </a>
+    <a routerLink="/applications" class="hasSubmenu"> Applications </a>
+    <a routerLink="/" class="hasSubmenu"> Intelligence </a>
     <a routerLink="/" class="hasSubmenu"> Setup </a>
     <a routerLink="/" class="hasSubmenu"> File Access Manager </a>
   </div>
@@ -65,7 +53,7 @@
 
     <button mat-icon-button class="profileBtn">
       <img src="/images/profile.png" class="profileImg" />
-      <span>Administrator</span>
+      <span>{{ userName }}</span>
     </button>
 
     <button
@@ -80,7 +68,7 @@
 
     <mat-menu #userMenu="matMenu" xPosition="before">
       <button mat-menu-item class="logoutMenuItem" (click)="logout()">
-        <img src="/svg/logout.svg" class="logout" />
+        <!-- <img src="/svg/logout.svg" class="logout" /> -->
         <span>Logout</span>
       </button>
     </mat-menu>
@@ -95,7 +83,6 @@
       <!-- Dashboard -->
       @defer {
         <a
-          *ngIf="permissionService.hasPermission('dashboard')"
           mat-list-item
           routerLink="/"
           routerLinkActive="mat-active"
@@ -111,7 +98,6 @@
       <!-- Applications -->
       @defer {
         <a
-          *ngIf="permissionService.hasPermission('applications')"
           mat-list-item
           routerLink="/applications"
           routerLinkActive="mat-active"
@@ -126,7 +112,6 @@
       <!-- Identity Vault -->
       @defer {
         <a
-          *ngIf="permissionService.hasPermission('identityVault')"
           mat-list-item
           routerLink="/identity-vault"
           routerLinkActive="mat-active"
@@ -141,7 +126,6 @@
       <!-- Request Access -->
       @defer {
         <a
-          *ngIf="permissionService.hasPermission('accessRequests')"
           mat-list-item
           routerLink="/request-access"
           routerLinkActive="mat-active"
@@ -156,7 +140,6 @@
       <!-- Audit Trail -->
       @defer {
         <a
-          *ngIf="permissionService.hasPermission('governance')"
           mat-list-item
           routerLink="/audit-trail"
           routerLinkActive="mat-active"
@@ -171,7 +154,6 @@
       <!-- Review Access -->
       @defer {
         <a
-          *ngIf="permissionService.hasPermission('attestations')"
           mat-list-item
           routerLink="/review-access"
           routerLinkActive="mat-active"
@@ -186,7 +168,6 @@
       <!-- Administrative Control -->
       @defer {
         <a
-          *ngIf="permissionService.hasPermission('RBAC')"
           mat-list-item
           routerLink="/administrative-control"
           routerLinkActive="mat-active"
@@ -200,12 +181,7 @@
 
       <!-- Alerts -->
       @defer {
-        <a
-          *ngIf="permissionService.hasPermission('policies')"
-          mat-list-item
-          routerLink="/alerts"
-          routerLinkActive="mat-active"
-        >
+        <a mat-list-item routerLink="/alerts" routerLinkActive="mat-active">
           <img src="/svg/alerts.svg" />
           <span>Alerts</span>
         </a>
@@ -215,12 +191,7 @@
 
       <!-- Rules -->
       @defer {
-        <a
-          *ngIf="permissionService.hasPermission('policies')"
-          mat-list-item
-          routerLink="/rules"
-          routerLinkActive="mat-active"
-        >
+        <a mat-list-item routerLink="/rules" routerLinkActive="mat-active">
           <img src="/svg/rules.svg" />
           <span>Rules</span>
         </a>
@@ -230,12 +201,7 @@
 
       <!-- Report -->
       @defer {
-        <a
-          *ngIf="permissionService.hasPermission('reports')"
-          mat-list-item
-          routerLink="/reports"
-          routerLinkActive="mat-active"
-        >
+        <a mat-list-item routerLink="/reports" routerLinkActive="mat-active">
           <img src="/svg/report.svg" />
           <span>Report</span>
         </a>
@@ -245,20 +211,15 @@
       }
 
       <!-- Agent -->
-      @defer {
-        <a
-          *ngIf="permissionService.hasPermission('agent')"
-          mat-list-item
-          routerLink="/agent"
-          routerLinkActive="mat-active"
-        >
+      <!-- @defer {
+        <a mat-list-item routerLink="/agent" routerLinkActive="mat-active">
           <img src="/images/chat-bot.png" />
           <span>Agent</span>
         </a>
       } @placeholder (minimum 1000ms) {
         <ngx-skeleton-loader animation="progress" />
         <ngx-skeleton-loader animation="progress" />
-      }
+      } -->
     </mat-nav-list>
   </mat-sidenav>
 

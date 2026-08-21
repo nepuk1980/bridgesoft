@@ -29,23 +29,27 @@ import { ExecutiveAuditReportComponent } from './pages/executive-audit-report/ex
 import { AgentLayoutComponent } from './layout/agent-layout/agent-layout.component';
 import { AgentComponent } from './pages/agent/agent.component';
 import { ReportListComponent } from './pages/report-list/report-list.component';
-import { LoginComponent } from './login/login.component';
 import { LayoutComponent } from './layout/layout.component';
-import { LaunchComponent } from './pages/launch/launch.component';
+import { LoadingComponent } from './pages/loading/loading.component';
 
 import { authGuard } from './guard/auth.guard';
-import { permissionGuard } from './guard/permission.guard';
 import { sessionGuard } from './guard/session.guard';
 
 export const routes: Routes = [
   {
     path: 'launch',
-    component: LaunchComponent,
-    data: { noLayout: true },
+    component: LoadingComponent,
   },
   {
-    path: 'login',
-    component: LoginComponent,
+    // SSO entry: /launch/launch_code=...+user=... (values arrive in the path)
+    path: 'launch/:payload',
+    component: LoadingComponent,
+  },
+  {
+    // Fallback used by the auth guard when there is no session yet: shows the
+    // loading/validation screen instead of the dashboard shell.
+    path: 'loading',
+    component: LoadingComponent,
   },
   {
     path: '',
@@ -55,13 +59,13 @@ export const routes: Routes = [
       {
         path: '',
         component: DashboardComponent,
-        canActivate: [authGuard, sessionGuard, permissionGuard('dashboard')],
+        canActivate: [authGuard, sessionGuard],
         data: { breadcrumb: 'Dashboard', animation: 'DashboardPage' }
       },
       {
         path: 'applications',
         component: ApplicationsLayoutComponent,
-        canActivate: [authGuard, sessionGuard, permissionGuard('applications')],
+        canActivate: [authGuard, sessionGuard],
         data: { breadcrumb: 'Applications', animation: 'ApplicationsPage' },
         children: [
           {
@@ -81,7 +85,7 @@ export const routes: Routes = [
       {
         path: 'identity-vault',
         component: IdentityvaultLayoutComponent,
-        canActivate: [authGuard, sessionGuard, permissionGuard('identityVault')],
+        canActivate: [authGuard, sessionGuard],
         data: { breadcrumb: 'Identity Vault', animation: 'IdentityvaultPage' },
         children: [
           {
@@ -103,7 +107,7 @@ export const routes: Routes = [
       {
         path: 'request-access',
         component: RequestaccessLayoutComponent,
-        canActivate: [authGuard, sessionGuard, permissionGuard('accessRequests')],
+        canActivate: [authGuard, sessionGuard],
         data: { breadcrumb: 'Request Access', animation: 'ReaquestAccessPage' },
         children: [
           {
@@ -139,7 +143,7 @@ export const routes: Routes = [
       {
         path: 'audit-trail',
         component: AudittrailLayoutComponent,
-        canActivate: [authGuard, sessionGuard, permissionGuard('governance')],
+        canActivate: [authGuard, sessionGuard],
         data: { breadcrumb: 'Audit Trail', animation: 'AudittrailPage' },
         children: [
           {
@@ -161,7 +165,7 @@ export const routes: Routes = [
       {
         path: 'review-access',
         component: RequestaccessLayoutComponent,
-        canActivate: [authGuard, sessionGuard, permissionGuard('attestations')],
+        canActivate: [authGuard, sessionGuard],
         data: { breadcrumb: 'Review Access', animation: 'ReviewAccessPage' },
         children: [
           {
@@ -173,7 +177,7 @@ export const routes: Routes = [
       {
         path: 'administrative-control',
         component: AdministrativecontrolsLayoutComponent,
-        canActivate: [authGuard, sessionGuard, permissionGuard('RBAC')],
+        canActivate: [authGuard, sessionGuard],
         data: {
           breadcrumb: 'Administrative Control',
           animation: 'AdministrativeControlPage',
@@ -188,7 +192,7 @@ export const routes: Routes = [
       {
         path: 'alerts',
         component: AlertLayoutComponent,
-        canActivate: [authGuard, sessionGuard, permissionGuard('policies')],
+        canActivate: [authGuard, sessionGuard],
         data: { breadcrumb: 'Alert', animation: 'AlertPage' },
         children: [
           {
@@ -208,7 +212,7 @@ export const routes: Routes = [
       {
         path: 'rules',
         component: RulesLayoutComponent,
-        canActivate: [authGuard, sessionGuard, permissionGuard('policies')],
+        canActivate: [authGuard, sessionGuard],
         data: {
           breadcrumb: 'Rules Control',
           animation: 'RulesPage',
@@ -223,7 +227,7 @@ export const routes: Routes = [
       {
         path: 'reports',
         component: ReportsLayoutComponent,
-        canActivate: [authGuard, sessionGuard, permissionGuard('reports')],
+        canActivate: [authGuard, sessionGuard],
         data: { breadcrumb: 'Reports', animation: 'ReportPage' },
         children: [
           {
@@ -248,22 +252,22 @@ export const routes: Routes = [
           },
         ],
       },
-      {
-        path: 'agent',
-        component: AgentLayoutComponent,
-        canActivate: [authGuard, sessionGuard, permissionGuard('agent')],
-        data: { breadcrumb: 'Agent', animation: 'AgentPage' },
-        children: [
-          {
-            path: '',
-            component: AgentComponent
-          },
-        ],
-      },
+      // {
+      //   path: 'agent',
+      //   component: AgentLayoutComponent,
+      //   canActivate: [authGuard, sessionGuard],
+      //   data: { breadcrumb: 'Agent', animation: 'AgentPage' },
+      //   children: [
+      //     {
+      //       path: '',
+      //       component: AgentComponent
+      //     },
+      //   ],
+      // },
     ]
   },
   {
     path: '**',
-    redirectTo: 'login'
+    redirectTo: ''
   }
 ];

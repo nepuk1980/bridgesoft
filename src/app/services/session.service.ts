@@ -4,10 +4,9 @@ import { CookieService } from 'ngx-cookie-service';
 import { MatDialog } from '@angular/material/dialog';
 import { IgapiService } from '../services/igapi.service';
 import { AuthService } from '../core/services/auth.service';
-import { PermissionService } from './permission.service';
 import { SessionManagerService } from './session-manager.service';
 import { SessionExpiredDialogComponent } from '../session-manager/session-expired-dialog/session-expired-dialog.component';
-import { Observable, catchError, throwError, map, of, switchMap, forkJoin } from 'rxjs';
+import { Observable, catchError, throwError, map, of, switchMap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +16,6 @@ export class SessionService implements OnDestroy {
   private cookie = inject(CookieService);
   private router = inject(Router);
   private authService = inject(AuthService);
-  private permissionService = inject(PermissionService);
   private sessionManager = inject(SessionManagerService);
   private dialog = inject(MatDialog);
 
@@ -32,6 +30,11 @@ export class SessionService implements OnDestroy {
   /** Mark the session as validated (success:true from /validateTokens). */
   public markTokenValidated(): void {
     this.tokenValidated = true;
+  }
+
+  /** True when the loading flow already validated the session via validateTokens. */
+  public isTokenValidated(): boolean {
+    return this.tokenValidated;
   }
 
   /** Clear the validation flag (logout / session expiry). */
@@ -98,44 +101,32 @@ export class SessionService implements OnDestroy {
   }
 
   /**
-   * Check token validity on every route change.
-   * success:true  -> allow navigation
-   * success:false -> rotate tokens via GET /api/tokens/refresh; if that fails,
-   *                  prompt the user: continue (refresh) or cancel (login page)
+   * Check token validity on every route change using GET /api/tokens/validateTokens.
+   * success:true -> allow navigation (validateTokens success redirects to dashboard).
+   * success:false -> attempt token refresh; if that fails, logout.
+   * validate-user is never called here - only validateTokens, on every navigation.
    */
   public validateTokenOnRouteChange(): Observable<boolean> {
-    // Already validated by the launch flow / a previous success - don't re-hit
-    // the validateTokens endpoint on every page transition.
-    if (this.tokenValidated) {
-      return of(true);
-    }
-
     return this.validateTokens().pipe(
       switchMap((res) => {
         if (res && this.authService.isSuccess(res.success)) {
           this.authService.setIgUrl(res.IG_URL);
-          if (res.permissionsList) {
-            this.permissionService.setPermissions(res.permissionsList);
-          }
           this.authService.persistSessionData(res);
           this.authService.setTokensFromValidateResponse(res);
           this.authService.syncTokensFromCookies();
           this.tokenValidated = true;
           return of(true);
         }
-        console.warn('⛔ Session is not active. Attempting token refresh...');
+        console.warn('⛔ validateTokens success:false. Attempting token refresh...');
         this.authService.setIgUrl(res?.IG_URL);
         // refreshTokens() logs out the session itself when the refresh fails.
         return this.refreshTokens();
       }),
       catchError((err) => {
-        console.warn('⛔ Token check failed on route change:', err);
-        // 401/403 -> dead/expired session. Prompt the user instead of
-        // auto-bouncing to IG so the expiry dialog gets a chance to wait.
+        console.warn('⛔ validateTokens error on route change:', err);
         if (err?.status === 401 || err?.status === 403) {
           return this.handleSessionExpiry();
         }
-        this.redirectToIg();
         return of(false);
       })
     );
@@ -152,9 +143,6 @@ export class SessionService implements OnDestroy {
       switchMap((res) => {
         if (res && this.authService.isSuccess(res.success)) {
           this.authService.setIgUrl(res.IG_URL);
-          if (res.permissionsList) {
-            this.permissionService.setPermissions(res.permissionsList);
-          }
           this.authService.setTokensFromValidateResponse(res);
           this.authService.syncTokensFromCookies();
           return of(true);
@@ -185,7 +173,6 @@ export class SessionService implements OnDestroy {
       switchMap((res) => {
         if (res && this.authService.isSuccess(res.success)) {
           console.log('🔄 Tokens refreshed successfully.');
-          this.authService.setIgUrl(res.IG_URL);
           this.authService.persistAuthResponse(res);
           this.authService.persistSessionData(res);
           this.authService.syncAuthCookies();
@@ -264,7 +251,6 @@ export class SessionService implements OnDestroy {
       switchMap((res) => {
         if (res && this.authService.isSuccess(res.success)) {
           console.log('🔄 Tokens refreshed successfully. Resuming session.');
-          this.authService.setIgUrl(res.IG_URL);
           this.authService.persistAuthResponse(res);
           this.authService.persistSessionData(res);
           this.authService.syncAuthCookies();
@@ -284,19 +270,20 @@ export class SessionService implements OnDestroy {
     );
   }
 
-  /** Clear the local session and navigate to the login page. */
+  /** Clear the local session and restart validation from the loading screen. */
   public redirectToLoginPage(): void {
     this.tokenValidated = false;
     this.sessionManager.clearSession();
     this.authService.clearSession();
     localStorage.removeItem('basicAuth');
     this.authService.clearTokenCookies();
-    this.router.navigate(['/login']);
+    this.router.navigate(['/']);
   }
 
   /**
    * Logout flow:
-   * 1. GET /api/auth/logout on BOTH backends (fasm + IG) so both sessions die.
+   * 1. POST /api/auth/logout on the IG backend so the IG session dies.
+   *    (The fasm /api/auth/logout call is intentionally not made.)
    * 2. On success OR failure, clear the local session and stay on the login page.
    */
   public logoutAndRedirect(): void {
@@ -304,14 +291,6 @@ export class SessionService implements OnDestroy {
     this.isLoggingOut = true;
     this.tokenValidated = false;
 
-    // Fire both logouts in parallel; finish once both settle. Each call is
-    // guarded so one backend failing still lets the other one log out.
-    const fasmLogout = this.api.get<any>('auth/logout').pipe(
-      catchError((err) => {
-        console.warn('fasm logout error (continuing):', err);
-        return of(null);
-      })
-    );
     const igLogout = this.api.igLogout().pipe(
       catchError((err) => {
         console.warn('IG logout error (continuing):', err);
@@ -319,12 +298,10 @@ export class SessionService implements OnDestroy {
       })
     );
 
-    forkJoin([fasmLogout, igLogout]).subscribe({
-      next: ([fasmRes, igRes]) => {
-        console.log('✅ Logged out from fasm and IG.');
-        const igUrl = (fasmRes as any)?.IG_URL || (igRes as any)?.IG_URL;
-        this.authService.setIgUrl(igUrl);
-        this.finishLogout(igUrl);
+    igLogout.subscribe({
+      next: (igRes) => {
+        console.log('✅ Logged out from IG.');
+        this.finishLogout();
       },
       error: (err) => {
         console.warn('Logout response error (continuing local logout):', err);
@@ -333,25 +310,21 @@ export class SessionService implements OnDestroy {
     });
   }
 
-  private finishLogout(igUrl?: string): void {
+  private finishLogout(): void {
     this.sessionManager.clearSession();
     this.authService.clearSession();
     localStorage.removeItem('basicAuth');
     this.authService.clearTokenCookies();
     this.isLoggingOut = false;
 
-    // No external redirect after logout - stay inside the SPA on the login page.
-    this.authService.redirectToIgUrl(igUrl);
-
-    // ───────────────────────────────────────────────────────────────────────
-    // BACKUP: redirect to the IG page after logout. Keep this for future use.
-    // ───────────────────────────────────────────────────────────────────────
-    // const target = igUrl || this.authService.getIgUrl();
-    // if (target && target.trim()) {
-    //   console.log('🔙 Logout complete. Redirecting to IG:', target.trim());
-    //   window.location.href = target.trim();
-    // } else {
-    //   this.authService.redirectToIgUrl(igUrl);
-    // }
+    // After logout, redirect the browser to the IG URL stored in localStorage.
+    const igUrl = this.authService.getIgUrl();
+    if (igUrl) {
+      console.log('🚪 Logged out. Redirecting to IG URL:', igUrl);
+      window.location.href = igUrl;
+      return;
+    }
+    // No IG URL available - stay on the current URL.
+    console.log('🚪 Logged out. No IG URL in localStorage - staying on the current URL.');
   }
 }
