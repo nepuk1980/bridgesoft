@@ -375,6 +375,13 @@ export class AuthService {
     }
   }
 
+  // --- User helpers ---
+
+  getUser(): string | null {
+    const user = localStorage.getItem('user');
+    return user && user !== 'null' && user !== 'undefined' && user.trim() !== '' ? user.trim() : null;
+  }
+
   // --- Cleanup ---
 
   /**

@@ -35,6 +35,7 @@ import { ApiService } from '../services/api.service';
 import { NotificationInterface } from '../models/type';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SessionService } from '../services/session.service';
+import { AuthService } from '../core/services/auth.service';
 
 @Component({
   selector: 'app-layout',
@@ -112,6 +113,7 @@ import { SessionService } from '../services/session.service';
 export class LayoutComponent implements OnInit {
   private dialog = inject(MatDialog);
   private sessionService = inject(SessionService);
+  private authService = inject(AuthService);
 
   @ViewChild('drawer') drawer!: MatSidenav;
 
@@ -122,11 +124,17 @@ export class LayoutComponent implements OnInit {
 
   isDashboard = true;
   hidden = false;
+  userName = 'Administrator';
 
   notifications: any[] = [];
   loadingNotifications = false;
 
   ngOnInit(): void {
+    const user = this.authService.getUser();
+    if (user) {
+      this.userName = user;
+    }
+
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
       .subscribe((event: any) => {

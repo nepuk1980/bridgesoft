@@ -53,6 +53,10 @@ export class LoadingComponent implements OnInit, OnDestroy {
 
     const { launchCode, fasmSessionId, user } = this.resolveLaunchValues();
 
+    if (user) {
+      localStorage.setItem('user', user);
+    }
+
     // On project load, directly hit the validate-user API with the values
     // parsed from the browser URL. Any failure falls back to validateTokens
     // via the existing logic.
