@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BreadcrumbComponent } from '../../shared/components/breadcrumb/breadcrumb.component';
 import { MatSelectModule } from '@angular/material/select';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
@@ -68,6 +68,7 @@ export class IdentityVaultDetailComponent implements OnInit {
   appId!: number;
   selectedIndex = 0;
   isLoading = true;
+  breadcrumbName = '';
   selectedEntitlementsDownload: string = 'Download';
   selectedApplicationDownload: string = 'Download';
 
@@ -107,22 +108,30 @@ export class IdentityVaultDetailComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
+    private router: Router,
     private api: ApiService,
     private reportService: ReportService,
   ) {}
 
   ngOnInit(): void {
-    this.appId = history.state?.id;
+    this.route.paramMap.subscribe(() => {
+      this.appId = history.state?.id;
 
-    if (this.appId) {
-      this.getAttributes();
-      this.getApplicationAccounts();
-      this.getEntitlements(); // ✅ missing call added
-      console.log('id ==', this.appId);
-    } else {
-      console.error('No ID found');
-      this.isLoading = false;
-    }
+      if (this.appId) {
+        this.loadData();
+      } else {
+        console.error('No ID found');
+        this.isLoading = false;
+      }
+    });
+  }
+
+  loadData(): void {
+    this.isLoading = true;
+    this.getAttributes();
+    this.getApplicationAccounts();
+    this.getEntitlements();
+    console.log('id ==', this.appId);
   }
 
   // ✅ ATTRIBUTES API
@@ -130,6 +139,26 @@ export class IdentityVaultDetailComponent implements OnInit {
     this.api.getidentityvaultdetails(this.appId).subscribe({
       next: (res: any) => {
         const data = res?.content || res;
+
+        this.breadcrumbName = [data?.firstName, data?.lastName]
+          .filter(Boolean)
+          .join(' ');
+
+        if (this.breadcrumbName) {
+          const slug = this.breadcrumbName
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9\s-]/g, '')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-');
+
+          if (slug && this.route.snapshot.params['id'] !== slug) {
+            this.router.navigate(['/identity-vault', slug], {
+              replaceUrl: true,
+              state: { id: this.appId },
+            });
+          }
+        }
 
         this.tabs[0].data = {
           firstName: data?.firstName || '-',
