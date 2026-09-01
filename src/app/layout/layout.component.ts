@@ -125,6 +125,7 @@ export class LayoutComponent implements OnInit {
   isDashboard = true;
   hidden = false;
   userName = 'Administrator';
+  displayName = '';
 
   notifications: any[] = [];
   loadingNotifications = false;
@@ -134,6 +135,8 @@ export class LayoutComponent implements OnInit {
     if (user) {
       this.userName = user;
     }
+
+    this.loadCurrentUserDetails();
 
     this.router.events
       .pipe(filter((event) => event instanceof NavigationEnd))
@@ -150,6 +153,12 @@ export class LayoutComponent implements OnInit {
       });
 
     this.getNotifications();
+  }
+
+  loadCurrentUserDetails(): void {
+    const firstName = this.authService.getFirstName();
+    const lastName = this.authService.getLastName();
+    this.displayName = [firstName, lastName].filter(Boolean).join(' ') || 'Administrator';
   }
 
 
@@ -217,6 +226,21 @@ export class LayoutComponent implements OnInit {
   handleNotificationClick() {
     this.toggleBadgeVisibility();
     this.openNotificationDialog();
+  }
+
+  navigateToProfile(): void {
+    const currentUserId = localStorage.getItem('currentUserId');
+
+    if (!currentUserId) {
+      this.router.navigate(['/identity-vault']);
+      return;
+    }
+
+    this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
+      this.router.navigate(['/identity-vault', currentUserId], {
+        state: { id: currentUserId },
+      });
+    });
   }
 
   logout(): void {

@@ -1,4 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnInit,
+  OnChanges,
+  SimpleChanges,
+} from '@angular/core';
 import {
   Router,
   NavigationEnd,
@@ -21,8 +27,10 @@ interface Breadcrumb {
   templateUrl: './breadcrumb.component.html',
   styleUrls: ['./breadcrumb.component.css'],
 })
-export class BreadcrumbComponent implements OnInit {
+export class BreadcrumbComponent implements OnInit, OnChanges {
   breadcrumbs: Breadcrumb[] = [];
+
+  @Input() name = '';
 
   constructor(
     private router: Router,
@@ -30,7 +38,6 @@ export class BreadcrumbComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // ✅ Initial load
     this.breadcrumbs = this.buildBreadcrumbs(this.route.root);
 
     // ✅ On route change
@@ -39,6 +46,12 @@ export class BreadcrumbComponent implements OnInit {
       .subscribe(() => {
         this.breadcrumbs = this.buildBreadcrumbs(this.route.root);
       });
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['name']) {
+      this.breadcrumbs = this.buildBreadcrumbs(this.route.root);
+    }
   }
 
   private buildBreadcrumbs(
@@ -86,6 +99,11 @@ export class BreadcrumbComponent implements OnInit {
               )
               .join(' ');
           }
+        }
+
+        // Use name passed from the component via @Input
+        if (this.name) {
+          dynamicName = this.name;
         }
 
         const showPrefix = child.snapshot.data['showPrefix'];

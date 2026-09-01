@@ -51,9 +51,9 @@
       </div>
     </div>
 
-    <button mat-icon-button class="profileBtn">
+    <button mat-icon-button class="profileBtn" (click)="navigateToProfile()">
       <img src="/images/profile.png" class="profileImg" />
-      <span>{{ userName }}</span>
+      <span>{{ displayName }}</span>
     </button>
 
     <button

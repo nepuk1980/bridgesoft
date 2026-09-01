@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { BehaviorSubject, Observable, filter, take } from 'rxjs';
 import { CookieService } from 'ngx-cookie-service';
+import { IgapiService } from '../../services/igapi.service';
 
 export interface AuthTokens {
   accessToken: string | null;
@@ -17,6 +18,7 @@ export class AuthService {
   private http = inject(HttpClient);
   private cookie = inject(CookieService);
   private router = inject(Router);
+  private igapi = inject(IgapiService);
 
   private token: string | null = this.getStoredToken();
   private tokenSubject = new BehaviorSubject<string | null>(this.token);
@@ -382,6 +384,27 @@ export class AuthService {
     return user && user !== 'null' && user !== 'undefined' && user.trim() !== '' ? user.trim() : null;
   }
 
+  getCurrentUserDetails(): Observable<any> {
+    return this.igapi.get<any>('auth/current-user-details');
+  }
+
+  persistCurrentUserDetails(response: any): void {
+    if (!response) return;
+    if (response.id) localStorage.setItem('currentUserId', response.id);
+    if (response.firstName) localStorage.setItem('firstName', response.firstName);
+    if (response.lastName) localStorage.setItem('lastName', response.lastName);
+  }
+
+  getFirstName(): string | null {
+    const val = localStorage.getItem('firstName');
+    return val && val !== 'null' && val !== 'undefined' && val.trim() !== '' ? val.trim() : null;
+  }
+
+  getLastName(): string | null {
+    const val = localStorage.getItem('lastName');
+    return val && val !== 'null' && val !== 'undefined' && val.trim() !== '' ? val.trim() : null;
+  }
+
   // --- Cleanup ---
 
   /**
@@ -406,6 +429,9 @@ export class AuthService {
     localStorage.removeItem('launchCode');
     localStorage.removeItem('fasmSessionId');
     localStorage.removeItem(this.SESSION_DATA_KEY);
+    localStorage.removeItem('currentUserId');
+    localStorage.removeItem('firstName');
+    localStorage.removeItem('lastName');
 
     this.clearTokenCookies();
 

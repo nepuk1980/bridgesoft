@@ -290,11 +290,25 @@ export class LoadingComponent implements OnInit, OnDestroy {
     });
   }
 
+  /** Fire the current-user-details API on every boot/refresh and cache it. */
+  private loadCurrentUserDetails(): void {
+    this.authService.getCurrentUserDetails().subscribe({
+      next: (res: any) => {
+        this.authService.persistCurrentUserDetails(res);
+      },
+      error: (err) => {
+        console.warn('current-user-details API error:', err?.status, err?.message);
+      },
+    });
+  }
+
   /** Navigate to the dashboard once the token validation succeeds. */
   private finishLogin(): void {
     const refreshToken = localStorage.getItem('refreshToken') || 'NOT FOUND';
     console.log('🔑 Refresh token after login:', refreshToken ? 'STORED' : refreshToken);
     this.loading = false;
+
+    this.loadCurrentUserDetails();
 
     // On page refresh the browser URL is preserved (skipLocationChange: true),
     // so window.location.pathname still holds the original route the user was
