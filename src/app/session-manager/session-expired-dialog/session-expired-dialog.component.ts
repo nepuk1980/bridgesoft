@@ -23,53 +23,45 @@ export class SessionExpiredDialogComponent {
   private session = inject(SessionManagerService);
 
   async onLogin() {
+    if (this.checking) return; // prevent duplicate clicks
     this.checking = true;
+
     try {
       const resp: any = await firstValueFrom(this.api.get('tokens/validateTokens'));
+
       if (this.authService.isSuccess(resp?.success)) {
+        // validateTokens success:true -> hit the refreshTokens API.
+        // Keep the Login button disabled and the dialog open while refreshing.
         const refreshResp: any = await firstValueFrom(this.api.get<any>(`tokens/refresh`));
-
-        this.checking = false;
 
         if (this.authService.isSuccess(refreshResp?.success)) {
           this.authService.persistAuthResponse(refreshResp);
           this.authService.syncAuthCookies();
           this.authService.syncTokensFromCookies();
 
+          this.checking = false;
           this.dialogRef.close(true);
           this.session.resumeAfterCheck();
           return;
-        } else {
-          this.dialogRef.close(false);
-          await this.session.performLogout();
-          return;
         }
-      } else {
-        // validateTokens success:false -> try to rotate the tokens via refresh.
-        const refreshResp: any = await firstValueFrom(this.api.get<any>(`tokens/refresh`));
 
+        // refreshTokens success:false -> close the dialog and go to IG login.
         this.checking = false;
-
-        if (this.authService.isSuccess(refreshResp?.success)) {
-          this.authService.persistAuthResponse(refreshResp);
-          this.authService.syncAuthCookies();
-          this.authService.syncTokensFromCookies();
-
-          this.dialogRef.close(true);
-          this.session.resumeAfterCheck();
-          return;
-        }
-
         this.dialogRef.close(false);
         await this.session.performLogout();
         return;
       }
-    } catch (err) {
-      console.error('checkTokens/refresh API error:', err);
+
+      // validateTokens success:false -> navigate the user to the IG login page.
       this.checking = false;
       this.dialogRef.close(false);
       await this.session.performLogout();
-      return;
+    } catch (err) {
+      // validateTokens / refreshTokens API failed -> navigate to the IG login page.
+      console.error('validateTokens/refresh API error:', err);
+      this.checking = false;
+      this.dialogRef.close(false);
+      await this.session.performLogout();
     }
   }
 }

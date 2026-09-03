@@ -213,6 +213,10 @@ export class SessionService implements OnDestroy {
     if (this.isPromptingExpiry) return of(false); // Prevent duplicate prompts
     this.isPromptingExpiry = true;
 
+    // Close any other popup/dialog before showing the expiry dialog so it is
+    // the only visible overlay.
+    this.dialog.closeAll();
+
     const dialogRef = this.dialog.open(SessionExpiredDialogComponent, {
       disableClose: true,
       autoFocus: false,

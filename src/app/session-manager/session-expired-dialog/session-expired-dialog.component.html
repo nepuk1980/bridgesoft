@@ -1,13 +1,23 @@
 <div class="overlay">
-    <div class="session-expired-dialog">
-        <div class="dialog-header">Your session has expired</div>
-        <div class="dialog-body">
-            <p class="secondary-text">Your session has expired due to inactivity. Please login again.</p>
-            <div class="dialog-footer">
-                <button mat-raised-button class='download-btn' (click)="onLogin()" [disabled]="checking">
-                    <span class="btn-text">{{ checking ? 'Checking…' : 'Login' }}</span>
-                </button>
-            </div>
-        </div>
+  <div class="session-expired-dialog warning-dialog">
+    <div class="dialog-header">Session Timed Out</div>
+    <div class="dialog-body">
+      <p class="secondary-text">
+        <strong>
+          Your session has been terminated due to inactivity. <br />Please Login
+          again.
+        </strong>
+      </p>
+      <div class="dialog-footer">
+        <button
+          mat-raised-button
+          class="download-btn"
+          (click)="onLogin()"
+          [disabled]="checking"
+        >
+          <span class="btn-text">{{ checking ? "Logging in…" : "Login" }}</span>
+        </button>
+      </div>
     </div>
+  </div>
 </div>

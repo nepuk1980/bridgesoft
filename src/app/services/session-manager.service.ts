@@ -35,6 +35,10 @@ export class SessionManagerService {
   public showWarning$ = new BehaviorSubject<boolean>(false);
   public isRefreshing$ = new BehaviorSubject<boolean>(false);
 
+  // When the expired session popup is showing, no other warning/popup may
+  // appear on top of it.
+  private expiryPromptActive = false;
+
   // Throttle user events so we only register real activity once per 5 seconds
   private readonly ACTIVITY_THROTTLE = 5_000;
   private lastActivity = 0;
@@ -58,7 +62,7 @@ export class SessionManagerService {
 
   // Configurable timeouts
   private readonly INACTIVITY_LIMIT = 30 * 60 * 1000; // 30 min
-  private readonly WARNING_DURATION = 5 * 60 * 1000; // 5 min
+  private readonly WARNING_DURATION = 5 * 60 * 1000; // 5 min (expired popup at 35 min total)
   private readonly REFRESH_INTERVAL = 5 * 60 * 1000; // 5 min
 
   private readonly ACTIVITY_WINDOW_KEY = 'session-manager.activityWindow';
@@ -106,6 +110,7 @@ export class SessionManagerService {
 
   /** Start everything: listen for activity, kick off timers */
   public start(): void {
+    this.expiryPromptActive = false;
     this.attachListeners();
     this.resetInactivityTimer();    // warning
     this.scheduleNextRefresh();     // auto-refresh loop
@@ -113,6 +118,7 @@ export class SessionManagerService {
 
   /** Restart the refresh loop after a successful continuation (used after the expiry prompt). */
   public resume(): void {
+    this.expiryPromptActive = false;
     this.scheduleNextRefresh();
   }
 
@@ -121,7 +127,7 @@ export class SessionManagerService {
       .forEach((evt) => window.addEventListener(evt, this.activityListener));
   }
 
-  /** Clear/Restart the 30-min inactivity → warning countdown */
+  /** Clear/Restart the 5-min inactivity → warning countdown */
   private resetInactivityTimer(): void {
     if (this.showWarning$.value) return; // warning already onscreen
 
@@ -129,36 +135,60 @@ export class SessionManagerService {
     clearTimeout(this.warningTimer);
     this.showWarning$.next(false);
 
-    this.activityTimer = setTimeout(() => {
-      this.showWarning$.next(true);
+    this.activityTimer = setTimeout(() => this.startWarning(), this.INACTIVITY_LIMIT);
+  }
 
-      // Start the WARNING_DURATION countdown — when it completes, ask the user
-      // whether to continue or log out (single, guarded expiry prompt path).
-      this.warningTimer = setTimeout(() => {
-        this.showWarning$.next(false);
-        this.sessionExpired$.next();
-      }, this.WARNING_DURATION);
-    }, this.INACTIVITY_LIMIT);
+  /**
+   * Show the 5-min warning popup and start the countdown. When it completes,
+   * the warning is closed and the consumer decides continue / logout.
+   */
+  private startWarning(): void {
+    if (this.expiryPromptActive) return; // expired popup is showing - never overlay it
+    if (this.showWarning$.value) return; // warning already onscreen
+    if (this.warningTimer) clearTimeout(this.warningTimer);
+
+    this.showWarning$.next(true);
+
+    this.warningTimer = setTimeout(() => {
+      this.showWarning$.next(false);
+      this.expiryPromptActive = true;
+      this.sessionExpired$.next();
+    }, this.WARNING_DURATION);
   }
 
   /** "Continue Session" button was clicked */
   public async staySignedIn(): Promise<void> {
+    if (this.isRefreshing$.value) return; // prevent duplicate clicks
     this.isRefreshing$.next(true);
-    const { rotated, stillValid } = await this.attemptRefresh();
-    this.isRefreshing$.next(false);
 
-    if (rotated) {
-      this.showWarning$.next(false);
-      this.dialog.closeAll();
-      clearTimeout(this.warningTimer);
+    try {
+      // Hit the validateTokens API and keep the button disabled until it responds.
+      const resp: any = await firstValueFrom(this.api.get('tokens/validateTokens'));
 
-      this.resetInactivityTimer();
-      this.scheduleNextRefresh();
-    } else if (!rotated && stillValid) {
-      this.showWarning$.next(false);
-      clearTimeout(this.warningTimer);
-      this.resetInactivityTimer();
-    } else {
+      if (resp && this.authService.isSuccess(resp.success)) {
+        // Persist whatever fresh tokens / session data the response carries.
+        this.authService.setIgUrl(resp.IG_URL);
+        this.authService.persistSessionData(resp);
+        this.authService.setTokensFromValidateResponse(resp);
+        this.authService.syncTokensFromCookies();
+
+        this.showWarning$.next(false);
+        this.dialog.closeAll();
+        clearTimeout(this.warningTimer);
+
+        this.resetInactivityTimer();
+        this.scheduleNextRefresh();
+        this.isRefreshing$.next(false);
+        return;
+      }
+
+      // validateTokens success:false -> navigate the user to the IG login page.
+      this.isRefreshing$.next(false);
+      await this.performLogout();
+    } catch (err) {
+      // validateTokens API failed -> navigate the user to the IG login page.
+      console.error('validateTokens API error:', err);
+      this.isRefreshing$.next(false);
       await this.performLogout();
     }
   }
@@ -173,8 +203,11 @@ export class SessionManagerService {
         const { rotated, stillValid } = await this.attemptRefresh();
 
         if (!rotated && !stillValid) {
-          // Invalid tokens -> let the consumer decide (prompt continue / logout)
+          // Refresh failed -> the session is already dead, so show the
+          // session-expired popup directly (IG_URL was captured in attemptRefresh
+          // and is used to redirect the user after the popup flow).
           this.showWarning$.next(false);
+          this.expiryPromptActive = true;
           this.sessionExpired$.next();
           return;
         }
@@ -199,6 +232,11 @@ export class SessionManagerService {
       const resp: any = await firstValueFrom(this.api.get<any>(`tokens/refresh`));
 
       if (!resp || !this.authService.isSuccess(resp.success)) {
+        // Failed refresh -> capture the IG_URL from the response so the later
+        // redirect (session expire flow) navigates the user to the right page.
+        if (resp?.IG_URL) {
+          this.authService.setIgUrl(resp.IG_URL);
+        }
         return { rotated: false, stillValid: false };
       }
 
@@ -256,6 +294,7 @@ export class SessionManagerService {
 
   /** Resume the session after the expired-dialog's checkTokens+refresh succeeded */
   public resumeAfterCheck(): void {
+    this.expiryPromptActive = false;
     this.showWarning$.next(false);
     try { this.resetInactivityTimer(); } catch (e) { console.warn(e); }
     try { this.scheduleNextRefresh(); } catch (e) { console.warn(e); }
@@ -270,6 +309,7 @@ export class SessionManagerService {
     clearTimeout(this.warningTimer);
     clearTimeout(this.refreshTimer);
 
+    this.expiryPromptActive = false;
     this.showWarning$.next(false);
     this.isRefreshing$.next(false);
 

@@ -4,11 +4,22 @@
   <div class="warning-dialog">
     <div class="dialog-header">Session Timeout Warning</div>
     <div class="dialog-body">
-      <p class="primary-text"><strong>Your session is about to expire in five minutes due to inactivity.</strong></p>
-      <p class="secondary-text">To continue working securely, please extend your session.</p>
+      <p class="primary-text">
+        <strong
+          >You've been inactive for 30 minutes. <br />Your session will be
+          terminated if you're idle for 5 more minutes.</strong
+        >
+      </p>
       <div class="dialog-footer">
-        <button mat-raised-button class="download-btn" (click)="staySignedIn()" [disabled]="isRefreshing">
-          <span class="btn-text">{{ isRefreshing ? 'Continuing…' : 'Continue Session' }}</span>
+        <button
+          mat-raised-button
+          class="download-btn"
+          (click)="staySignedIn()"
+          [disabled]="isRefreshing"
+        >
+          <span class="btn-text">{{
+            isRefreshing ? "Continuing…" : "Continue Session"
+          }}</span>
         </button>
       </div>
     </div>
