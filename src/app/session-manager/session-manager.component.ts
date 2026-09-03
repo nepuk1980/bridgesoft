@@ -18,6 +18,8 @@ export class SessionManagerComponent implements OnInit, OnDestroy {
   private session = inject(SessionManagerService);
 
   ngOnInit() {
+    this.session.start();
+
     this.subs.add(
       this.session.showWarning$.subscribe(v => this.showWarning = v)
     );
