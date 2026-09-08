@@ -1,11 +1,11 @@
 // src/app/guard/session.guard.ts
 import { inject } from '@angular/core';
 import { CanActivateFn } from '@angular/router';
-import { SessionService } from '../services/session.service';
+import { SessionManagerService } from '../services/session-manager.service';
 
 export const sessionGuard: CanActivateFn = (route, state) => {
-  const sessionService = inject(SessionService);
+  const sessionManager = inject(SessionManagerService);
 
   // Calls /api/tokens/validateTokens API on every page transition
-  return sessionService.validateTokenOnRouteChange();
+  return sessionManager.validateTokenOnRouteChange();
 };

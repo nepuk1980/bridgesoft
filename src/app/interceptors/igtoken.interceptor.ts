@@ -1,7 +1,7 @@
 import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { CookieService } from 'ngx-cookie-service';
-import { SessionService } from '../services/session.service';
+import { SessionManagerService } from '../services/session-manager.service';
 import { catchError, throwError } from 'rxjs';
 
 // Guard against re-entrancy: if the session is being re-verified we don't want
@@ -10,7 +10,7 @@ let sessionCheckInFlight = false;
 
 export const igtokenInterceptor: HttpInterceptorFn = (req, next) => {
   const cookieService = inject(CookieService);
-  const sessionService = inject(SessionService);
+  const sessionManager = inject(SessionManagerService);
 
   const logitoken = localStorage.getItem('accessToken');
   const accessTokenCookie = cookieService.get('accessToken');
@@ -97,7 +97,7 @@ export const igtokenInterceptor: HttpInterceptorFn = (req, next) => {
 
         // 🚨 Any business API failure -> verify the session as a fallback
         console.warn(`⛔ API call failed (${error.status}) on endpoint: ${url}. Verifying session...`);
-        sessionService.verifySessionOnApiFailure().subscribe({
+        sessionManager.verifySessionOnApiFailure().subscribe({
           next: (active) => {
             sessionCheckInFlight = false;
             console.log(`🔍 Fallback session check -> ${active ? 'session active, continuing normal flow' : 'session dead, redirecting to IG'}`);
