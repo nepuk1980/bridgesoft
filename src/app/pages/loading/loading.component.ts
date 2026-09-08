@@ -5,7 +5,7 @@ import { delay } from 'rxjs/operators';
 
 import { IgapiService } from '../../services/igapi.service';
 import { AuthService } from '../../core/services/auth.service';
-import { SessionService } from '../../services/session.service';
+import { SessionManagerService } from '../../services/session-manager.service';
 import { getInitialUrl } from '../../sso-url';
 
 export interface ValidateUserResponse {
@@ -46,7 +46,7 @@ export class LoadingComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private api = inject(IgapiService);
   private authService = inject(AuthService);
-  private sessionService = inject(SessionService);
+  private sessionManager = inject(SessionManagerService);
 
   ngOnInit(): void {
     this.startMessageRotation();
@@ -258,26 +258,26 @@ export class LoadingComponent implements OnInit, OnDestroy {
 
           // Mark the session as validated so the route guard won't re-hit
           // validateTokens on the immediate navigation to the dashboard.
-          this.sessionService.markTokenValidated();
+          this.sessionManager.markTokenValidated();
 
           this.finishLogin();
         } else {
           this.loading = false;
           this.authService.setIgUrl(res?.IG_URL);
           // success:false -> try to rotate the tokens via /api/tokens/refresh.
-          this.sessionService.refreshTokens().subscribe({
+          this.sessionManager.refreshTokens().subscribe({
             next: (refreshed) => {
               if (refreshed) {
                 this.finishLogin();
               } else {
                 // Valid user + valid tokens, but refresh rejected -> logout.
                 console.warn('⛔ validateTokens ok but refresh rejected -> logging out.');
-                this.sessionService.logoutAndRedirect();
+                this.sessionManager.logoutAndRedirect();
               }
             },
             error: (err) => {
               console.error('validateTokens refresh fallback error:', err);
-              this.sessionService.logoutAndRedirect();
+              this.sessionManager.logoutAndRedirect();
             }
           });
         }

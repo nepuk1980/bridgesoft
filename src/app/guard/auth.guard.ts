@@ -32,11 +32,11 @@
 import { inject } from '@angular/core';
 import { CanActivateFn } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
-import { SessionService } from '../services/session.service';
+import { SessionManagerService } from '../services/session-manager.service';
 
 export const authGuard: CanActivateFn = (route, state) => {
   const cookieService = inject(CookieService);
-  const sessionService = inject(SessionService);
+  const sessionManager = inject(SessionManagerService);
 
   const token = localStorage.getItem('accessToken');
   const cookieToken = cookieService.get('accessToken');
@@ -45,7 +45,7 @@ export const authGuard: CanActivateFn = (route, state) => {
     (token && token !== 'null' && token !== 'undefined' && token.trim() !== '') ||
     (cookieToken && cookieToken !== 'null' && cookieToken !== 'undefined' && cookieToken.trim() !== '');
 
-  if (hasAuth || sessionService.isTokenValidated()) return true;
+  if (hasAuth || sessionManager.isTokenValidated()) return true;
 
   // No local token found. On page refresh, HttpOnly cookies may still be valid
   // but JS cannot read them. Let the session guard (validateTokens API) decide

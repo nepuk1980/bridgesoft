@@ -34,7 +34,7 @@ import { NotificationpopupComponent } from '../shared/components/notificationpop
 import { ApiService } from '../services/api.service';
 import { NotificationInterface } from '../models/type';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { SessionService } from '../services/session.service';
+import { SessionManagerService } from '../services/session-manager.service';
 import { AuthService } from '../core/services/auth.service';
 
 @Component({
@@ -112,7 +112,7 @@ import { AuthService } from '../core/services/auth.service';
 })
 export class LayoutComponent implements OnInit {
   private dialog = inject(MatDialog);
-  private sessionService = inject(SessionService);
+  private sessionManager = inject(SessionManagerService);
   private authService = inject(AuthService);
 
   @ViewChild('drawer') drawer!: MatSidenav;
@@ -244,6 +244,6 @@ export class LayoutComponent implements OnInit {
   }
 
   logout(): void {
-    this.sessionService.logoutAndRedirect();
+    this.sessionManager.logoutAndRedirect();
   }
 }
