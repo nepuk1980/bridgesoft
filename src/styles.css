@@ -102,6 +102,12 @@ body {
   background: #f4f4f4;
   font-family: "Roboto", sans-serif !important;
 }
+.text-center {
+  text-align: center !important;
+}
+table th {
+  white-space: nowrap;
+}
 .sidebar .mdc-list-item__primary-text {
   display: flex !important;
   align-items: center !important;

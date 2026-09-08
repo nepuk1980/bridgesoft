@@ -9,18 +9,21 @@ import {
   ApplicationAccountsResponseInterface,
   ApplicationResponseInterface,
   AuditResponseInterface,
+  DisabledIdentityVaultResponse,
   ExecutiveAuditReportsInterface,
   ExternalResourcesGroupByResponse,
   FileSystemAccessSummaryInterface,
   FileSystemResponseInterface,
   GetADGroupInterface,
   GetAllFoldersResponse,
+  getexecutiveauditmetadataResponse,
   GetUsersByGroupNameResponse,
   GroupFolderPermissionResponse,
   IdentityVaultCategoryResponse,
   IdentityVaultDetailResponseInterface,
   IdentityVaultResponseInterface,
   NotificationInterface,
+  PrivilegedAccessReportResponse,
   RequestAccessWorkflowInterface,
   ReviewAccessInterface,
   RuleResponseInterface,
@@ -154,6 +157,74 @@ export class ApiService {
       { params },
     );
   }
+
+
+
+  // ===============
+
+
+  // pure storage file
+  getpurestoragefiledetails(
+    ruleCategory: string,
+    page: number = 0,
+    size: number = 10,
+    searchFileOrFolderName: string,
+  ): Observable<FileSystemResponseInterface> {
+    const params = new HttpParams()
+      .set('ruleCategory', ruleCategory)
+      .set('page', page)
+      .set('size', size)
+      .set('searchFileOrFolderName', searchFileOrFolderName);
+
+    return this.http.get<FileSystemResponseInterface>(
+      `${environment.fasmUrl}/getpurestoragefiledetails`,
+      { params },
+    );
+  }
+
+  // pure storage folder
+  getpurestoragefolderdetails(
+    ruleCategory: string,
+    page: number = 0,
+    size: number = 10,
+    searchFileOrFolderName: string,
+  ): Observable<FileSystemResponseInterface> {
+    const params = new HttpParams()
+      .set('ruleCategory', ruleCategory)
+      .set('page', page)
+      .set('size', size)
+      .set('searchFileOrFolderName', searchFileOrFolderName);
+
+    return this.http.get<FileSystemResponseInterface>(
+      `${environment.fasmUrl}/getpurestoragefolderdetails`,
+      { params },
+    );
+  }
+
+  // pure storage total
+  getpurestoragetotaldetails(
+    ruleCategory: string,
+    page: number = 0,
+    size: number = 10,
+    searchFileOrFolderName: string,
+  ): Observable<FileSystemResponseInterface> {
+    const params = new HttpParams()
+      .set('ruleCategory', ruleCategory)
+      .set('page', page)
+      .set('size', size)
+      .set('searchFileOrFolderName', searchFileOrFolderName);
+
+    return this.http.get<FileSystemResponseInterface>(
+      `${environment.fasmUrl}/getpurestoragetotaldetails`,
+      { params },
+    );
+  }
+
+
+
+
+
+  // ==========
 
   // ✅ Details API
   getFilesystemAccessPermissionDetails(
@@ -470,6 +541,42 @@ export class ApiService {
     );
   }
 
+  getlistofdisabledidentityvaults(
+    searchEmployeeName: string,
+    filter: string,
+    page: number,
+    size: number,
+  ): Observable<DisabledIdentityVaultResponse> {
+    let params = new HttpParams()
+      .set('searchEmployeeName', searchEmployeeName || '')
+      .set('filter', filter || '')
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    return this.http.get<DisabledIdentityVaultResponse>(
+      `${environment.fasmUrl}/getlistofdisabledidentityvaults`,
+      { params },
+    );
+  }
+
+  getprivilegedaccessreport(
+    searchEmployeeName: string,
+    filter: string,
+    page: number,
+    size: number,
+  ): Observable<PrivilegedAccessReportResponse> {
+    let params = new HttpParams()
+      .set('searchEmployeeName', searchEmployeeName || '')
+      .set('filter', filter || '')
+      .set('page', page.toString())
+      .set('size', size.toString());
+
+    return this.http.get<PrivilegedAccessReportResponse>(
+      `${environment.fasmUrl}/getprivilegedaccessreport`,
+      { params },
+    );
+  }
+
   // Notification
   getgetnotifications(
     page: number,
@@ -686,6 +793,17 @@ export class ApiService {
       {
         params,
       },
+    );
+  }
+
+  // Executive Audit Report
+  getexecutiveauditmetadata(
+  ): Observable<getexecutiveauditmetadataResponse> {
+
+
+    return this.http.get<getexecutiveauditmetadataResponse>(
+      `${environment.fasmUrl}/getexecutiveauditmetadata`,
+
     );
   }
 

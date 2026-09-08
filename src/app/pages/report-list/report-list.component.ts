@@ -3,7 +3,8 @@ import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { InnerheaderComponent } from '../../shared/components/innerheader/innerheader.component';
 import { MatCardModule } from '@angular/material/card';
-import { forkJoin } from 'rxjs';
+import { forkJoin, of } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { ApiService } from '../../services/api.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
@@ -29,21 +30,17 @@ interface ExecutiveAccount {
 })
 export class ReportListComponent implements OnInit {
   accounts: ExecutiveAccount[] = [];
+  paginatedAccounts: ExecutiveAccount[] = [];
   isLoading = false;
 
-  // The base list of executive emails you want to display cards for
-  private executiveEmails: string[] = [
-    'Greg.Anderson@allegiantair.com',
-    'Laura.Overton@allegiantair.com',
-    'Maury.Gallagher@allegiantair.com',
-    'Michael.Broderick@allegiantair.com',
-    'Robert.Goldberg@allegiantair.com',
-    'Robert.Neal@allegiantair.com',
-    'Tyler.Hollingsworth@allegiantair.com',
-    'Drew.Wells@allegiantair.com',
-  ];
+  // Pagination state
+  pageIndex: number = 0;
+  pageSize: number = 8; // Set cards per page
+  totalElements: number = 0;
+  totalPages: number = 0;
+  pages: number[] = [];
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService) { }
 
   ngOnInit(): void {
     this.loadExecutiveCards();
@@ -52,41 +49,109 @@ export class ReportListComponent implements OnInit {
   loadExecutiveCards(): void {
     this.isLoading = true;
 
-    // 1. Map each email into an individual API HTTP request observable
-    const requests = this.executiveEmails.map(
-      (email) => this.api.getexecutiveauditreport('', email, '', 0, 1), // page=0, size=1 for speed since we only need totalElements
-    );
+    this.api
+      .getexecutiveauditmetadata()
+      .pipe(
+        switchMap((metadata) => {
+          if (!metadata || metadata.length === 0) {
+            return of({ metadata: [], responses: [] });
+          }
 
-    // 2. Fire all API calls in parallel and wait for them to resolve
-    forkJoin(requests).subscribe({
-      next: (responses: any[]) => {
-        this.accounts = this.executiveEmails.map((email, index) => {
-          const apiResponse = responses[index];
+          const requests = metadata.map((item) =>
+            this.api.getexecutiveauditreport('', item.email, '', 0, 1)
+          );
 
-          // Grab the first record returned by the filtered search to read its properties
-          const firstRecord = apiResponse?.content?.[0];
+          return forkJoin(requests).pipe(
+            switchMap((responses) => of({ metadata, responses }))
+          );
+        })
+      )
+      .subscribe({
+        next: ({ metadata, responses }) => {
+          this.accounts = metadata.map((meta, index) => {
+            const apiResponse = responses[index];
+            const firstRecord = apiResponse?.content?.[0];
 
-          // Safe fallback variables if the API hasn't found any records for this specific email yet
-          const fallbackName = email.split('@')[0].replace(/\./g, ' ');
-          const accountType =
-            firstRecord?.accountType === 'USER'
-              ? 'Individual'
-              : firstRecord?.accountType || 'Individual';
+            return {
+              name:
+                meta.accountName ||
+                firstRecord?.targetUserDisplayName ||
+                meta.email.split('@')[0].replace(/\./g, ' '),
+              type: meta.accountType || firstRecord?.accountType || 'Individual',
+              email: meta.email,
+              records: apiResponse?.totalElements || 0,
+            };
+          });
 
-          return {
-            // ✅ MAPS THE ORIGINAL FIELD DIRECTLY FROM THE API RESPONSE
-            name: firstRecord?.targetUserDisplayName || fallbackName,
-            type: firstRecord?.accountType || accountType,
-            email: email,
-            records: apiResponse?.totalElements || 0,
-          };
-        });
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error fetching executive audit counts:', err);
-        this.isLoading = false;
-      },
-    });
+          this.totalElements = this.accounts.length;
+          this.totalPages = Math.ceil(this.totalElements / this.pageSize);
+          this.updatePagination();
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.error('Error fetching executive metadata or reports:', err);
+          this.isLoading = false;
+        },
+      });
   }
-}
+
+  // --- Pagination Methods ---
+
+  updatePagination(): void {
+    const start = this.pageIndex * this.pageSize;
+    const end = start + this.pageSize;
+    this.paginatedAccounts = this.accounts.slice(start, end);
+    this.generatePageNumbers();
+  }
+
+  generatePageNumbers(): void {
+    const visiblePages = 5;
+    let startPage = Math.max(1, this.pageIndex + 1 - Math.floor(visiblePages / 2));
+    let endPage = startPage + visiblePages - 1;
+
+    if (endPage > this.totalPages) {
+      endPage = this.totalPages;
+      startPage = Math.max(1, endPage - visiblePages + 1);
+    }
+
+    this.pages = [];
+    for (let i = startPage; i <= endPage; i++) {
+      this.pages.push(i);
+    }
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages) {
+      this.pageIndex = page - 1;
+      this.updatePagination();
+    }
+  }
+
+  nextPage(): void {
+    if (this.pageIndex < this.totalPages - 1) {
+      this.pageIndex++;
+      this.updatePagination();
+    }
+  }
+
+  prevPage(): void {
+    if (this.pageIndex > 0) {
+      this.pageIndex--;
+      this.updatePagination();
+    }
+  }
+
+  firstPage(): void {
+    if (this.pageIndex !== 0) {
+      this.pageIndex = 0;
+      this.updatePagination();
+    }
+  }
+
+  lastPage(): void {
+    if (this.pageIndex !== this.totalPages - 1) {
+      this.pageIndex = Math.max(0, this.totalPages - 1);
+      this.updatePagination();
+    }
+  }
+} 

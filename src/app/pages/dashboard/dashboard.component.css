@@ -8,6 +8,6 @@
 .dashboard-card-list .dashboard-card {
   width: calc((100% / 3) - 0.875rem);
 }
-.dashboard-card-list .static-dashboard-card {
+/* .dashboard-card-list .static-dashboard-card {
   width: calc(50% - 0.7rem);
-}
+} */
