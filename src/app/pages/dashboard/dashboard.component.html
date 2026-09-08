@@ -19,7 +19,7 @@
     *ngIf="fileSystemSummary as data"
   >
     <app-card
-      title="SharePoint"
+      title="Share Point"
       [static]="true"
       [filecount]="data.sharePointFiles"
       [foldercount]="data.sharePointFolders"
@@ -29,6 +29,37 @@
       totaldata="getsharepointtotaldetails"
     ></app-card>
   </div>
+  <div
+    class="dashboard-card static-dashboard-card"
+    *ngIf="fileSystemSummary as data"
+  >
+    <app-card
+      title="Pure Storage"
+      [static]="true"
+      [filecount]="data.pureStorageFiles"
+      [foldercount]="data.pureStorageFolders"
+      [totalcount]="data.pureStorageTotal"
+      filedata="getpurestoragefiledetails"
+      folderdata="getpurestoragefolderdetails"
+      totaldata="getpurestoragetotaldetails"
+    ></app-card>
+  </div>
+
+  <!-- <div
+    class="dashboard-card static-dashboard-card"
+    *ngIf="fileSystemSummary as data"
+  >
+    <app-card
+      title="PureStorage"
+      [static]="true"
+      [filecount]="400"
+      [foldercount]="340"
+      [totalcount]="740"
+      filedata="getsharepointfiledetails"
+      folderdata="getsharepointfolderdetails"
+      totaldata="getsharepointtotaldetails"
+    ></app-card>
+  </div> -->
 
   <div
     class="dashboard-card"

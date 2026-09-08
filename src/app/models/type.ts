@@ -1,5 +1,8 @@
 // File System Interfaces
 export interface FileSystemAccessSummaryInterface {
+  pureStorageFiles: number;
+  pureStorageFolders: number;
+  pureStorageTotal: number;
   fileShareFolders: number;
   sensitiveFoldersWithReadandExecuteOpenAccessPercentage: string;
   sensitivefoldersWithFullcontrolOpenAccess: number;
@@ -325,6 +328,106 @@ export interface ExecutiveAuditReportsInterface {
   first: boolean;
   empty: boolean;
 }
+
+export type DisabledIdentityVaultResponse = {
+  content: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    department: string;
+    manager: string;
+    manager_employee_id: string;
+    manager_department: string;
+    location: string;
+    job_title: string;
+    employee_code: string;
+    company: string;
+    createDatetime: string;
+    lastModifiedDatetime: string;
+    assignedRoleSummary: string;
+    riskScore: string;
+    groupsList: string;
+    accountName: string;
+    accountType: string;
+    directoryPath: string;
+    inheritancePath: string;
+    displayName: string;
+    accountStatus: string;
+    active: boolean;
+  }[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+  last: boolean;
+  totalPages: number;
+  totalElements: number;
+  first: boolean;
+  size: number;
+  number: number;
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+  numberOfElements: number;
+  empty: boolean;
+};
+
+export type PrivilegedAccessReportResponse = {
+  content: {
+    id: number;
+    sourceType: string;
+    eventTime: string;
+    eventOperation: string;
+    eventDescription: string;
+    eventType: string;
+    accountName: string;
+    path: string;
+    objectName: string;
+    sensitive: boolean;
+    eventStatus: string;
+    dataSource: string;
+    exposureLevel: string;
+    permissionsBeforeChange: string;
+    permissionsAfterChange: string;
+    changedPermissionFlag: boolean;
+  }[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+  last: boolean;
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+  numberOfElements: number;
+  first: boolean;
+  empty: boolean;
+};
 
 export interface AuditResponseInterface {
   content: {
@@ -847,4 +950,11 @@ export type IdentityVaultCategoryResponse = {
   id: number;
   categoryType: string;
   categoryName: string;
+}[];
+
+export type getexecutiveauditmetadataResponse = {
+  accountName: string;
+  accountType: string;
+  email: string;
+  path: string;
 }[];

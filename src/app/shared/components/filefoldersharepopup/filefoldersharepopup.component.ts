@@ -56,7 +56,7 @@ export class FilefoldersharepopupComponent implements AfterViewInit, OnInit {
     @Inject(MAT_DIALOG_DATA) public data: any,
     private reportService: ReportService,
     private api: ApiService,
-  ) {}
+  ) { }
 
   selectedDownload: string = 'Download';
   // ✅ Search-aware cache
@@ -124,9 +124,9 @@ export class FilefoldersharepopupComponent implements AfterViewInit, OnInit {
       category: item.category ?? '-',
       adgroup: item.groupsList
         ? item.groupsList
-            .split(',')
-            .map((g: string) => g.trim())
-            .join(', ')
+          .split(',')
+          .map((g: string) => g.trim())
+          .join(', ')
         : '-',
       user: item.username ?? item.owner ?? '-',
       duration: item.duration ?? '-',
@@ -385,9 +385,9 @@ export class FilefoldersharepopupComponent implements AfterViewInit, OnInit {
 
             adgroup: item.groupsList
               ? item.groupsList
-                  .split(',')
-                  .map((g: string) => g.trim())
-                  .join(', ')
+                .split(',')
+                .map((g: string) => g.trim())
+                .join(', ')
               : '-',
 
             user: item.userName ?? item.owner ?? '-',
@@ -403,18 +403,18 @@ export class FilefoldersharepopupComponent implements AfterViewInit, OnInit {
             let row: any = {};
 
             if (this.data?.both) {
-              row['File/Folder Names'] = item.name;
+              row['File/Folder Names'] = item.name || '-';
             } else if (this.data?.file) {
-              row['File Names'] = item.name;
+              row['File Names'] = item.name || '-';
             } else {
-              row['Folder Names'] = item.name;
+              row['Folder Names'] = item.name || '-';
             }
 
-            row['Categories'] = item.category;
-            row['AD Group'] = item.adgroup;
-            row['User'] = item.user;
-            row['Duration'] = item.duration;
-            row['Created On'] = item.created;
+            row['Categories'] = item.category || '-';
+            row['AD Group'] = item.adgroup || '-';
+            row['User'] = item.user || '-';
+            row['Duration'] = item.duration || '-';
+            row['Created On'] = item.created || '-';
 
             return row;
           });

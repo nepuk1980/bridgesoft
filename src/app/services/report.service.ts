@@ -109,7 +109,7 @@ export class ReportService {
         worksheet[cellRef].s = {
           font: { bold: true, sz: 11 },
           fill: { fgColor: { rgb: 'E6E6E6' } },
-          alignment: { horizontal: 'left', vertical: 'center' },
+          alignment: { horizontal: 'left', vertical: 'center', wrapText: false },
         };
       }
     });
@@ -237,6 +237,7 @@ export class ReportService {
         fillColor: [230, 230, 230],
         textColor: 20,
         fontStyle: 'bold',
+        overflow: 'visible',
       },
 
       bodyStyles: {

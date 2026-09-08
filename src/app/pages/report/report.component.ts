@@ -2,9 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { InnerheaderComponent } from '../../shared/components/innerheader/innerheader.component';
 import { RouterModule } from '@angular/router';
-import { ExecutiveAuditReportsInterface } from '../../models/type';
 import { ApiService } from '../../services/api.service';
 import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-report',
@@ -19,85 +19,34 @@ import { NgxSkeletonLoaderModule } from 'ngx-skeleton-loader';
   styleUrl: './report.component.css',
 })
 export class ReportComponent implements OnInit {
-  // Pagination State
-  totalElements: number = 0;
-  pageIndex: number = 0;
-  pageSize: number = 10;
+  // Report Counts
+  executiveAuditCount: number = 0;
+  disabledVaultsCount: number = 0;
+  privilegedAccessCount: number = 0;
 
-  // Filter & Search State
+  // Filter & Search Defaults
   searchText: string = '';
-  executiveEmail: string = ''; // ✅ Tracking state variable
+  executiveEmail: string = '';
   selectedFilter: string = '';
 
-  constructor(private api: ApiService) {}
+  constructor(private api: ApiService) { }
 
   ngOnInit(): void {
-    this.loadAuditData();
+    this.loadDashboardMetrics();
   }
 
-  /**
-   * Primary method to load audit data based on parameters
-   * (Fixes compiler error around line 119)
-   */
-  loadAuditData(
-    page: number = this.pageIndex,
-    size: number = this.pageSize,
-  ): void {
-    this.api
-      .getexecutiveauditreport(
-        this.searchText,
-        this.executiveEmail, // ✅ Insert this as the 2nd argument
-        this.selectedFilter,
-        this.pageIndex,
-        this.pageSize,
-      )
-      .subscribe({
-        next: (res: ExecutiveAuditReportsInterface) => {
-          this.totalElements = res.totalElements;
-          this.pageIndex = page;
-          this.pageSize = size;
-        },
-        error: (err) => console.error('API Error:', err),
-      });
-  }
-
-  /**
-   * Example handler or secondary fetch hook inside your file
-   * (Fixes compiler error around line 140)
-   */
-  fetchBulkDataExample(): void {
-    // Passes an extra empty string down to cover the 5 expected arguments
-    this.api
-      .getexecutiveauditreport('', '', '', 0, 1000) // ✅ Added 3rd string literal
-      .subscribe({
-        next: (res: ExecutiveAuditReportsInterface) => {
-          console.log('Bulk logs loaded:', res.totalElements);
-        },
-        error: (err) => console.error('Bulk Fetch Error:', err),
-      });
-  }
-
-  /**
-   * Alternative Pagination / Reload handler
-   * (Fixes compiler error around line 229)
-   */
-  onPageChange(event: any): void {
-    this.pageIndex = event.pageIndex;
-    this.pageSize = event.pageSize;
-
-    this.api
-      .getexecutiveauditreport(
-        this.searchText,
-        this.executiveEmail, // ✅ Added 2nd argument
-        this.selectedFilter,
-        this.pageIndex,
-        this.pageSize,
-      )
-      .subscribe({
-        next: (res: ExecutiveAuditReportsInterface) => {
-          this.totalElements = res.totalElements;
-        },
-        error: (err) => console.error('Pagination API Error:', err),
-      });
+  loadDashboardMetrics(): void {
+    forkJoin({
+      executive: this.api.getexecutiveauditreport(this.searchText, this.executiveEmail, this.selectedFilter, 0, 1),
+      disabledVaults: this.api.getlistofdisabledidentityvaults(this.searchText, this.selectedFilter, 0, 1),
+      privilegedAccess: this.api.getprivilegedaccessreport(this.searchText, this.selectedFilter, 0, 1)
+    }).subscribe({
+      next: ({ executive, disabledVaults, privilegedAccess }) => {
+        this.executiveAuditCount = executive?.totalElements ?? 0;
+        this.disabledVaultsCount = (disabledVaults as any)?.totalElements ?? 0;
+        this.privilegedAccessCount = (privilegedAccess as any)?.totalElements ?? 0;
+      },
+      error: (err) => console.error('Dashboard metrics fetch error:', err)
+    });
   }
 }

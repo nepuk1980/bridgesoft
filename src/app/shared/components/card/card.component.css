@@ -62,3 +62,6 @@
 .static-card-wrapper .card-content {
   min-height: auto;
 }
+.static-card-wrapper h6 {
+  font-size: 1.7rem;
+}

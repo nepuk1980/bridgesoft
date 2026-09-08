@@ -10,7 +10,7 @@
   </div>
 } @else {
   <div class="dashboard-card-list">
-    @for (account of accounts; track account.email) {
+    @for (account of paginatedAccounts; track account.email) {
       <div
         class="dashboard-card"
         [routerLink]="['/reports/executive-audit-report']"
@@ -47,4 +47,38 @@
       </div>
     }
   </div>
+
+  @if (totalElements > 0) {
+    <div class="custom-pagination">
+      <span class="count">
+        Showing {{ paginatedAccounts.length }} of {{ totalElements }}
+      </span>
+
+      <div class="pagination-buttons">
+        <button (click)="firstPage()" [disabled]="pageIndex === 0">«</button>
+        <button (click)="prevPage()" [disabled]="pageIndex <= 0">‹</button>
+
+        @if (pages.length > 0 && pages[0] > 1) {
+          <span class="dots">...</span>
+        }
+
+        @for (p of pages; track p) {
+          <button (click)="goToPage(p)" [class.active]="p === pageIndex + 1">
+            {{ p }}
+          </button>
+        }
+
+        @if (pages.length > 0 && pages[pages.length - 1] < totalPages) {
+          <span class="dots">...</span>
+        }
+
+        <button (click)="nextPage()" [disabled]="pageIndex >= totalPages - 1">
+          ›
+        </button>
+        <button (click)="lastPage()" [disabled]="pageIndex >= totalPages - 1">
+          »
+        </button>
+      </div>
+    </div>
+  }
 }

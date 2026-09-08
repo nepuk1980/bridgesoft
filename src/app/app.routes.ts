@@ -34,6 +34,8 @@ import { LoadingComponent } from './pages/loading/loading.component';
 
 import { authGuard } from './guard/auth.guard';
 import { sessionGuard } from './guard/session.guard';
+import { StaleDisabledAccountsReportComponent } from './pages/stale-disabled-accounts-report/stale-disabled-accounts-report.component';
+import { PrivilegedAccessReportComponent } from './pages/privileged-access-report/privileged-access-report.component';
 
 export const routes: Routes = [
   {
@@ -248,6 +250,22 @@ export const routes: Routes = [
             data: {
               breadcrumb: 'Executive Audit Report',
               animation: 'ExecutiveAuditReportPage',
+            }
+          },
+          {
+            path: 'stale-disabled-accounts-report',
+            component: StaleDisabledAccountsReportComponent,
+            data: {
+              breadcrumb: 'Stale/Disabled Accounts',
+              animation: 'StaleDisabledAccountsReportPage',
+            }
+          },
+          {
+            path: 'privileged-access-report',
+            component: PrivilegedAccessReportComponent,
+            data: {
+              breadcrumb: 'Privileged Access',
+              animation: 'PrivilegedAccessReportPage',
             }
           },
         ],
