@@ -1,0 +1,113 @@
+<app-innerheader
+  title="Reports"
+  [btn]="false"
+  btntitle=" Back To Reports"
+></app-innerheader>
+
+@defer {
+  <div class="dashboard-card-list">
+    <!-- Executive Audit Report Card -->
+    <div
+      class="dashboard-card"
+      routerLink="/reports/executive-audit-report-list"
+    >
+      <mat-card class="card-wrapper">
+        <div class="card-header">
+          <h6 class="card-title">Executive Audit Report</h6>
+        </div>
+        <div class="card-content">
+          <div class="card-content-data">
+            <h6>
+              {{ executiveAuditCount }}
+              <span>Record{{ executiveAuditCount === 1 ? "" : "s" }}</span>
+            </h6>
+          </div>
+        </div>
+      </mat-card>
+    </div>
+
+    <!-- Stale/Disabled Accounts Card -->
+    <div
+      class="dashboard-card"
+      routerLink="/reports/stale-disabled-accounts-report"
+    >
+      <mat-card class="card-wrapper">
+        <div class="card-header">
+          <h6 class="card-title">Stale/Disabled Accounts</h6>
+        </div>
+        <div class="card-content">
+          <div class="card-content-data">
+            <h6>
+              {{ disabledVaultsCount }}
+              <span>Record{{ disabledVaultsCount === 1 ? "" : "s" }}</span>
+            </h6>
+          </div>
+        </div>
+      </mat-card>
+    </div>
+
+    <!-- Privileged Access Card -->
+    <div class="dashboard-card" routerLink="/reports/privileged-access-report">
+      <mat-card class="card-wrapper">
+        <div class="card-header">
+          <h6 class="card-title">Privileged Access</h6>
+        </div>
+        <div class="card-content">
+          <div class="card-content-data">
+            <h6>
+              {{ privilegedAccessCount }}
+              <span>Record{{ privilegedAccessCount === 1 ? "" : "s" }}</span>
+            </h6>
+          </div>
+        </div>
+      </mat-card>
+    </div>
+  </div>
+} @placeholder (minimum 1000ms) {
+  <div class="dashboard-card-list">
+    <div
+      class="dashboard-card"
+      routerLink="/reports/executive-audit-report-list"
+    >
+      <mat-card class="card-wrapper">
+        <div class="card-header">
+          <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+        </div>
+        <div class="card-content">
+          <div class="card-content-data">
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </div>
+        </div>
+      </mat-card>
+    </div>
+
+    <div
+      class="dashboard-card"
+      routerLink="/reports/stale-disabled-accounts-report"
+    >
+      <mat-card class="card-wrapper">
+        <div class="card-header">
+          <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+        </div>
+        <div class="card-content">
+          <div class="card-content-data">
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </div>
+        </div>
+      </mat-card>
+    </div>
+
+    <div class="dashboard-card" routerLink="/reports/privileged-access-report">
+      <mat-card class="card-wrapper">
+        <div class="card-header">
+          <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+        </div>
+        <div class="card-content">
+          <div class="card-content-data">
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </div>
+        </div>
+      </mat-card>
+    </div>
+  </div>
+}

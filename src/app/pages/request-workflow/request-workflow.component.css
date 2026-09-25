@@ -1,0 +1,36 @@
+.fixed-btn {
+  padding: 1rem 1.5rem;
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: flex-end;
+}
+.solid-table {
+  height: calc(100vh - 28.8rem);
+}
+.solid-table th:nth-child(1),
+.solid-table td:nth-child(1) {
+  width: 20% !important;
+}
+.solid-table th:nth-child(2),
+.solid-table td:nth-child(2) {
+  width: 30% !important;
+}
+.solid-table th:nth-child(3),
+.solid-table td:nth-child(3) {
+  width: 10% !important;
+}
+.solid-table th:nth-child(4),
+.solid-table td:nth-child(4) {
+  width: 20% !important;
+}
+.solid-table th:nth-child(5),
+.solid-table td:nth-child(5) {
+  width: 20% !important;
+}
+.checktddiv img {
+  width: 1.25rem;
+  object-fit: contain;
+  object-position: left;
+  max-width: fit-content;
+}

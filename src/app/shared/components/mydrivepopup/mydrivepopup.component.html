@@ -1,0 +1,61 @@
+<mat-dialog-actions align="end" class="popupclose">
+  <img mat-dialog-close src="/svg/close.svg" />
+</mat-dialog-actions>
+
+<div class="inner-popup-content">
+  <h6>My Drive</h6>
+  <p><strong>Path:</strong> {{data.path}}</p>
+  <p><strong>Owner:</strong> {{data.sharedBy}}</p>
+  <p><strong>Tags:</strong> &nbsp;<span>{{data.tag}}</span></p>
+
+  <mat-tab-group  dynamicHeight mat-stretch-tabs="false" mat-align-tabs="start" class="tabGrp">
+    <mat-tab label="Entitlements" class="tab">
+      <mat-dialog-content class="inner-dialog-content">
+        <div class="tab-title-cust">
+          <h4>Entitlements</h4>
+          <button mat-button>View Full Table</button>
+        </div>
+        <div class="tab-content-cust">
+          <mat-accordion class="tab-acco-cust">
+            <mat-expansion-panel
+              (opened)="panelOpenState.set(true)"
+              (closed)="panelOpenState.set(false)"
+            >
+              <mat-expansion-panel-header>
+                <mat-panel-title> Direct
+                    <img
+                src="/svg/tabprofile.svg"
+                width="12"
+                height="12"
+                alt="profile"
+              />
+                </mat-panel-title>
+              </mat-expansion-panel-header>
+              <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Ab incidunt, est distinctio consequuntur facere consectetur, aspernatur iure voluptates neque architecto aperiam, ducimus culpa. Doloribus, beatae magnam in quaerat eum blanditiis!</p>
+            </mat-expansion-panel>
+          </mat-accordion>
+          <div class="tab-profile">
+            <div class="left-profile">
+              <img
+                src="/svg/tabprofile.svg"
+                width="12"
+                height="12"
+                alt="profile"
+              />
+              <h3>
+                {{data.sharedWith}}<br />
+                <span>{{data.date}}</span>
+              </h3>
+            </div>
+            <p>{{data.taged}}</p>
+          </div>
+        </div>
+      </mat-dialog-content>
+    </mat-tab>
+    <mat-tab label="Last Actions">
+      <mat-dialog-content class="inner-dialog-content">
+        asdsadsa
+      </mat-dialog-content>
+    </mat-tab>
+  </mat-tab-group>
+</div>

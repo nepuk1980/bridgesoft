@@ -1,0 +1,352 @@
+<div class="dashboard-card-list">
+  <div
+    class="dashboard-card static-dashboard-card"
+    *ngIf="fileSystemSummary as data"
+  >
+    <app-card
+      title="Windows File Share"
+      [static]="true"
+      [filecount]="data.fileShareFiles"
+      [foldercount]="data.fileShareFolders"
+      [totalcount]="data.fileShareTotal"
+      filedata="getfilesharefiledetails"
+      folderdata="getfilesharefolderdetails"
+      totaldata="getfilesharetotaldetails"
+    ></app-card>
+  </div>
+  <div
+    class="dashboard-card static-dashboard-card"
+    *ngIf="fileSystemSummary as data"
+  >
+    <app-card
+      title="Share Point"
+      [static]="true"
+      [filecount]="data.sharePointFiles"
+      [foldercount]="data.sharePointFolders"
+      [totalcount]="data.sharePointTotal"
+      filedata="getsharepointfiledetails"
+      folderdata="getsharepointfolderdetails"
+      totaldata="getsharepointtotaldetails"
+    ></app-card>
+  </div>
+  <div
+    class="dashboard-card static-dashboard-card"
+    *ngIf="fileSystemSummary as data"
+  >
+    <app-card
+      title="Pure Storage"
+      [static]="true"
+      [filecount]="data.pureStorageFiles"
+      [foldercount]="data.pureStorageFolders"
+      [totalcount]="data.pureStorageTotal"
+      filedata="getpurestoragefiledetails"
+      folderdata="getpurestoragefolderdetails"
+      totaldata="getpurestoragetotaldetails"
+    ></app-card>
+  </div>
+
+  <!-- <div
+    class="dashboard-card static-dashboard-card"
+    *ngIf="fileSystemSummary as data"
+  >
+    <app-card
+      title="PureStorage"
+      [static]="true"
+      [filecount]="400"
+      [foldercount]="340"
+      [totalcount]="740"
+      filedata="getsharepointfiledetails"
+      folderdata="getsharepointfolderdetails"
+      totaldata="getsharepointtotaldetails"
+    ></app-card>
+  </div> -->
+
+  <div
+    class="dashboard-card"
+    *ngIf="fileSystemSummary as data"
+    (click)="
+      openDialog(
+        {
+          title: 'Sensitive Folders With Open Access',
+          reporttitle: 'sensitive-folders-with-open-access',
+          value: +data.sensitiveFoldersWithOpenAccess,
+          file: false,
+          fileicon: false,
+          icon: '/svg/folder.svg',
+          subtitle: 'Sensitive Folders With Open Access',
+        },
+        'Sensitive Folders With Open Access'
+      )
+    "
+  >
+    <app-card
+      title="Sensitive Folders With Open Access"
+      [chart]="true"
+      [file]="false"
+      [fileicon]="false"
+      [filecount]="+data.sensitiveFoldersWithOpenAccess"
+      [percentage]="+data.sensitiveFoldersWithOpenAccessPercentage"
+      icon="/svg/folder.svg"
+      subtitle="Sensitive Folders With Open Access"
+    ></app-card>
+  </div>
+
+  <div
+    class="dashboard-card"
+    *ngIf="fileSystemSummary as data"
+    (click)="
+      openDialog(
+        {
+          title: 'Sensitive Files With Open Access',
+          reporttitle: 'sensitive-files-with-open-access-reports',
+          value: +data.sensitiveFilesWithOpenAccess,
+          file: true,
+          fileicon: true,
+          icon: '/svg/file.svg',
+          subtitle: 'Sensitive Files With Open Access',
+        },
+        'Sensitive Files With Open Access'
+      )
+    "
+  >
+    <app-card
+      title="Sensitive Files With Open Access"
+      [chart]="false"
+      [file]="true"
+      [fileicon]="true"
+      [filecount]="+data.sensitiveFilesWithOpenAccess"
+      [percentage]="+data.sensitiveFilesWithOpenAccessPercentage"
+      icon="/svg/file.svg"
+      subtitle="Sensitive Files With Open Access"
+    ></app-card>
+  </div>
+
+  <div
+    class="dashboard-card"
+    *ngIf="fileSystemSummary as data"
+    (click)="
+      openDialog(
+        {
+          title: 'Folders That Contain Sensitive Files',
+          reporttitle: 'folders-that-contain-sensitive-files',
+          value: +data.foldersThatContainsSensitiveFiles,
+          file: true,
+          fileicon: false,
+          icon: '/svg/folder.svg',
+          subtitle: 'Folders That Contain Sensitive Files',
+        },
+        'Folders That Contain Sensitive Files'
+      )
+    "
+  >
+    <app-card
+      title="Folders That Contain Sensitive Files"
+      [chart]="false"
+      [file]="true"
+      [fileicon]="false"
+      [filecount]="+data.foldersThatContainsSensitiveFiles"
+      [percentage]="+data.foldersThatContainsSensitiveFilesPercentage"
+      icon="/svg/folder.svg"
+      subtitle="Folders That Contain Sensitive Files"
+    ></app-card>
+  </div>
+
+  <div
+    class="dashboard-card"
+    *ngIf="fileSystemSummary as data"
+    (click)="
+      openDialog(
+        {
+          title: 'Sensitive Folders With Full Control Open Access',
+          reporttitle: 'sensitive-folders-with-full-control-open-access',
+          value: +data.sensitivefoldersWithFullcontrolOpenAccess,
+          file: false,
+          fileicon: false,
+          icon: '/svg/folder.svg',
+          subtitle: 'Sensitive Folders With Full Control Open Access',
+        },
+        'Sensitive Folders With Full Control Open Access'
+      )
+    "
+  >
+    <app-card
+      title="Sensitive Folders With Full Control Open Access"
+      [chart]="true"
+      [file]="false"
+      [fileicon]="false"
+      [filecount]="+data.sensitivefoldersWithFullcontrolOpenAccess"
+      [percentage]="+data.sensitivefoldersWithFullcontrolOpenAccessPercentage"
+      icon="/svg/folder.svg"
+      subtitle="Sensitive Folders With Full Control Open Access"
+    ></app-card>
+  </div>
+
+  <div
+    class="dashboard-card"
+    *ngIf="fileSystemSummary as data"
+    (click)="
+      openDialog(
+        {
+          title: 'Folders With Open Access',
+          reporttitle: 'folders-with-open-access',
+          value: +data.foldersWithOpenAccess,
+          file: false,
+          fileicon: false,
+          icon: '/svg/folder.svg',
+          subtitle: 'Folders With Open Access',
+        },
+        'Folders With Open Access'
+      )
+    "
+  >
+    <app-card
+      title=" Folders With Open Access"
+      [chart]="true"
+      [file]="false"
+      [fileicon]="false"
+      [filecount]="+data.foldersWithOpenAccess"
+      [percentage]="+data.foldersWithOpenAccessPercentage"
+      icon="/svg/folder.svg"
+      subtitle=" Folders With Open Access"
+    ></app-card>
+  </div>
+
+  <div
+    class="dashboard-card"
+    *ngIf="fileSystemSummary as data"
+    (click)="
+      openDialog(
+        {
+          title: 'Stale Sensitive Files',
+          reporttitle: 'stale-sensitive-files',
+          value: +data.staleSensitiveFiles,
+          file: true,
+          fileicon: true,
+          icon: '/svg/file.svg',
+          subtitle: 'Stale Sensitive Files',
+        },
+        'Stale Sensitive Files'
+      )
+    "
+  >
+    <app-card
+      title="Stale Sensitive Files"
+      [chart]="false"
+      [file]="true"
+      [fileicon]="true"
+      [filecount]="+data.staleSensitiveFiles"
+      [percentage]="+data.staleSensitiveFilesPercentage"
+      icon="/svg/file.svg"
+      subtitle="Stale Sensitive Files"
+    ></app-card>
+  </div>
+
+  <div
+    class="dashboard-card"
+    *ngIf="fileSystemSummary as data"
+    (click)="
+      openDialog(
+        {
+          title: 'Sensitive Folders With Read and Execute Open Access',
+          reporttitle: 'sensitive-folders-with-read-and-execute-open-access',
+          value: +data.sensitiveFoldersWithReadandExecuteOpenAccess,
+          file: false,
+          fileicon: false,
+          icon: '/svg/folder.svg',
+          subtitle: 'Sensitive Folders With Read and Execute Open Access',
+        },
+        'Sensitive Folders With Read and Execute Open Access'
+      )
+    "
+  >
+    <app-card
+      title="Sensitive Folders With Read and Execute Open Access"
+      [chart]="true"
+      [file]="false"
+      [fileicon]="false"
+      [filecount]="+data.sensitiveFoldersWithReadandExecuteOpenAccess"
+      [percentage]="
+        +data.sensitiveFoldersWithReadandExecuteOpenAccessPercentage
+      "
+      icon="/svg/folder.svg"
+      subtitle="Sensitive Folders With Open Access"
+    ></app-card>
+  </div>
+
+  <div
+    class="dashboard-card"
+    *ngIf="fileSystemSummary as data"
+    (click)="
+      openExternalDialog(
+        {
+          title: 'External Sources',
+          reporttitle: 'external-sources',
+          value: '46%',
+          file: true,
+          fileicon: true,
+          icon: '/svg/file.svg',
+          subtitle: 'External Sources',
+        },
+        'External Sources'
+      )
+    "
+  >
+    <app-card
+      title="External Sources"
+      value="46%"
+      [chart]="false"
+      [file]="true"
+      [fileicon]="true"
+      [filecount]="+data.externalSources"
+      [percentage]="+data.externalSourcesPercentage"
+      icon="/svg/file.svg"
+      subtitle="Folders With Open Access (Including Inherited)"
+    ></app-card>
+  </div>
+
+  <!-- <div
+    class="dashboard-card"
+    *ngIf="fileSystemSummary as data"
+    (click)="
+      openCloudDialog(
+        {
+          title: 'Cloud Resources',
+          reporttitle: 'cloud-resources',
+          value: '46%',
+          file: true,
+          fileicon: true,
+          icon: '/svg/file.svg',
+          subtitle: 'Cloud Resources',
+        },
+        Shared,
+        ExternalFiles
+      )
+    "
+  >
+    <app-card
+      title="Cloud Resources"
+      value="19%"
+      [chart]="false"
+      [file]="true"
+      [fileicon]="false"
+      [filecount]="+data.cloudResources"
+      [percentage]="+data.cloudResourcesPercentage"
+      icon="/svg/folder.svg"
+      subtitle="Folders With Stale Data"
+    ></app-card>
+  </div> -->
+</div>
+
+<!-- <div class="report-buttons">
+  <button mat-raised-button color="primary" (click)="downloadExcel()">
+    Download Excel
+  </button>
+
+  <button mat-raised-button color="accent" (click)="downloadCSV()">
+    Download CSV
+  </button>
+
+  <button mat-raised-button color="warn" (click)="downloadPDF()">
+    Download PDF
+  </button>
+</div> -->

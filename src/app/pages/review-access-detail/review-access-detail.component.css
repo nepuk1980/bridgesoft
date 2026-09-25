@@ -1,0 +1,112 @@
+.file-content-div {
+  margin: 1.875rem 1.5rem 3.75rem 1.5rem;
+}
+.file-content-div h3 {
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: #050d02;
+}
+.chartgrp {
+  display: flex;
+  gap: 1.25rem;
+  margin-top: 0.625rem;
+}
+.chartWrapper {
+  box-shadow: 3px 3px 1px 1px #0000000d;
+  background: #fff;
+  padding: 1.25rem;
+  border-radius: 0.625rem;
+  width: 100%;
+}
+.chartWrapper ul {
+  list-style: none;
+  padding: 0;
+}
+.chartWrapper ul li {
+  width: 100%;
+  padding: 0.625rem 0;
+  border-bottom: 1px solid #ececec;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+.chartWrapper ul li:last-child {
+  border-bottom: 0;
+}
+.chartWrapper ul li strong {
+  font-weight: 500;
+  font-size: 1rem;
+  color: #000;
+  line-height: 2.5rem;
+}
+.chartWrapper ul li span {
+  font-weight: 400;
+  font-size: 1rem;
+  color: #050d02;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.625rem;
+}
+.chartWrapper ul li span small {
+  background: #38ae47;
+  border-radius: 0.625rem;
+  height: 1rem;
+  width: 5.125rem;
+  display: flex;
+}
+.chartWrapper h6 {
+  font-weight: 500;
+  font-size: 1rem;
+}
+.chartContentdiv {
+  margin-top: 1.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.chart {
+  width: 10rem;
+  height: 10rem;
+}
+.chartContentdiv ul {
+  padding: 0;
+  list-style-type: none;
+  width: calc(100% - 13rem);
+}
+.chartContentdiv ul li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 400;
+  font-size: 1.125rem;
+}
+.chartContentdiv ul li span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.chartContentdiv ul li span b {
+  width: 0.75rem;
+  height: 0.75rem;
+  display: inline-flex;
+  border-radius: 50%;
+}
+.chartContentdiv ul li:first-child span b {
+  background: #81c9ff;
+}
+.chartContentdiv ul li:nth-child(2) span b {
+  background: #98d5be;
+}
+.chartContentdiv ul li:nth-child(3) span b {
+  background: #81ebff;
+}
+.chartContentdiv ul li:nth-child(4) span b {
+  background: #97b7bd;
+}
+
+.solid-table th,
+.solid-table td {
+  width: auto !important;
+}

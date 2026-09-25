@@ -1,0 +1,960 @@
+// File System Interfaces
+export interface FileSystemAccessSummaryInterface {
+  pureStorageFiles: number;
+  pureStorageFolders: number;
+  pureStorageTotal: number;
+  fileShareFolders: number;
+  sensitiveFoldersWithReadandExecuteOpenAccessPercentage: string;
+  sensitivefoldersWithFullcontrolOpenAccess: number;
+  sensitivefoldersWithFullcontrolOpenAccessPercentage: string;
+  externalSourcesPercentage: string;
+  foldersWithOpenAccessPercentage: string;
+  sensitiveFoldersWithOpenAccessPercentage: string;
+  externalSources: number;
+  foldersThatContainsSensitiveFilesPercentage: string;
+  sharePointFiles: number;
+  fileShareTotal: number;
+  foldersWithOpenAccess: number;
+  sharePointTotal: number;
+  cloudResourcesPercentage: string;
+  sharePointFolders: number;
+  sensitiveFoldersWithOpenAccess: number;
+  staleSensitiveFiles: number;
+  foldersThatContainsSensitiveFiles: number;
+  staleSensitiveFilesPercentage: string;
+  fileShareFiles: number;
+  sensitiveFilesWithOpenAccessPercentage: string;
+  cloudResources: number;
+  sensitiveFoldersWithReadandExecuteOpenAccess: number;
+  sensitiveFilesWithOpenAccess: number;
+}
+
+export interface FileSystemResponseInterface {
+  content: {
+    id: number;
+    sourceType: string;
+    sourceName: string;
+    libraryName: string;
+    itemName: string;
+    pathValue: string;
+    itemType: string;
+    itemUrl: string;
+    groupsList: string;
+    createDatetime: string; // ISO datetime string
+    lastModifiedDatetime: string; // ISO datetime string
+    lastAccessedDatetime: string | null;
+    sensitive: boolean;
+    openAccess: boolean;
+    fullControlOpenAccess: boolean;
+    readExecuteOpenAccess: boolean;
+    external: boolean;
+    cloudResource: boolean;
+    stale: boolean;
+    folderContainsSensitiveFiles: boolean;
+    ruleCategory: string;
+    category: string;
+  }[];
+
+  empty: boolean;
+  first: boolean;
+  last: boolean;
+  number: number;
+  numberOfElements: number;
+
+  pageable: {
+    offset: number;
+    pageNumber: number;
+    pageSize: number;
+    paged: boolean;
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    unpaged: boolean;
+  };
+
+  size: number;
+
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+
+  totalElements: number;
+  totalPages: number;
+}
+
+export type ExternalResourcesGroupByResponse = [string, number][];
+
+export type ApplicationResponseInterface = {
+  content: {
+    applicationHost: string;
+    applicationName: string;
+    applicationType: string;
+    assignedRoleSummary: string;
+    createDatetime: string;
+    id: number;
+    lastModifiedDatetime: string;
+  }[];
+
+  empty: boolean;
+  first: boolean;
+  last: boolean;
+  number: number;
+  numberOfElements: number;
+
+  pageable: {
+    offset: number;
+    pageNumber: number;
+    pageSize: number;
+    paged: boolean;
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    unpaged: boolean;
+  };
+
+  size: number;
+
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+
+  totalElements: number;
+  totalPages: number;
+};
+
+export type IdentityVaultDetailResponseInterface = {
+  assignedRoleSummary: string;
+  company: string;
+  createDatetime: string;
+  department: string;
+  email: string;
+  employee_code: string;
+  firstName: string;
+  id: number;
+  job_title: string;
+  lastModifiedDatetime: string;
+  lastName: string;
+  location: string;
+  manager: string;
+  manager_department: string;
+  manager_employee_id: string;
+  riskScore: string;
+};
+
+export type ApplicationAccountsResponseInterface = {
+  accountName: string;
+  appId: number;
+  fsApplications: {
+    applicationHost: string;
+    applicationName: string;
+    applicationType: string;
+    assignedRoleSummary: string;
+    createDatetime: string;
+    id: number;
+    lastModifiedDatetime: string;
+  };
+  id: number;
+  lastAccess: string;
+  status: string;
+};
+
+export interface RuleResponseInterface {
+  id: number;
+  ruleName: string;
+  ruleDesc: string;
+  active: boolean;
+  ruleCategory: string;
+  createDatetime: string | null;
+  lastModifiedDatetime: string;
+}
+
+export interface RequestAccessWorkflowInterface {
+  content: {
+    id: number;
+    sourceType: string;
+    sourceName: string;
+    libraryName: string;
+    itemName: string;
+    pathValue: string;
+    itemType: string;
+    itemUrl: string;
+    groupsList: string;
+    createDatetime: string;
+    lastModifiedDatetime: string;
+    lastAccessedDatetime: string | null;
+    sensitive: boolean;
+    openAccess: boolean;
+    fullControlOpenAccess: boolean;
+    readExecuteOpenAccess: boolean;
+    external: boolean;
+    cloudResource: boolean;
+    stale: boolean;
+    folderContainsSensitiveFiles: boolean;
+    ruleCategory: string;
+    category: string;
+    folderFileSize: number | null;
+    folderFileHitCount: number;
+    username: string;
+    duration: string;
+  }[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+  size: number;
+  number: number;
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+  first: boolean;
+  numberOfElements: number;
+  empty: boolean;
+}
+
+export type ReviewAccessInterface = {
+  id: number;
+  employeeName: string;
+  employeeEmail: string;
+  folderFileName: string;
+  resourceFullPath: string;
+  category: string;
+  criticality: string;
+  review: boolean;
+  sourceType: string;
+  decision: string;
+  decisionDateTime: string;
+  decisionBy: string | null;
+  requestedBy: string | null;
+};
+
+export interface ExecutiveAuditReportsInterface {
+  content: {
+    id: number;
+    sourceSystem: string;
+    eventId: string;
+    userEmail: string;
+    userDisplayname: string;
+    eventType: string;
+    deviceName: string;
+    eventTime: string;
+    datasourceType: string;
+    eventOperation: string;
+    eventDescription: string;
+    eventPath: string;
+    accountName: string;
+    objectName: string;
+    objectType: string;
+    eventSensitive: boolean;
+    eventStatus: string;
+    externalIp: string;
+    datasource: string;
+    country: string;
+    department: string;
+    useragent: string;
+    exposureLevel: string;
+    permissionsBeforeChange: string;
+    permissionsAfterChange: string;
+    changedPermissionFlag: boolean;
+    resourceOwner: string;
+    targetUserEmail: string;
+    targetUserDisplayName: string;
+    targetOneDrivePathKey: string;
+    connectionType: string;
+    clientIp: string;
+    client: string;
+    deviceTrustType: string;
+    sourceNatAddress: string;
+    sourcePort: string;
+    sourceZone: string;
+    destinationDevicename: string;
+    deviceManagedStatus: boolean;
+    sourceNatPort: string;
+    logonType: string;
+    accountType: string;
+    samAccountname: string;
+    operatingSystem: string;
+    maliciousExternalIp: boolean;
+    externalipReputation: string;
+    inheritancePaths: string;
+  }[];
+
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+
+  last: boolean;
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  number: number;
+
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+
+  numberOfElements: number;
+  first: boolean;
+  empty: boolean;
+}
+
+export type DisabledIdentityVaultResponse = {
+  content: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    department: string;
+    manager: string;
+    manager_employee_id: string;
+    manager_department: string;
+    location: string;
+    job_title: string;
+    employee_code: string;
+    company: string;
+    createDatetime: string;
+    lastModifiedDatetime: string;
+    assignedRoleSummary: string;
+    riskScore: string;
+    groupsList: string;
+    accountName: string;
+    accountType: string;
+    directoryPath: string;
+    inheritancePath: string;
+    displayName: string;
+    accountStatus: string;
+    active: boolean;
+  }[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+  last: boolean;
+  totalPages: number;
+  totalElements: number;
+  first: boolean;
+  size: number;
+  number: number;
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+  numberOfElements: number;
+  empty: boolean;
+};
+
+export type PrivilegedAccessReportResponse = {
+  content: {
+    id: number;
+    sourceType: string;
+    eventTime: string;
+    eventOperation: string;
+    eventDescription: string;
+    eventType: string;
+    accountName: string;
+    path: string;
+    objectName: string;
+    sensitive: boolean;
+    eventStatus: string;
+    dataSource: string;
+    exposureLevel: string;
+    permissionsBeforeChange: string;
+    permissionsAfterChange: string;
+    changedPermissionFlag: boolean;
+  }[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+  last: boolean;
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+  numberOfElements: number;
+  first: boolean;
+  empty: boolean;
+};
+
+export interface AuditResponseInterface {
+  content: {
+    id: number;
+    sourceSystem: string;
+    eventId: string;
+    userEmail: string;
+    userDisplayname: string;
+    eventType: string;
+    deviceName: string;
+    eventTime: string;
+    datasourceType: string;
+    eventOperation: string;
+    eventDescription: string;
+    eventPath: string;
+    accountName: string;
+    objectName: string;
+    objectType: string;
+    eventSensitive: boolean;
+    eventStatus: string;
+    externalIp: string;
+    datasource: string;
+    country: string;
+    department: string;
+    useragent: string;
+    exposureLevel: string;
+    permissionsBeforeChange: string;
+    permissionsAfterChange: string;
+    changedPermissionFlag: boolean;
+    resourceOwner: string;
+    targetUserEmail: string;
+    targetUserDisplayName: string;
+    targetOneDrivePathKey: string;
+    connectionType: string;
+    clientIp: string;
+    client: string;
+    deviceTrustType: string;
+    sourceNatAddress: string;
+    sourcePort: string;
+    sourceZone: string;
+    destinationDevicename: string;
+    deviceManagedStatus: boolean;
+    sourceNatPort: string;
+    logonType: string;
+    accountType: string;
+    samAccountname: string;
+    operatingSystem: string;
+    maliciousExternalIp: boolean;
+    externalipReputation: string;
+    inheritancePaths: string;
+  }[];
+
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+
+  last: boolean;
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  number: number;
+
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+
+  first: boolean;
+  numberOfElements: number;
+  empty: boolean;
+}
+
+export interface NotificationInterface {
+  content: {
+    id: number;
+    notification: string;
+    sourceIp: string;
+    resource: string;
+    target_user: string;
+    notificationTime: string;
+    createdDate: string;
+  }[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      unsorted: boolean;
+      empty: boolean;
+      sorted: boolean;
+    };
+    offset: number;
+    unpaged: boolean;
+    paged: boolean;
+  };
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+  size: number;
+  number: number;
+  sort: {
+    unsorted: boolean;
+    empty: boolean;
+    sorted: boolean;
+  };
+  first: boolean;
+  numberOfElements: number;
+  empty: boolean;
+}
+
+export interface AlertInterface {
+  content: {
+    id: number;
+    alertName: string;
+    alertDesc: string;
+    whenSomeone: string;
+    alertAction: string;
+    alertResources: string;
+    includeGroups: string;
+    includeUsers: string;
+    includeResources: string;
+    excludeGroups: string;
+    excludeUsers: string;
+    excludeResources: string;
+    allTheTime: boolean;
+    fromDate: string | null;
+    toDate: string | null;
+    days: string;
+    timeZone: string;
+    alertTime: string | null;
+    alertMode: string;
+    createdDate: string | null;
+    updatedDate: string | null;
+    deletedDate: string | null;
+    alertUsers: number;
+    alertFolders: number;
+    alertFiles: number;
+    alertEmail: string;
+  }[];
+
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      unsorted: boolean;
+      empty: boolean;
+      sorted: boolean;
+    };
+    offset: number;
+    unpaged: boolean;
+    paged: boolean;
+  };
+
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+  size: number;
+  number: number;
+
+  sort: {
+    unsorted: boolean;
+    empty: boolean;
+    sorted: boolean;
+  };
+
+  first: boolean;
+  numberOfElements: number;
+  empty: boolean;
+}
+
+// add
+
+// 1. The individual AD Group Item
+export interface ADGroup {
+  id: number;
+  groupName: string;
+  distinguishedName: string;
+  managedBy: string;
+  memberCount: string;
+  parentGroups: string;
+  groupCategory: string;
+  groupScope: string;
+}
+
+// 2. The Paginated API Response Wrapper
+export interface GetADGroupInterface {
+  content: ADGroup[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+  size: number;
+  number: number;
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+  first: boolean;
+  numberOfElements: number;
+  empty: boolean;
+}
+
+export type GetUsersByGroupNameResponse = {
+  content: {
+    id: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+    department: string;
+    manager: string;
+    manager_employee_id: string;
+    manager_department: string;
+    location: string;
+    job_title: string;
+    employee_code: string;
+    company: string;
+    createDatetime: string;
+    lastModifiedDatetime: string;
+    assignedRoleSummary: string;
+    riskScore: string;
+    groupsList: string;
+  }[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+  size: number;
+  number: number;
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+  first: boolean;
+  numberOfElements: number;
+  empty: boolean;
+};
+
+export type IdentityVaultResponseInterface = {
+  content: {
+    assignedRoleSummary: string;
+    company: string;
+    createDatetime: string;
+    department: string;
+    email: string;
+    employee_code: string;
+    firstName: string;
+    id: number;
+    job_title: string;
+    lastModifiedDatetime: string;
+    lastName: string;
+    location: string;
+    manager: string;
+    manager_department: string;
+    manager_employee_id: string;
+    riskScore: string;
+  }[];
+
+  empty: boolean;
+  first: boolean;
+  last: boolean;
+  number: number;
+  numberOfElements: number;
+
+  pageable: {
+    offset: number;
+    pageNumber: number;
+    pageSize: number;
+    paged: boolean;
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    unpaged: boolean;
+  };
+
+  size: number;
+
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+
+  totalElements: number;
+  totalPages: number;
+};
+
+export type AllFilesByGroupResponse = {
+  content: {
+    id: number;
+    sourceType: string;
+    sourceName: string;
+    libraryName: string;
+    itemName: string;
+    pathValue: string;
+    itemType: 'File' | 'Folder';
+    itemUrl: string;
+    groupsList: string;
+    createDatetime: string;
+    lastModifiedDatetime: string;
+    lastAccessedDatetime: string | null;
+    sensitive: boolean;
+    openAccess: boolean;
+    fullControlOpenAccess: boolean;
+    readExecuteOpenAccess: boolean;
+    external: boolean;
+    cloudResource: boolean;
+    stale: boolean;
+    folderContainsSensitiveFiles: boolean;
+    ruleCategory: string;
+    category: string;
+    folderFileSize: string | number | null;
+    folderFileHitCount: number;
+    username: string;
+    duration: string;
+  }[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+  size: number;
+  number: number;
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+  first: boolean;
+  numberOfElements: number;
+  empty: boolean;
+};
+
+export type GetAllFoldersResponse = {
+  content: {
+    id: number;
+    sourceType: string;
+    sourceName: string;
+    libraryName: string;
+    itemName: string;
+    pathValue: string;
+    itemType: string;
+    itemUrl: string;
+    groupsList: string;
+    createDatetime: string;
+    lastModifiedDatetime: string;
+    lastAccessedDatetime: string;
+    sensitive: boolean;
+    openAccess: boolean;
+    fullControlOpenAccess: boolean;
+    readExecuteOpenAccess: boolean;
+    external: boolean;
+    cloudResource: boolean;
+    stale: boolean;
+    folderContainsSensitiveFiles: boolean;
+    ruleCategory: string;
+    category: string;
+    folderFileSize: number | null;
+    folderFileHitCount: number;
+    username: string;
+    duration: string;
+  }[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+  size: number;
+  number: number;
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+  first: boolean;
+  numberOfElements: number;
+  empty: boolean;
+};
+
+export type GroupFolderPermissionResponse = {
+  content: {
+    id: number;
+    groupId: string;
+    groupName: string;
+    folderId: string;
+    folderName: string;
+    userId: string;
+    userName: string;
+    fileSystemPermissions: string;
+    totalHitCount: number;
+    folderFileSize: string;
+    classification: string;
+    accessAction: string;
+    status: string;
+  }[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      empty: boolean;
+      sorted: boolean;
+      unsorted: boolean;
+    };
+    offset: number;
+    paged: boolean;
+    unpaged: boolean;
+  };
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+  size: number;
+  number: number;
+  sort: {
+    empty: boolean;
+    sorted: boolean;
+    unsorted: boolean;
+  };
+  first: boolean;
+  numberOfElements: number;
+  empty: boolean;
+};
+
+export type UserFolderPermissionResponse = {
+  content: {
+    id: number;
+    groupId: string;
+    groupName: string;
+    folderId: string;
+    folderName: string;
+    userId: string;
+    userName: string;
+    fileSystemPermissions: string;
+    totalHitCount: number;
+    folderFileSize: string;
+    classification: string;
+    accessAction: string;
+    status: string;
+  }[];
+  pageable: {
+    pageNumber: number;
+    pageSize: number;
+    sort: {
+      empty: boolean;
+      unsorted: boolean;
+      sorted: boolean;
+    };
+    offset: number;
+    unpaged: boolean;
+    paged: boolean;
+  };
+  last: boolean;
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  number: number;
+  sort: {
+    empty: boolean;
+    unsorted: boolean;
+    sorted: boolean;
+  };
+  first: boolean;
+  numberOfElements: number;
+  empty: boolean;
+};
+export type IdentityVaultCategoryResponse = {
+  id: number;
+  categoryType: string;
+  categoryName: string;
+}[];
+
+export type getexecutiveauditmetadataResponse = {
+  accountName: string;
+  accountType: string;
+  email: string;
+  path: string;
+}[];

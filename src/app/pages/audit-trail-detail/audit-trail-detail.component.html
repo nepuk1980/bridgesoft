@@ -1,0 +1,153 @@
+<app-innerheader
+  title="Audit Trail"
+  [btn]="true"
+  btntitle="Back To Audit Trail"
+></app-innerheader>
+
+<div class="mainWrapper">
+  <!-- REQUEST DETAILS (TOP 2 CARDS) -->
+  <div class="top-cards">
+    <!-- LEFT CARD -->
+    <div class="detail-card">
+      <div class="detail-row">
+        <span class="label">Access Request ID :</span>
+        <span class="value"
+          ><strong>{{ data.requestDetails.accessRequestId }}</strong></span
+        >
+      </div>
+
+      <div class="detail-row">
+        <span class="label">Type :</span>
+        <span class="value">{{ data.requestDetails.type }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="label">Requestee :</span>
+        <span class="value">{{ data.requestDetails.requestee }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="label">Requester :</span>
+        <span class="value">{{ data.requestDetails.requester }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="label">Completion Status :</span>
+        <span class="value">{{ data.requestDetails.completionStatus }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="label">Priority :</span>
+        <span class="value">{{ data.requestDetails.priority }}</span>
+      </div>
+    </div>
+
+    <!-- RIGHT CARD -->
+    <div class="detail-card">
+      <div class="detail-row">
+        <span class="label">Current Step :</span>
+        <span class="value"
+          ><strong>{{ data.requestDetails.currentStep }}</strong></span
+        >
+      </div>
+
+      <div class="detail-row">
+        <span class="label">Request Date :</span>
+        <span class="value">{{ data.requestDetails.requestDate }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="label">Completion Date :</span>
+        <span class="value">{{ data.requestDetails.completionDate }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="label">Verification Date :</span>
+        <span class="value">{{ data.requestDetails.verificationDate }}</span>
+      </div>
+
+      <div class="detail-row">
+        <span class="label">Execution Date :</span>
+        <span class="value">{{ data.requestDetails.executionDate }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-detail-card">
+    <div class="headingDiv">
+      <h3>Request Items</h3>
+      <p>
+        Showing {{ data.requestItems.length }} of {{ data.requestItems.length }}
+      </p>
+    </div>
+
+    <div *ngIf="data.requestItems.length === 0" class="no-data">
+      No data available
+    </div>
+    <div class="solid-table table-wrapper">
+      <table
+        mat-table
+        [dataSource]="data.requestItems"
+        *ngIf="data.requestItems.length > 0"
+        class="full-width-table"
+      >
+        <!-- Operation -->
+        <ng-container matColumnDef="operation">
+          <th mat-header-cell *matHeaderCellDef>Operation</th>
+          <td mat-cell *matCellDef="let row">
+            <div class="table-link" (click)="goToDetail(row)">
+              {{ row.operation }}
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Application -->
+        <ng-container matColumnDef="application">
+          <th mat-header-cell *matHeaderCellDef>Application</th>
+          <td mat-cell *matCellDef="let row">{{ row.application }}</td>
+        </ng-container>
+
+        <!-- Value -->
+        <ng-container matColumnDef="value">
+          <th mat-header-cell *matHeaderCellDef>Value</th>
+          <td mat-cell *matCellDef="let row">{{ row.value }}</td>
+        </ng-container>
+
+        <!-- Display -->
+        <ng-container matColumnDef="displayValue">
+          <th mat-header-cell *matHeaderCellDef>Display Value</th>
+          <td mat-cell *matCellDef="let row">{{ row.displayValue }}</td>
+        </ng-container>
+
+        <!-- Access -->
+        <ng-container matColumnDef="accessLevel">
+          <th mat-header-cell *matHeaderCellDef>Access Level</th>
+          <td mat-cell *matCellDef="let row">
+            <div class="activeinactivediv">
+              <span
+                *ngFor="let key of accessKeys"
+                [ngClass]="row.accessLevel?.[key] ? 'active' : 'inactive'"
+              >
+                {{ key }}
+              </span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Status -->
+        <ng-container matColumnDef="provisioningStatus">
+          <th mat-header-cell *matHeaderCellDef class="lastcol">
+            Provisioning Status
+          </th>
+          <td mat-cell *matCellDef="let row" class="lastcol">
+            {{ row.provisioningStatus }}
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+    </div>
+  </div>
+</div>

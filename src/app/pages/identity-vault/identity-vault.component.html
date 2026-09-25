@@ -1,0 +1,317 @@
+<app-innerheader
+  title="Identity Vault"
+  [btn]="false"
+  btntitle=" Back To Applications"
+></app-innerheader>
+
+@defer {
+  <div class="application-content-div">
+    <!-- Top Bar -->
+    <div class="application-tab-div">
+      <!-- 🔍 Search -->
+      <div class="search-box">
+        <input
+          type="text"
+          [(ngModel)]="searchText"
+          (input)="onSearch()"
+          placeholder="Search"
+        />
+        <img src="/svg/search.svg" class="search-icon" />
+      </div>
+
+      <!-- ✅ FIXED COUNT -->
+      <p>
+        Showing {{ dataSource.filteredData.length }} of
+        {{ totalElements }}
+      </p>
+
+      <!-- 🔽 Filters -->
+      <div class="filter-grp-div">
+        <div class="custom-filter no-icon">
+          <mat-form-field>
+            <mat-label>Download</mat-label>
+            <mat-select
+              [(ngModel)]="selectedDownload"
+              panelClass="custom-filter-panel"
+            >
+              <mat-option value="download">Download</mat-option>
+              <mat-option value="pdf" (click)="downloadPDF()"
+                ><div class="icontexttd">
+                  <img src="/svg/pdf.svg" class="icons" alt="pdf" /> PDF
+                </div></mat-option
+              >
+              <mat-option value="excel" (click)="downloadExcel()"
+                ><div class="icontexttd">
+                  <img src="/svg/excel.svg" class="icons" alt="excel" /> Excel
+                </div></mat-option
+              >
+              <mat-option value="csv" (click)="downloadCSV()"
+                ><div class="icontexttd">
+                  <img src="/svg/csv.svg" class="icons" alt="csv" /> CSV
+                </div></mat-option
+              >
+            </mat-select>
+          </mat-form-field>
+        </div>
+        <!-- Category -->
+        <div class="custom-filter no-icon">
+          <mat-form-field>
+            <mat-label>Select Category</mat-label>
+            <mat-select
+              [(ngModel)]="selectedCategory"
+              (selectionChange)="onFilterChange()"
+              panelClass="custom-filter-panel"
+            >
+              <mat-option value="">Category</mat-option>
+              @for (item of categories; track item.value) {
+                <mat-option [value]="item.value">
+                  {{ item.viewValue }}
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- Risk Filter -->
+        <div class="custom-filter">
+          <mat-form-field>
+            <mat-label>Filter</mat-label>
+            <mat-select
+              [(ngModel)]="selectedFilter"
+              (selectionChange)="onFilterChange()"
+              panelClass="custom-filter-panel"
+            >
+              <mat-option value="">Filter</mat-option>
+              @for (item of filters; track item.value) {
+                <mat-option [value]="item.value">
+                  {{ item.viewValue }}
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="solid-table table-wrapper">
+      <table mat-table [dataSource]="dataSource" matSort class="custom-table">
+        <!-- First Name -->
+        <ng-container matColumnDef="firstName">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>First Name</th>
+          <td mat-cell *matCellDef="let element">
+            <a
+              [routerLink]="[
+                '/identity-vault',
+                createSlug(element.firstName, element.lastName),
+              ]"
+              [state]="{ id: element.id }"
+              class="table-link"
+            >
+              {{ element.firstName }}
+            </a>
+          </td>
+        </ng-container>
+
+        <!-- Last Name -->
+        <ng-container matColumnDef="lastName">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Last Name</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.lastName }}
+          </td>
+        </ng-container>
+
+        <!-- Email -->
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Email Id</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.email }}
+          </td>
+        </ng-container>
+
+        <!-- Manager -->
+        <ng-container matColumnDef="manager">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Manager</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.manager }}
+          </td>
+        </ng-container>
+
+        <!-- Role Summary -->
+        <ng-container matColumnDef="roleSummary">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            Assigned Role Summary
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.roleSummary || "-" }}
+          </td>
+        </ng-container>
+
+        <!-- Last Refresh -->
+        <ng-container matColumnDef="lastRefresh">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            Last Refresh
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.lastRefresh }}
+          </td>
+        </ng-container>
+
+        <!-- Risk Score -->
+        <ng-container matColumnDef="riskScore">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header class="lastcol">
+            Risk Score
+          </th>
+          <td mat-cell *matCellDef="let element" class="lastcol">
+            {{ element.riskScore }}
+          </td>
+        </ng-container>
+
+        <!-- Header -->
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+
+        <!-- Data Rows -->
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+        <!-- ✅ NO DATA ROW -->
+        <tr *ngIf="dataSource.filteredData.length === 0">
+          <td colspan="7" class="no-data">No Data Found</td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- ✅ PAGINATOR -->
+    <!-- <mat-paginator
+      [length]="totalElements"
+      [pageSize]="size"
+      [pageIndex]="page"
+      (page)="onPageChange($event)"
+    >
+    </mat-paginator> -->
+  </div>
+
+  <!-- ✅ Custom Pagination -->
+  <div class="custom-pagination">
+    <span class="count">
+      Showing {{ dataSource.data.length }} of {{ totalElements }}
+    </span>
+
+    <div class="pagination-buttons">
+      <button (click)="firstPage()" [disabled]="pageIndex === 0">«</button>
+      <button (click)="prevPage()" [disabled]="pageIndex <= 0">‹</button>
+
+      <span *ngIf="pages[0] > 1">...</span>
+
+      <button
+        *ngFor="let p of pages"
+        (click)="goToPage(p)"
+        [class.active]="p === pageIndex + 1"
+      >
+        {{ p }}
+      </button>
+
+      <span *ngIf="pages[pages.length - 1] < totalPages">...</span>
+
+      <button (click)="nextPage()" [disabled]="pageIndex >= totalPages - 1">
+        ›
+      </button>
+      <button (click)="lastPage()" [disabled]="pageIndex === totalPages - 1">
+        »
+      </button>
+    </div>
+  </div>
+} @placeholder (minimum 1000ms) {
+  <div class="application-content-div">
+    <!-- Top Bar -->
+    <div class="application-tab-div">
+      <!-- 🔍 Search -->
+      <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+
+      <p><ngx-skeleton-loader animation="progress" class="skeleton-w-100" /></p>
+
+      <!-- 🔽 Filter -->
+      <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+    </div>
+
+    <!-- Table -->
+    <div class="solid-table table-wrapper">
+      <table mat-table [dataSource]="dataSource" matSort class="custom-table">
+        <!-- First Name -->
+        <ng-container matColumnDef="firstName">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </td>
+        </ng-container>
+
+        <!-- Last Name -->
+        <ng-container matColumnDef="lastName">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </td>
+        </ng-container>
+
+        <!-- Email -->
+        <ng-container matColumnDef="email">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </td>
+        </ng-container>
+
+        <!-- Manager -->
+        <ng-container matColumnDef="manager">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </td>
+        </ng-container>
+
+        <!-- Role Summary -->
+        <ng-container matColumnDef="roleSummary">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </td>
+        </ng-container>
+
+        <!-- Last Refresh -->
+        <ng-container matColumnDef="lastRefresh">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </td>
+        </ng-container>
+
+        <!-- Risk Score -->
+        <ng-container matColumnDef="riskScore">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </th>
+          <td mat-cell *matCellDef="let element">
+            <ngx-skeleton-loader animation="progress" class="skeleton-w-100" />
+          </td>
+        </ng-container>
+
+        <!-- Header -->
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+
+        <!-- Data Rows -->
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+    </div>
+  </div>
+}

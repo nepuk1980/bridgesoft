@@ -1,0 +1,78 @@
+.top-cards {
+  display: flex;
+  justify-content: space-between;
+}
+.top-cards .detail-card {
+  box-shadow: 3px 3px 1px 1px #0000000d;
+  border-radius: 0.625rem;
+  background-color: #fff;
+  width: calc(50% - 0.625rem);
+  padding: 1.875rem;
+}
+.top-cards .detail-card .detail-row {
+  display: flex;
+  align-items: center;
+}
+.top-cards .detail-card .detail-row span strong,
+.top-cards .detail-card .detail-row span {
+  font-weight: 500;
+  font-size: 1rem;
+  color: #000;
+}
+.top-cards .detail-card .detail-row span.label {
+  width: 15rem;
+}
+.top-cards .detail-card .detail-row span.value {
+  font-weight: 400;
+}
+.top-cards .detail-card .detail-row {
+  border-top: 1px solid #ececec;
+  padding: 0.5rem 0;
+}
+.top-cards .detail-card .detail-row:first-child {
+  padding-top: 0;
+  border-top: 0;
+}
+.top-cards .detail-card .detail-row:last-child {
+  padding-bottom: 0;
+}
+.table-detail-card {
+  margin-top: 1.5625rem;
+}
+.solid-table {
+  height: calc(100vh - 41rem);
+}
+.solid-table th:nth-child(1),
+.solid-table td:nth-child(1) {
+  width: 10% !important;
+}
+.solid-table th:nth-child(2),
+.solid-table td:nth-child(2) {
+  width: 10% !important;
+}
+.solid-table th:nth-child(3),
+.solid-table td:nth-child(3) {
+  width: 10% !important;
+}
+.solid-table th:nth-child(4),
+.solid-table td:nth-child(4) {
+  width: 10% !important;
+}
+.solid-table th:nth-child(5),
+.solid-table td:nth-child(5) {
+  width: 10% !important;
+}
+.solid-table th:nth-child(6),
+.solid-table td:nth-child(6) {
+  width: 10% !important;
+}
+.headingDiv {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.headingDiv p {
+  font-weight: 400;
+  font-size: 1rem;
+  color: #787878;
+}

@@ -1,0 +1,57 @@
+.popupclose {
+  position: absolute;
+  top: 0;
+  right: 0;
+  cursor: pointer;
+  z-index: 9;
+}
+
+.popup-content {
+  padding: 2rem;
+  padding-right: 2rem;
+  background: #fff;
+  box-shadow: 3px 3px 1px 1px #0000000d;
+  cursor: auto;
+}
+
+.dialog-content {
+  padding: 0;
+  margin-top: 1.875rem;
+  max-height: 50vh;
+}
+
+.popup-content .popup-title {
+  text-align: center;
+  color: #1176bd;
+  font-weight: 500;
+  font-size: 2.25rem;
+  line-height: 3.125rem;
+  padding: 0;
+}
+.profile-card {
+  width: 100%;
+  box-shadow: none;
+  padding: 0;
+  border-radius: 0;
+  margin-top: 1rem;
+}
+.closebtn {
+  padding-left: 0;
+  margin-top: 1rem;
+}
+.search-box {
+  width: 100%;
+}
+.checkboxwrapper {
+  display: flex;
+  flex-wrap: wrap;
+}
+.checkboxwrapper div {
+  width: 100%;
+}
+.form-control textarea {
+  height: 6rem;
+}
+.forwardbtn {
+  padding-right: 0;
+}

@@ -1,0 +1,197 @@
+<app-innerheader
+  title="Privileged Access Report"
+  [btn]="true"
+  btntitle=" Back To Reports"
+></app-innerheader>
+
+@defer {
+  <div class="application-content-div">
+    <!-- Top Bar -->
+    <div class="application-tab-div">
+      <div class="search-box">
+        <input
+          type="text"
+          placeholder="Search by name"
+          [(ngModel)]="searchText"
+          (input)="applyFilters()"
+        />
+        <img src="/svg/search.svg" class="search-icon" alt="search" />
+      </div>
+
+      <p>
+        Showing results {{ dataSource.data.length }} of
+        {{ displayTotalElements }}
+      </p>
+
+      <div class="filter-grp-div">
+        <!-- Download Selection -->
+        <div class="custom-filter no-icon">
+          <mat-form-field>
+            <mat-label>Download</mat-label>
+            <mat-select
+              [(ngModel)]="selectedDownload"
+              panelClass="custom-filter-panel"
+            >
+              <mat-option value="download">Download</mat-option>
+              <mat-option value="pdf" (click)="downloadPDF()">
+                <div class="icontexttd">
+                  <img src="/svg/pdf.svg" class="icons" alt="pdf" /> PDF
+                </div>
+              </mat-option>
+              <mat-option value="excel" (click)="downloadExcel()">
+                <div class="icontexttd">
+                  <img src="/svg/excel.svg" class="icons" alt="excel" /> Excel
+                </div>
+              </mat-option>
+              <mat-option value="csv" (click)="downloadCSV()">
+                <div class="icontexttd">
+                  <img src="/svg/csv.svg" class="icons" alt="csv" /> CSV
+                </div>
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <!-- Event Type Filter -->
+        <div class="custom-filter no-icon">
+          <mat-form-field>
+            <mat-label>Filter</mat-label>
+            <mat-select
+              [(ngModel)]="selectedFilter"
+              (selectionChange)="applyFilters()"
+              panelClass="custom-filter-panel"
+            >
+              <mat-option value="">All Event Types</mat-option>
+              <mat-option *ngFor="let item of filters" [value]="item.value">
+                {{ item.viewValue }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table (Displays 7 Mapped Columns) -->
+    <div class="solid-table table-wrapper">
+      <table mat-table [dataSource]="dataSource" matSort class="custom-table">
+        <!-- Source Type -->
+        <ng-container matColumnDef="sourceType">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Source Type</th>
+          <td mat-cell *matCellDef="let element">{{ element.sourceType }}</td>
+        </ng-container>
+
+        <!-- Account Name -->
+        <ng-container matColumnDef="accountName">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            Account Name
+          </th>
+          <td mat-cell *matCellDef="let element">{{ element.accountName }}</td>
+        </ng-container>
+
+        <!-- Event Type -->
+        <ng-container matColumnDef="eventType">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Event Type</th>
+          <td mat-cell *matCellDef="let element">{{ element.eventType }}</td>
+        </ng-container>
+
+        <!-- Event Description -->
+        <ng-container matColumnDef="eventDescription">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            Event Description
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.eventDescription }}
+          </td>
+        </ng-container>
+
+        <!-- Event Operation -->
+        <ng-container matColumnDef="eventOperation">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>
+            Event Operation
+          </th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.eventOperation }}
+          </td>
+        </ng-container>
+
+        <!-- Path -->
+        <ng-container matColumnDef="path">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Path</th>
+          <td mat-cell *matCellDef="let element">{{ element.path }}</td>
+        </ng-container>
+
+        <!-- Event Time -->
+        <ng-container matColumnDef="eventTime">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Event Time</th>
+          <td mat-cell *matCellDef="let element">
+            {{
+              element.eventTime !== "-"
+                ? (element.eventTime | date: "medium")
+                : "-"
+            }}
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+
+        <tr class="mat-row" *matNoDataRow>
+          <td class="mat-cell" [attr.colspan]="displayedColumns.length">
+            No data found
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <!-- Custom Pagination -->
+    <div class="custom-pagination">
+      <span class="count">
+        Showing {{ dataSource.data.length }} of {{ totalElements }}
+      </span>
+
+      <div class="pagination-buttons">
+        <button (click)="firstPage()" [disabled]="pageIndex === 0">«</button>
+        <button (click)="prevPage()" [disabled]="pageIndex === 0">‹</button>
+
+        <span *ngIf="pages.length && pages[0] > 1">...</span>
+
+        <button
+          *ngFor="let p of pages"
+          (click)="goToPage(p)"
+          [disabled]="totalElements === 0"
+          [class.active]="p === pageIndex + 1"
+        >
+          {{ p }}
+        </button>
+
+        <span *ngIf="pages.length && pages[pages.length - 1] < totalPages"
+          >...</span
+        >
+
+        <button (click)="nextPage()" [disabled]="pageIndex >= totalPages - 1">
+          ›
+        </button>
+        <button (click)="lastPage()" [disabled]="pageIndex >= totalPages - 1">
+          »
+        </button>
+      </div>
+    </div>
+  </div>
+} @placeholder (minimum 1000ms) {
+  <div class="application-content-div">
+    <div class="application-tab-div">
+      <ngx-skeleton-loader animation="progress" count="3" />
+    </div>
+    <div class="solid-table table-wrapper">
+      <ngx-skeleton-loader animation="progress" count="6" appearance="line" />
+    </div>
+  </div>
+}
+
+<div class="loader-overlay" *ngIf="isDownloading">
+  <div class="loader-content">
+    <p>Generating Report, please wait...</p>
+  </div>
+</div>
+
+<router-outlet></router-outlet>

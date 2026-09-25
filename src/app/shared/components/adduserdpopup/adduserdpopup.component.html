@@ -1,0 +1,70 @@
+<mat-dialog-actions align="end" class="popupclose">
+  <img
+    mat-dialog-close
+    src="/svg/close.svg"
+    alt="close"
+    class="cursor-pointer"
+  />
+</mat-dialog-actions>
+
+<div class="popup-content relative">
+  <h6 mat-dialog-title class="popup-title">
+    Add User to {{ data?.group?.name || "Group" }}
+  </h6>
+
+  <div>
+    <div class="search-box">
+      <input
+        type="text"
+        placeholder="Search"
+        [(ngModel)]="searchTerm"
+        (input)="filterUsers()"
+      />
+      <img src="/svg/search.svg" class="search-icon" alt="search" />
+    </div>
+
+    <div class="spinner" *ngIf="isFetchingUsers && pageIndex === 0">
+      <mat-spinner [diameter]="50"></mat-spinner>
+    </div>
+
+    <div
+      class="checkboxwrapper mt-4 max-h-[300px] overflow-y-auto"
+      (scroll)="onScroll($event)"
+    >
+      <div *ngFor="let user of filteredUsers" class="mb-2">
+        <mat-checkbox
+          class="customcheckbox"
+          [(ngModel)]="user.selected"
+          (change)="toggleUserSelection(user)"
+        >
+          <span class="font-medium"
+            >{{ user.firstName }} {{ user.lastName }}</span
+          >
+          <span class="text-gray-500 text-sm ml-1">( {{ user.email }} )</span>
+        </mat-checkbox>
+      </div>
+
+      <div class="text-center py-2" *ngIf="isFetchingUsers && pageIndex > 0">
+        <mat-spinner [diameter]="25" style="margin: 0 auto"></mat-spinner>
+      </div>
+
+      <div
+        *ngIf="filteredUsers.length === 0 && !isFetchingUsers"
+        class="text-gray-500 text-sm mt-2"
+      >
+        No users found.
+      </div>
+    </div>
+  </div>
+
+  <mat-dialog-actions align="center" class="forwardbtn mt-4">
+    <button
+      mat-flat-button
+      class="btn-blue w-full"
+      (click)="onSubmit()"
+      [disabled]="isLoading || isFetchingUsers || !hasSelectedUsers()"
+    >
+      {{ isLoading ? "Adding..." : "Add Selected User/s" }}
+    </button>
+  </mat-dialog-actions>
+</div>
